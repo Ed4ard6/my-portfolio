@@ -2,4 +2,6 @@
 
 declare(strict_types=1);
 
-echo "Mi Portafolio MVC - OK ✅";
+require_once __DIR__ . '/../core/Router.php';
+
+Router::run();
