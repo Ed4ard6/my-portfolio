@@ -79,6 +79,7 @@ class ProjectsController
         // 2) Tomar datos del formulario
         $name = trim($_POST['name'] ?? '');
         $description = trim($_POST['description'] ?? '');
+        $tech = trim($_POST['tech'] ?? '');
 
         // 3) Validar datos
         $errors = [];
@@ -94,6 +95,9 @@ class ProjectsController
         } elseif (mb_strlen($description) < 10) {
             $errors[] = 'La descripción debe tener al menos 10 caracteres.';
         }
+        if ($tech !== '' && mb_strlen($tech) < 2) {
+        $errors[] = 'Si agregas tecnologías, escribe al menos 2 caracteres.';
+        }
 
         // 4) Si hay errores, volvemos a mostrar el formulario con errores + datos previos
         if (!empty($errors)) {
@@ -103,7 +107,8 @@ class ProjectsController
                 'errors' => $errors,
                 'old' => [
                     'name' => $name,
-                    'description' => $description
+                    'description' => $description,
+                    'tech' => $tech
                 ]
             ]);
             return;
@@ -122,7 +127,7 @@ class ProjectsController
             'id' => $_SESSION['projects_next_id'],
             'name' => $name,
             'description' => $description,
-            'tech' => 'Pendiente'
+            'tech' => ($tech === '') ? 'Pendiente' : $tech
         ];
 
         // Guardarlo en sesión
