@@ -30,6 +30,13 @@ class Router
 
         require_once $controllerFile;
 
+        if (!class_exists($controller)) {
+            http_response_code(404);
+            echo "Clase controladora no encontrada: " . htmlspecialchars($controller);
+            return;
+        }
+
+
         if (!method_exists($controller, $method)) {
             http_response_code(404);
             echo "Método no encontrado";
