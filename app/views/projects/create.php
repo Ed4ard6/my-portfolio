@@ -17,7 +17,7 @@
         <input
           type="text"
           name="name"
-          
+          required
           value="<?= htmlspecialchars($old['name'] ?? '') ?>"
         >
     </label>
@@ -26,7 +26,10 @@
 
     <label>
         Descripción:
-        <textarea name="description" rows="4" ><?= htmlspecialchars($old['description'] ?? '') ?></textarea>
+        <textarea name="description" 
+        rows="4" 
+        required
+        ><?= htmlspecialchars($old['description'] ?? '') ?></textarea>
     </label>
 
     <br><br>

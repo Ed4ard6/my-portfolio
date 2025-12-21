@@ -116,11 +116,11 @@ class ProjectsController
             return;
         }
 
-        // 5) Si todo está bien, por ahora solo mostramos confirmación (sin DB)
-        View::render('projects/success', [
-            'title' => 'Proyecto guardado',
-            'name' => $name,
-            'description' => $description
-        ]);
+        // 5) Si todo está bien, guardamos un mensaje flash
+        $_SESSION['flash_success'] = '✅ Proyecto guardado con éxito (sin BD por ahora).';
+
+        // 6) Redirigimos a /projects
+        header('Location: /projects');
+        exit;
     }
 }
