@@ -6,12 +6,20 @@ class ProjectsController
 {
     public function index()
     {
+        $projects = [];
+
+        if (isset($_SESSION['projects']) && is_array($_SESSION['projects'])) {
+            $projects = $_SESSION['projects'];
+        }
+
         View::render('projects/index', [
             'title' => 'Proyectos',
             'heading' => 'Mis Proyectos',
-            'description' => 'Aquí podrás ver algunos de los proyectos que he desarrollado.'
+            'description' => 'Listado de proyectos (guardados en sesión, sin BD).',
+            'projects' => $projects
         ]);
     }
+
 
     public function show($id = null)
     {
@@ -21,30 +29,19 @@ class ProjectsController
             return;
         }
 
-        // Simulamos una base de datos con un array
-        $projects = [
-            1 => [
-                'name' => 'Portafolio MVC',
-                'description' => 'Un portafolio hecho con PHP MVC puro.',
-                'tech' => 'PHP, MVC, HTML, CSS'
-            ],
-            2 => [
-                'name' => 'App de Finanzas',
-                'description' => 'Aplicación para controlar ingresos y gastos en COP.',
-                'tech' => 'PHP, MySQL, MVC'
-            ],
-            3 => [
-                'name' => 'Landing Personal',
-                'description' => 'Página simple para presentarme y mostrar contacto.',
-                'tech' => 'HTML, CSS, JS'
-            ],
-        ];
-
-        // Normalizamos a entero
         $id = (int) $id;
 
-        // Validamos existencia
-        if (!isset($projects[$id])) {
+        $projects = $_SESSION['projects'] ?? [];
+
+        $found = null;
+        foreach ($projects as $p) {
+            if ((int)($p['id'] ?? 0) === $id) {
+                $found = $p;
+                break;
+            }
+        }
+
+        if ($found === null) {
             http_response_code(404);
             View::render('errors/404', [
                 'title' => 'No encontrado',
@@ -54,18 +51,14 @@ class ProjectsController
             return;
         }
 
-        $project = $projects[$id];
-
         View::render('projects/show', [
-            'title' => $project['name'],
-            'heading' => $project['name'],
-            'description' => $project['description'],
-            'tech' => $project['tech'],
-            'id' => $id
+            'title' => $found['name'],
+            'heading' => $found['name'],
+            'description' => $found['description'],
+            'tech' => $found['tech'] ?? 'Pendiente',
+            'id' => $found['id']
         ]);
     }
-
-
 
     public function create()
     {
@@ -115,11 +108,31 @@ class ProjectsController
             ]);
             return;
         }
+        // Inicializar "tabla" en sesión si no existe
+        if (!isset($_SESSION['projects']) || !is_array($_SESSION['projects'])) {
+            $_SESSION['projects'] = [];
+        }
 
-        // 5) Si todo está bien, guardamos un mensaje flash
+        if (!isset($_SESSION['projects_next_id'])) {
+            $_SESSION['projects_next_id'] = 1;
+        }
+
+        // Crear un nuevo proyecto
+        $newProject = [
+            'id' => $_SESSION['projects_next_id'],
+            'name' => $name,
+            'description' => $description,
+            'tech' => 'Pendiente'
+        ];
+
+        // Guardarlo en sesión
+        $_SESSION['projects'][] = $newProject;
+
+        // Incrementar el ID para el siguiente
+        $_SESSION['projects_next_id']++;
+
         $_SESSION['flash_success'] = '✅ Proyecto guardado con éxito (sin BD por ahora).';
 
-        // 6) Redirigimos a /projects
         header('Location: /projects');
         exit;
     }
