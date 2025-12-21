@@ -74,4 +74,53 @@ class ProjectsController
             'heading' => 'Crear nuevo proyecto'
         ]);
     }
+    public function store()
+    {
+        // 1) Asegurarnos de que sea POST
+        if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
+            http_response_code(405);
+            echo "Método HTTP no permitido. Usa POST.";
+            return;
+        }
+
+        // 2) Tomar datos del formulario
+        $name = trim($_POST['name'] ?? '');
+        $description = trim($_POST['description'] ?? '');
+
+        // 3) Validar datos
+        $errors = [];
+
+        if ($name === '') {
+            $errors[] = 'El nombre es obligatorio.';
+        } elseif (mb_strlen($name) < 3) {
+            $errors[] = 'El nombre debe tener al menos 3 caracteres.';
+        }
+
+        if ($description === '') {
+            $errors[] = 'La descripción es obligatoria.';
+        } elseif (mb_strlen($description) < 10) {
+            $errors[] = 'La descripción debe tener al menos 10 caracteres.';
+        }
+
+        // 4) Si hay errores, volvemos a mostrar el formulario con errores + datos previos
+        if (!empty($errors)) {
+            View::render('projects/create', [
+                'title' => 'Crear proyecto',
+                'heading' => 'Crear nuevo proyecto',
+                'errors' => $errors,
+                'old' => [
+                    'name' => $name,
+                    'description' => $description
+                ]
+            ]);
+            return;
+        }
+
+        // 5) Si todo está bien, por ahora solo mostramos confirmación (sin DB)
+        View::render('projects/success', [
+            'title' => 'Proyecto guardado',
+            'name' => $name,
+            'description' => $description
+        ]);
+    }
 }
