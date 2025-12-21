@@ -4,13 +4,10 @@ class Router
 {
     public static function run()
     {
-        // Obtener la URL limpia
         $url = $_GET['url'] ?? '/';
-
-        // Normalizar la URL
         $url = trim($url, '/');
+        $parts = ($url === '') ? [] : explode('/', $url);
 
-        // Si está vacía, ir a home
         if ($url === '') {
             $controller = 'HomeController';
             $method = 'index';
