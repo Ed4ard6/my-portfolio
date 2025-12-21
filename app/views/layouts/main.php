@@ -53,6 +53,14 @@
             <?php unset($_SESSION['flash_success']); ?>
         <?php endif; ?>
 
+        <?php if (!empty($_SESSION['flash_error'])): ?>
+            <div style="padding:12px; border:1px solid #f5c2c7; background:#f8d7da; margin-bottom:16px;">
+                <?= htmlspecialchars($_SESSION['flash_error']) ?>
+            </div>
+            <?php unset($_SESSION['flash_error']); ?>
+        <?php endif; ?>
+
+
         <?= $content ?>
     </main>
 </body>
