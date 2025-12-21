@@ -13,14 +13,20 @@ class ProjectsController
         ]);
     }
 
-    public function show()
+    public function show($id = null)
     {
+        if ($id === null) {
+            echo "Falta el ID del proyecto.";
+            return;
+        }
+
         View::render('projects/show', [
-            'title' => 'Detalle del proyecto',
-            'heading' => 'Proyecto destacado',
-            'description' => 'Este es un ejemplo de “detalle” usando un método del controlador.'
+            'title' => 'Proyecto ' . $id,
+            'heading' => 'Proyecto #' . $id,
+            'description' => 'Mostrando el detalle del proyecto con id: ' . $id
         ]);
     }
+
 
     public function create()
     {
