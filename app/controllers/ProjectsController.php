@@ -136,4 +136,19 @@ class ProjectsController
         header('Location: /projects');
         exit;
     }
+    public function reset()
+{
+    if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
+        http_response_code(405);
+        echo "Método HTTP no permitido. Usa POST.";
+        return;
+    }
+
+    unset($_SESSION['projects'], $_SESSION['projects_next_id']);
+
+    $_SESSION['flash_success'] = '🧹 Proyectos borrados (sesión reiniciada).';
+    header('Location: /projects');
+    exit;
+}
+
 }

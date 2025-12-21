@@ -6,6 +6,11 @@
 <p>
   <a href="/projects/create">➕ Crear proyecto</a>
 </p>
+<form method="post" action="/projects/reset" style="display:inline;">
+  <button type="submit" onclick="return confirm('¿Borrar todos los proyectos de la sesión?');">
+    🧹 Reset
+  </button>
+</form>
 
 <?php if (empty($projects)): ?>
   <p>No hay proyectos aún. Crea el primero 👆</p>
