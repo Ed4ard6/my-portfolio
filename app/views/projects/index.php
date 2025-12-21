@@ -20,6 +20,7 @@
       <li>
         <strong><?= htmlspecialchars($p['name']) ?></strong>
         — <a href="/projects/show/<?= urlencode((string)$p['id']) ?>">Ver detalle</a>
+        — <a href="/projects/edit/<?= urlencode((string)$p['id']) ?>">Editar</a>
       </li>
     <?php endforeach; ?>
   </ul>

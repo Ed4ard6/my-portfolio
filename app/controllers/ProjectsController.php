@@ -1,21 +1,20 @@
 <?php
 
 require_once __DIR__ . '/../../core/View.php';
+require_once __DIR__ . '/../models/ProjectModel.php';
+require_once __DIR__ . '/../models/TechnologyModel.php';
 
 class ProjectsController
 {
     public function index()
     {
-        $projects = [];
-
-        if (isset($_SESSION['projects']) && is_array($_SESSION['projects'])) {
-            $projects = $_SESSION['projects'];
-        }
+        $projectModel = new ProjectModel();
+        $projects = $projectModel->all();
 
         View::render('projects/index', [
             'title' => 'Proyectos',
             'heading' => 'Mis Proyectos',
-            'description' => 'Listado de proyectos (guardados en sesión, sin BD).',
+            'description' => 'Listado de proyectos (ahora desde la BD).',
             'projects' => $projects
         ]);
     }
@@ -29,19 +28,12 @@ class ProjectsController
             return;
         }
 
-        $id = (int) $id;
+        $id = (int)$id;
 
-        $projects = $_SESSION['projects'] ?? [];
+        $projectModel = new ProjectModel();
+        $project = $projectModel->find($id);
 
-        $found = null;
-        foreach ($projects as $p) {
-            if ((int)($p['id'] ?? 0) === $id) {
-                $found = $p;
-                break;
-            }
-        }
-
-        if ($found === null) {
+        if (!$project) {
             http_response_code(404);
             View::render('errors/404', [
                 'title' => 'No encontrado',
@@ -51,14 +43,18 @@ class ProjectsController
             return;
         }
 
+        // Para mostrar tecnologías bonitas en el detalle
+        $techIds = $projectModel->technologyIds($id);
+
         View::render('projects/show', [
-            'title' => $found['name'],
-            'heading' => $found['name'],
-            'description' => $found['description'],
-            'tech' => $found['tech'] ?? 'Pendiente',
-            'id' => $found['id']
+            'title' => $project['name'],
+            'heading' => $project['name'],
+            'description' => $project['description'],
+            'tech' => (empty($techIds) ? 'Pendiente' : 'Asignadas'), // luego lo mejoramos a nombres
+            'id' => $project['id']
         ]);
     }
+
 
     public function create()
     {
@@ -67,6 +63,72 @@ class ProjectsController
             'heading' => 'Crear nuevo proyecto'
         ]);
     }
+
+    public function edit($id = null)
+    {
+        if ($id === null) {
+            http_response_code(400);
+            echo "Falta el ID del proyecto.";
+            return;
+        }
+
+        $id = (int)$id;
+
+        $projectModel = new ProjectModel();
+        $techModel = new TechnologyModel();
+
+        $project = $projectModel->find($id);
+        if (!$project) {
+            http_response_code(404);
+            View::render('errors/404', [
+                'title' => 'No encontrado',
+                'heading' => 'Proyecto no encontrado',
+                'message' => "No existe un proyecto con id $id."
+            ]);
+            return;
+        }
+
+        $technologies = $techModel->all();
+        $selectedTechIds = $projectModel->technologyIds($id);
+
+        View::render('projects/edit', [
+            'title' => 'Editar proyecto',
+            'heading' => 'Editar proyecto',
+            'project' => $project,
+            'technologies' => $technologies,
+            'selectedTechIds' => $selectedTechIds
+        ]);
+    }
+
+    public function update()
+{
+    if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
+        http_response_code(405);
+        echo "Método HTTP no permitido. Usa POST.";
+        return;
+    }
+
+    $id = (int)($_POST['id'] ?? 0);
+    $name = trim($_POST['name'] ?? '');
+    $description = trim($_POST['description'] ?? '');
+
+    $techIds = $_POST['technologies'] ?? [];
+    if (!is_array($techIds)) $techIds = [];
+
+    if ($id <= 0 || $name === '' || $description === '') {
+        http_response_code(400);
+        echo "Datos inválidos.";
+        return;
+    }
+
+    $projectModel = new ProjectModel();
+    $projectModel->update($id, $name, $description, $techIds);
+
+    header("Location: /projects/show/$id");
+    exit;
+}
+
+
     public function store()
     {
         // 1) Asegurarnos de que sea POST
@@ -96,7 +158,7 @@ class ProjectsController
             $errors[] = 'La descripción debe tener al menos 10 caracteres.';
         }
         if ($tech !== '' && mb_strlen($tech) < 2) {
-        $errors[] = 'Si agregas tecnologías, escribe al menos 2 caracteres.';
+            $errors[] = 'Si agregas tecnologías, escribe al menos 2 caracteres.';
         }
 
         // 4) Si hay errores, volvemos a mostrar el formulario con errores + datos previos
@@ -142,18 +204,17 @@ class ProjectsController
         exit;
     }
     public function reset()
-{
-    if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
-        http_response_code(405);
-        echo "Método HTTP no permitido. Usa POST.";
-        return;
+    {
+        if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
+            http_response_code(405);
+            echo "Método HTTP no permitido. Usa POST.";
+            return;
+        }
+
+        unset($_SESSION['projects'], $_SESSION['projects_next_id']);
+
+        $_SESSION['flash_success'] = '🧹 Proyectos borrados (sesión reiniciada).';
+        header('Location: /projects');
+        exit;
     }
-
-    unset($_SESSION['projects'], $_SESSION['projects_next_id']);
-
-    $_SESSION['flash_success'] = '🧹 Proyectos borrados (sesión reiniciada).';
-    header('Location: /projects');
-    exit;
-}
-
 }
