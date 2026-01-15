@@ -8,16 +8,25 @@ class ProjectsController
 {
     public function index()
     {
+        $status = trim($_GET['status'] ?? '');
+
         $projectModel = new ProjectModel();
-        $projects = $projectModel->all();
+
+        if ($status !== '') {
+            $projects = $projectModel->filterByStatus($status);
+        } else {
+            $projects = $projectModel->all();
+        }
 
         View::render('projects/index', [
             'title' => 'Proyectos',
             'heading' => 'Mis Proyectos',
             'description' => 'Listado de proyectos (ahora desde la BD).',
-            'projects' => $projects
+            'projects' => $projects,
+            'currentStatus' => $status
         ]);
     }
+
 
     public function show($id = null)
     {

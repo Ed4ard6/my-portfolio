@@ -7,6 +7,26 @@
   <a class="btn btn-primary" href="/projects/create">➕ Crear proyecto</a>
   <a class="btn btn-secondary" href="/projects/archived">Ver archivados</a>
 </div>
+<?php $currentStatus = $currentStatus ?? ''; ?>
+
+<div style="display:flex; gap:10px; flex-wrap:wrap; margin:12px 0;">
+  <a class="btn <?= $currentStatus === '' ? 'btn-primary' : '' ?>" href="/projects">
+    Todos
+  </a>
+
+  <a class="btn <?= $currentStatus === 'pending' ? 'btn-primary' : '' ?>" href="/projects?status=pending">
+    Pendiente
+  </a>
+
+  <a class="btn <?= $currentStatus === 'active' ? 'btn-primary' : '' ?>" href="/projects?status=active">
+    Activo
+  </a>
+
+  <a class="btn <?= $currentStatus === 'completed' ? 'btn-primary' : '' ?>" href="/projects?status=completed">
+    Completado
+  </a>
+</div>
+
 
 <?php if (empty($projects)): ?>
   <p>No hay proyectos aún. Crea el primero 👆</p>

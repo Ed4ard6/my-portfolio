@@ -194,4 +194,44 @@ class ProjectModel
         $stmt = $pdo->prepare("UPDATE projects SET status = ? WHERE id = ?");
         $stmt->execute([$newStatus, $id]);
     }
+
+    public function filterByStatus(string $status, bool $includeArchived = false): array
+    {
+        $pdo = Database::connect();
+
+        $allowed = ['pending', 'active', 'completed', 'archived'];
+
+        if (!in_array($status, $allowed, true)) {
+            return $this->all($includeArchived); // fallback seguro
+        }
+
+        // Si no queremos archived dentro de /projects, lo filtramos aquí también
+        // (aunque en tu caso solo lo llamaremos con pending/active/completed)
+        $extra = '';
+        if (!$includeArchived) {
+            $extra = "AND p.status <> 'archived'";
+        }
+
+        $sql = "
+        SELECT 
+            p.id,
+            p.name,
+            p.description,
+            p.status,
+            p.created_at,
+            GROUP_CONCAT(t.name ORDER BY t.name SEPARATOR ', ') AS technologies
+        FROM projects p
+        LEFT JOIN project_technology pt ON pt.project_id = p.id
+        LEFT JOIN technologies t ON t.id = pt.technology_id
+        WHERE p.status = :status
+        $extra
+        GROUP BY p.id
+        ORDER BY p.id DESC
+        ";
+
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([':status' => $status]);
+
+        return $stmt->fetchAll();
+    }
 }
