@@ -15,6 +15,32 @@
     </div>
   </div>
 
+  <?php if (($status ?? 'pending') !== 'archived'): ?>
+    <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
+      <form method="POST" action="/projects/updateStatus/<?= urlencode((string)($id ?? '')) ?>" style="display:inline;">
+        <input type="hidden" name="status" value="pending">
+        <button class="btn btn-status-pending" <?= ($status === 'pending') ? 'disabled' : '' ?>>
+          Pending
+        </button>
+      </form>
+
+      <form method="POST" action="/projects/updateStatus/<?= urlencode((string)($id ?? '')) ?>" style="display:inline;">
+        <input type="hidden" name="status" value="active">
+        <button class="btn btn-status-active" <?= ($status === 'active') ? 'disabled' : '' ?>>
+          Active
+        </button>
+      </form>
+
+      <form method="POST" action="/projects/updateStatus/<?= urlencode((string)($id ?? '')) ?>" style="display:inline;">
+        <input type="hidden" name="status" value="completed">
+        <button class="btn btn-status-completed" <?= ($status === 'completed') ? 'disabled' : '' ?>>
+          Completed
+        </button>
+      </form>
+    </div>
+  <?php endif; ?>
+
+
   <p style="margin-top:12px;">
     <?= nl2br(htmlspecialchars($description)) ?>
   </p>

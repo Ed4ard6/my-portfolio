@@ -156,6 +156,66 @@ class ProjectsController
         exit;
     }
 
+    public function updateStatus($id = null)
+    {
+        // A) Asegurar que sea POST (seguridad + semántica)
+        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
+            http_response_code(405);
+            echo "Método no permitido";
+            return;
+        }
+
+        // B) Validar ID
+        if ($id === null) {
+            http_response_code(400);
+            echo "Falta el ID del proyecto.";
+            return;
+        }
+
+        $id = (int)$id;
+        if ($id <= 0) {
+            http_response_code(400);
+            echo "ID inválido.";
+            return;
+        }
+
+        // C) Validar status permitido (NO incluye archived)
+        $status = trim($_POST['status'] ?? '');
+        $allowed = ['pending', 'active', 'completed'];
+
+        if (!in_array($status, $allowed, true)) {
+            http_response_code(400);
+            echo "Status inválido.";
+            return;
+        }
+
+        $projectModel = new ProjectModel();
+
+        // D) Verificar que exista (y bloquear archived desde aquí también)
+        $project = $projectModel->find($id);
+        if (!$project) {
+            http_response_code(404);
+            View::render('errors/404', [
+                'title' => 'No encontrado',
+                'message' => 'Proyecto no existe'
+            ]);
+            return;
+        }
+
+        if (($project['status'] ?? '') === 'archived') {
+            http_response_code(400);
+            echo "Este proyecto está archivado. Debes restaurarlo antes de cambiar el status.";
+            return;
+        }
+
+        // E) Actualizar en BD vía Model
+        $projectModel->updateStatus($id, $status);
+
+        // F) Redirigir (PRG: evita reenvío al refrescar)
+        header('Location: /projects/show/' . $id);
+        exit;
+    }
+
     public function store()
     {
         // 1) Asegurarnos de que sea POST

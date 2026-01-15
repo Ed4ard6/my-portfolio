@@ -234,4 +234,21 @@ class ProjectModel
 
         return $stmt->fetchAll();
     }
+
+    public function updateStatus(int $id, string $status): bool
+    {
+        $pdo = Database::connect();
+
+        $stmt = $pdo->prepare("
+        UPDATE projects
+        SET status = :status
+        WHERE id = :id
+          AND status <> 'archived'
+        ");
+
+        return $stmt->execute([
+            ':status' => $status,
+            ':id' => $id,
+        ]);
+    }
 }

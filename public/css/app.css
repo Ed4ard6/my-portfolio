@@ -167,6 +167,11 @@ a:hover{ text-decoration: underline; }
   background: var(--btnBg);
   cursor:pointer;
   transition: transform .12s ease, background .12s ease, opacity .12s ease, border-color .12s ease;
+  color: var(--text);
+  font: inherit;
+  line-height: 1;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 /* Buttons should NOT underline on hover */
@@ -177,6 +182,12 @@ a:hover{ text-decoration: underline; }
   transform: translateY(-1px);
 }
 .btn:active{ transform: translateY(0px); }
+
+.btn:disabled{
+  opacity: .55;
+  cursor: not-allowed;
+  transform: none;
+}
 
 /* Primary: consistent in both themes using vars */
 .btn-primary{
@@ -202,6 +213,30 @@ a:hover{ text-decoration: underline; }
 }
 .btn-danger:hover{
   background: var(--dangerBgHover);
+}
+
+.btn-status-pending{
+  border-color: rgba(255,184,0,.35);
+  background: rgba(255,184,0,.10);
+}
+.btn-status-pending:hover{
+  background: rgba(255,184,0,.16);
+}
+
+.btn-status-active{
+  border-color: rgba(0,210,140,.35);
+  background: rgba(0,210,140,.10);
+}
+.btn-status-active:hover{
+  background: rgba(0,210,140,.16);
+}
+
+.btn-status-completed{
+  border-color: rgba(90,160,255,.35);
+  background: rgba(90,160,255,.10);
+}
+.btn-status-completed:hover{
+  background: rgba(90,160,255,.16);
 }
 
 /* Slight pill look for nav buttons (optional but nice) */
