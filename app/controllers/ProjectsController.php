@@ -19,7 +19,6 @@ class ProjectsController
         ]);
     }
 
-
     public function show($id = null)
     {
         if ($id === null) {
@@ -43,24 +42,44 @@ class ProjectsController
             return;
         }
 
-        // Para mostrar tecnologías bonitas en el detalle
-        $techIds = $projectModel->technologyIds($id);
+        $techNames = $projectModel->technologyNames($id);
 
         View::render('projects/show', [
             'title' => $project['name'],
             'heading' => $project['name'],
             'description' => $project['description'],
-            'tech' => (empty($techIds) ? 'Pendiente' : 'Asignadas'), // luego lo mejoramos a nombres
-            'id' => $project['id']
+            'id' => $project['id'],
+            'techNames' => $techNames,
+            'status' => $project['status'] ?? 'pending',
+
         ]);
     }
 
-
     public function create()
     {
+        // 1) El controller NO habla directo con la BD
+        //    Usa el modelo correspondiente
+        $techModel = new TechnologyModel();
+
+        // 2) Pedimos TODAS las tecnologías existentes
+        //    Esto devuelve algo como:
+        //    [
+        //      ['id'=>1,'name'=>'PHP'],
+        //      ['id'=>2,'name'=>'MySQL'],
+        //      ...
+        //    ]
+        $technologies = $techModel->all();
+
+        // 3) Renderizamos la vista y le pasamos los datos
         View::render('projects/create', [
             'title' => 'Crear proyecto',
-            'heading' => 'Crear nuevo proyecto'
+            'heading' => 'Crear proyecto',
+            'technologies' => $technologies,
+            // Por ahora no hay tecnologías seleccionadas
+            'selectedTechIds' => [],
+            // Para que no falle si vienes desde errores
+            'errors' => [],
+            'old' => []
         ]);
     }
 
@@ -101,33 +120,32 @@ class ProjectsController
     }
 
     public function update()
-{
-    if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
-        http_response_code(405);
-        echo "Método HTTP no permitido. Usa POST.";
-        return;
+    {
+        if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
+            http_response_code(405);
+            echo "Método HTTP no permitido. Usa POST.";
+            return;
+        }
+
+        $id = (int)($_POST['id'] ?? 0);
+        $name = trim($_POST['name'] ?? '');
+        $description = trim($_POST['description'] ?? '');
+
+        $techIds = $_POST['technologies'] ?? [];
+        if (!is_array($techIds)) $techIds = [];
+
+        if ($id <= 0 || $name === '' || $description === '') {
+            http_response_code(400);
+            echo "Datos inválidos.";
+            return;
+        }
+
+        $projectModel = new ProjectModel();
+        $projectModel->update($id, $name, $description, $techIds);
+
+        header("Location: /projects/show/$id");
+        exit;
     }
-
-    $id = (int)($_POST['id'] ?? 0);
-    $name = trim($_POST['name'] ?? '');
-    $description = trim($_POST['description'] ?? '');
-
-    $techIds = $_POST['technologies'] ?? [];
-    if (!is_array($techIds)) $techIds = [];
-
-    if ($id <= 0 || $name === '' || $description === '') {
-        http_response_code(400);
-        echo "Datos inválidos.";
-        return;
-    }
-
-    $projectModel = new ProjectModel();
-    $projectModel->update($id, $name, $description, $techIds);
-
-    header("Location: /projects/show/$id");
-    exit;
-}
-
 
     public function store()
     {
@@ -141,9 +159,15 @@ class ProjectsController
         // 2) Tomar datos del formulario
         $name = trim($_POST['name'] ?? '');
         $description = trim($_POST['description'] ?? '');
-        $tech = trim($_POST['tech'] ?? '');
 
-        // 3) Validar datos
+        // technologies[] llega como array (o no llega si no marcaron nada)
+        $techIds = $_POST['technologies'] ?? [];
+        if (!is_array($techIds)) $techIds = [];
+
+        // Normalizamos: int + sin duplicados
+        $techIds = array_values(array_unique(array_map('intval', $techIds)));
+
+        // 3) Validar datos (mantenemos tu lógica)
         $errors = [];
 
         if ($name === '') {
@@ -157,64 +181,82 @@ class ProjectsController
         } elseif (mb_strlen($description) < 10) {
             $errors[] = 'La descripción debe tener al menos 10 caracteres.';
         }
-        if ($tech !== '' && mb_strlen($tech) < 2) {
-            $errors[] = 'Si agregas tecnologías, escribe al menos 2 caracteres.';
-        }
 
-        // 4) Si hay errores, volvemos a mostrar el formulario con errores + datos previos
+        // 4) Si hay errores, volvemos a mostrar el formulario con:
+        //    - errores
+        //    - old inputs
+        //    - technologies (para pintar checkboxes)
+        //    - selectedTechIds (para mantener checks)
         if (!empty($errors)) {
+            $techModel = new TechnologyModel();
+            $technologies = $techModel->all();
+
             View::render('projects/create', [
                 'title' => 'Crear proyecto',
-                'heading' => 'Crear nuevo proyecto',
+                'heading' => 'Crear proyecto',
                 'errors' => $errors,
                 'old' => [
                     'name' => $name,
                     'description' => $description,
-                    'tech' => $tech
-                ]
+                ],
+                'technologies' => $technologies,
+                'selectedTechIds' => $techIds
             ]);
             return;
         }
-        // Inicializar "tabla" en sesión si no existe
-        if (!isset($_SESSION['projects']) || !is_array($_SESSION['projects'])) {
-            $_SESSION['projects'] = [];
-        }
 
-        if (!isset($_SESSION['projects_next_id'])) {
-            $_SESSION['projects_next_id'] = 1;
-        }
+        // 5) Guardar en BD (proyecto + tabla pivote)
+        $projectModel = new ProjectModel();
+        $newId = $projectModel->create($name, $description, $techIds);
 
-        // Crear un nuevo proyecto
-        $newProject = [
-            'id' => $_SESSION['projects_next_id'],
-            'name' => $name,
-            'description' => $description,
-            'tech' => ($tech === '') ? 'Pendiente' : $tech
-        ];
-
-        // Guardarlo en sesión
-        $_SESSION['projects'][] = $newProject;
-
-        // Incrementar el ID para el siguiente
-        $_SESSION['projects_next_id']++;
-
-        $_SESSION['flash_success'] = '✅ Proyecto guardado con éxito (sin BD por ahora).';
-
-        header('Location: /projects');
+        // 6) Redirigir al detalle del nuevo proyecto
+        header("Location: /projects/show/$newId");
         exit;
     }
-    public function reset()
+
+    public function archive($id = null)
     {
-        if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
-            http_response_code(405);
-            echo "Método HTTP no permitido. Usa POST.";
+        if ($id === null) {
+            http_response_code(400);
+            echo "Falta el ID del proyecto.";
             return;
         }
 
-        unset($_SESSION['projects'], $_SESSION['projects_next_id']);
+        $id = (int)$id;
 
-        $_SESSION['flash_success'] = '🧹 Proyectos borrados (sesión reiniciada).';
-        header('Location: /projects');
+        $projectModel = new ProjectModel();
+        $projectModel->archive($id);
+
+        header("Location: /projects");
+        exit;
+    }
+
+    public function archived()
+    {
+        $projectModel = new ProjectModel();
+        $projects = $projectModel->archived();
+
+        View::render('projects/archived', [
+            'title' => 'Archivados',
+            'heading' => 'Proyectos archivados',
+            'projects' => $projects
+        ]);
+    }
+
+    public function restore($id = null)
+    {
+        if ($id === null) {
+            http_response_code(400);
+            echo "Falta el ID del proyecto.";
+            return;
+        }
+
+        $id = (int)$id;
+
+        $projectModel = new ProjectModel();
+        $projectModel->restore($id);
+
+        header("Location: /projects/archived");
         exit;
     }
 }
