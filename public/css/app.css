@@ -4,7 +4,7 @@
    - Light: [data-theme="light"]
 ========================================================= */
 
-:root{
+:root {
   --bg: #0b1020;
   --card: rgba(18, 26, 51, .82);
   --text: #e7eaf3;
@@ -34,7 +34,7 @@
   --btnBgHover: rgba(255, 255, 255, .12);
 }
 
-[data-theme="light"]{
+[data-theme="light"] {
   /* Light theme with more “personality” */
   --bg: #eef2ff;
   --card: rgba(255, 255, 255, .86);
@@ -65,9 +65,11 @@
    BASE
 ========================================================= */
 
-*{ box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
-body{
+body {
   margin: 0;
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
   background:
@@ -78,16 +80,18 @@ body{
   transition: background .25s ease, color .25s ease;
 }
 
-a{ color: inherit; }
+a {
+  color: inherit;
+}
 
-.container{
+.container {
   width: min(1100px, 92vw);
   margin: 0 auto;
   padding: 18px 0 50px;
 }
 
 /* =========================================================
-   NAV (compact + glass)
+   NAV
 ========================================================= */
 
 .nav{
@@ -96,49 +100,41 @@ a{ color: inherit; }
   align-items:center;
   justify-content: space-between;
   padding: 0;
+  min-height: 74px; /* evita saltos al alternar tema */
 }
 
-.nav .links{
-  display:flex;
-  gap:10px;
+.nav .links {
+  display: flex;
+  gap: 10px;
   flex-wrap: wrap;
   justify-content: center;
 }
 
-/* Dark nav */
-:root:not([data-theme="light"]) .nav{
-  background: rgba(0,0,0,.10);
-  border: 1px solid rgba(255,255,255,.08);
-  border-radius: 16px;
-  padding: 8px 12px;
-  box-shadow: 0 10px 28px rgba(0,0,0,.28);
+/* Dark nav (glass card) */
+:root:not([data-theme="light"]) .nav {
+  background: rgba(0, 0, 0, .10);
+  border: 1px solid rgba(255, 255, 255, .08);
+  border-radius: 18px;
+  padding: 10px 14px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, .28);
   backdrop-filter: blur(10px);
 }
 
-/* Light nav */
+/* Light nav (glass card) */
 [data-theme="light"] .nav{
-  background: rgba(255,255,255,.28);
+  background: rgba(255,255,255,.30);
   border: 1px solid rgba(15,23,42,.08);
-  border-radius: 16px;
-  padding: 8px 12px;
-  box-shadow: 0 10px 25px rgba(15,23,42,.08);
+  border-radius: 18px;
+  padding: 10px 14px;
+  box-shadow: 0 10px 28px rgba(15,23,42,.10);
   backdrop-filter: blur(10px);
-}
-
-/* Nav buttons pill */
-.nav .btn{
-  padding: 9px 12px;
-  border-radius: 999px;
-  border-color: var(--border);
-  font-size: 12px;
-  color: var(--text);
 }
 
 /* =========================================================
    CARDS / GRID
 ========================================================= */
 
-.card{
+.card {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -146,32 +142,36 @@ a{ color: inherit; }
   backdrop-filter: blur(10px);
 }
 
-.card-pad{ padding: 16px; }
+.card-pad {
+  padding: 16px;
+}
 
-.grid{
+.grid {
   display: grid;
   grid-template-columns: 1fr;
   gap: 14px;
   margin-top: 16px;
 }
 
-@media (min-width: 860px){
-  .grid{ grid-template-columns: 1fr 1fr; }
+@media (min-width: 860px) {
+  .grid {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
-.row{
+.row {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
 }
 
-.muted{
+.muted {
   color: var(--muted);
   font-size: 14px;
 }
 
-hr.sep{
+hr.sep {
   border: 0;
   border-top: 1px solid var(--border);
   margin: 14px 0 16px;
@@ -181,7 +181,7 @@ hr.sep{
    BUTTONS
 ========================================================= */
 
-.btn{
+.btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -201,41 +201,47 @@ hr.sep{
   appearance: none;
 }
 
-.btn, .btn:hover{ text-decoration: none; }
+.btn,
+.btn:hover {
+  text-decoration: none;
+}
 
-.btn:hover{
+.btn:hover {
   background: var(--btnBgHover);
   transform: translateY(-1px);
 }
 
-.btn:active{ transform: translateY(0px); }
+.btn:active {
+  transform: translateY(0px);
+}
 
-.btn:disabled{
+.btn:disabled {
   opacity: .55;
   cursor: not-allowed;
   transform: none;
 }
 
-.btn-primary{
+.btn-primary {
   background: linear-gradient(90deg, var(--primary1), var(--primary2));
   border-color: rgba(255, 255, 255, .10);
 }
 
-[data-theme="light"] .btn-primary{
+[data-theme="light"] .btn-primary {
   border-color: rgba(15, 23, 42, .10);
 }
 
-.btn-secondary{
+.btn-secondary {
   background: transparent;
   border-color: var(--border);
 }
 
 /* Danger: Archivar should ALWAYS stand out */
-.btn-danger{
+.btn-danger {
   background: var(--dangerBg);
   border-color: var(--dangerBd);
 }
-.btn-danger:hover{
+
+.btn-danger:hover {
   background: var(--dangerBgHover);
 }
 
@@ -243,35 +249,47 @@ hr.sep{
    STATUS BUTTONS (pending / active / completed)
 ========================================================= */
 
-.btn-status-pending{
+.btn-status-pending {
   border-color: rgba(255, 184, 0, .35);
   background: rgba(255, 184, 0, .10);
 }
-.btn-status-pending:hover{
+
+.btn-status-pending:hover {
   background: rgba(255, 184, 0, .16);
 }
 
-.btn-status-active{
+.btn-status-active {
   border-color: rgba(0, 210, 140, .35);
   background: rgba(0, 210, 140, .10);
 }
-.btn-status-active:hover{
+
+.btn-status-active:hover {
   background: rgba(0, 210, 140, .16);
 }
 
-.btn-status-completed{
+.btn-status-completed {
   border-color: rgba(90, 160, 255, .35);
   background: rgba(90, 160, 255, .10);
 }
-.btn-status-completed:hover{
+
+.btn-status-completed:hover {
   background: rgba(90, 160, 255, .16);
+}
+
+/* Slight pill look for nav buttons (optional but nice) */
+.nav .btn {
+  padding: 9px 12px;
+  border-radius: 999px;
+  border-color: var(--border);
+  font-size: 12px;
+  color: var(--text);
 }
 
 /* =========================================================
    BADGES (Status pills)
 ========================================================= */
 
-.badge{
+.badge {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -283,26 +301,46 @@ hr.sep{
   background: rgba(255, 255, 255, .06);
 }
 
-.badge-dot{
+.badge-dot {
   width: 8px;
   height: 8px;
   border-radius: 999px;
   background: rgba(255, 255, 255, .6);
 }
 
-.badge--pending{ background: var(--pending); }
-.badge--pending .badge-dot{ background: rgba(255, 184, 0, .9); }
+.badge--pending {
+  background: var(--pending);
+}
 
-.badge--active{ background: var(--active); }
-.badge--active .badge-dot{ background: rgba(0, 210, 140, .9); }
+.badge--pending .badge-dot {
+  background: rgba(255, 184, 0, .9);
+}
 
-.badge--completed{ background: var(--completed); }
-.badge--completed .badge-dot{ background: rgba(90, 160, 255, .95); }
+.badge--active {
+  background: var(--active);
+}
 
-.badge--archived{ background: rgba(255, 255, 255, .07); }
-.badge--archived .badge-dot{ background: rgba(255, 255, 255, .65); }
+.badge--active .badge-dot {
+  background: rgba(0, 210, 140, .9);
+}
 
-[data-theme="light"] .badge{
+.badge--completed {
+  background: var(--completed);
+}
+
+.badge--completed .badge-dot {
+  background: rgba(90, 160, 255, .95);
+}
+
+.badge--archived {
+  background: rgba(255, 255, 255, .07);
+}
+
+.badge--archived .badge-dot {
+  background: rgba(255, 255, 255, .65);
+}
+
+[data-theme="light"] .badge {
   background: rgba(255, 255, 255, .80);
   border-color: rgba(15, 23, 42, .10);
 }
@@ -311,14 +349,16 @@ hr.sep{
    FORMS
 ========================================================= */
 
-label{
+label {
   display: block;
   font-size: 14px;
   margin: 10px 0 6px;
   color: var(--muted);
 }
 
-input[type="text"], textarea, select{
+input[type="text"],
+textarea,
+select {
   width: 100%;
   padding: 10px 12px;
   border-radius: 12px;
@@ -331,30 +371,31 @@ input[type="text"], textarea, select{
 
 [data-theme="light"] input[type="text"],
 [data-theme="light"] textarea,
-[data-theme="light"] select{
+[data-theme="light"] select {
   background: rgba(255, 255, 255, .85);
   color: var(--text);
   border-color: rgba(15, 23, 42, .10);
 }
 
-input[type="text"]:focus, textarea:focus{
+input[type="text"]:focus,
+textarea:focus {
   border-color: rgba(115, 102, 255, .55);
   background: rgba(255, 255, 255, .07);
 }
 
 [data-theme="light"] input[type="text"]:focus,
-[data-theme="light"] textarea:focus{
+[data-theme="light"] textarea:focus {
   border-color: rgba(79, 70, 229, .55);
   background: rgba(255, 255, 255, .95);
 }
 
-textarea{
+textarea {
   min-height: 120px;
   resize: vertical;
 }
 
 /* =========================================================
-   BRAND / HEADER (Logo image)
+   BRAND / HEADER
 ========================================================= */
 
 .brand-link{
@@ -380,16 +421,19 @@ textarea{
   }
 }
 
+
 /* =========================================================
-   THEME TOGGLE (round + glass)
+   TOGGLE ICON BUTTON
 ========================================================= */
 
 .icon-toggle{
   width: 42px;
   height: 42px;
-  padding: 0;
   border-radius: 999px;
+
+  /* antes: border: 1px solid transparent; */
   border: 1px solid var(--border);
+
   background: rgba(255,255,255,.10);
   color: var(--text);
   cursor: pointer;
@@ -399,25 +443,14 @@ textarea{
   transition: transform .12s ease, background .12s ease, border-color .12s ease;
 }
 
-.icon-toggle:hover{
-  background: rgba(255,255,255,.16);
-  transform: translateY(-1px);
-}
-
-.icon-toggle:active{ transform: translateY(0px); }
-
-/* Light mode: glass claro, NO blanco sólido */
-[data-theme="light"] .icon-toggle{
-  background: rgba(255,255,255,.55);
-  border-color: rgba(15,23,42,.10);
-}
-[data-theme="light"] .icon-toggle:hover{
-  background: rgba(255,255,255,.75);
-}
-
-/* Fallbacks (por si tu botón no usa .icon-toggle) */
-#themeToggle, #theme-toggle, .toggle-theme, .theme-toggle,
-.nav .theme-toggle, .nav #themeToggle, .nav #theme-toggle{
+/* Fallback: si el toggle NO está usando .icon-toggle y se ve cuadrado */
+#themeToggle,
+#theme-toggle,
+.toggle-theme,
+.theme-toggle,
+.nav .theme-toggle,
+.nav #themeToggle,
+.nav #theme-toggle{
   width: 42px;
   height: 42px;
   padding: 0;
@@ -430,29 +463,85 @@ textarea{
   color: var(--text);
 }
 
-[data-theme="light"] #themeToggle,
-[data-theme="light"] #theme-toggle,
-[data-theme="light"] .toggle-theme,
-[data-theme="light"] .theme-toggle{
+/* Si el toggle también tiene .btn, esto lo “des-cuadra” */
+#themeToggle.btn,
+#theme-toggle.btn,
+.toggle-theme.btn,
+.theme-toggle.btn{
+  padding: 0;
+  border-radius: 999px;
+}
+
+
+.icon-btn{
+  width: 42px;
+  height: 42px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+
+  /* Glass fijo, no dependiente de --btnBg */
+  background: rgba(255,255,255,.10);
+
+  cursor:pointer;
+  transition: transform .06s ease, background .12s ease, border-color .12s ease;
+}
+
+.icon-btn:hover{
+  background: rgba(255,255,255,.16);
+  transform: translateY(-1px);
+}
+
+.icon-btn:active{
+  transform: translateY(0px);
+}
+
+/* Light mode: glass claro, NO blanco sólido */
+[data-theme="light"] .icon-btn{
   background: rgba(255,255,255,.55);
   border-color: rgba(15,23,42,.10);
 }
+
+[data-theme="light"] .icon-btn:hover{
+  background: rgba(255,255,255,.75);
+}
+
 
 /* =========================================================
    SMALL UTILITIES
 ========================================================= */
 
-h1,h2,h3{ margin: 0 0 10px; }
-p{ margin: 0 0 10px; }
-small{ color: var(--muted); }
+h1,
+h2,
+h3 {
+  margin: 0 0 10px;
+}
 
-.flex{
-  display:flex;
-  align-items:center;
+p {
+  margin: 0 0 10px;
+}
+
+small {
+  color: var(--muted);
+}
+
+.flex {
+  display: flex;
+  align-items: center;
   gap: 10px;
   flex-wrap: wrap;
 }
 
-.gap8{ gap: 8px; }
-.mt10{ margin-top: 10px; }
-.mt16{ margin-top: 16px; }
+.gap8 {
+  gap: 8px;
+}
+
+.mt10 {
+  margin-top: 10px;
+}
+
+.mt16 {
+  margin-top: 16px;
+}
