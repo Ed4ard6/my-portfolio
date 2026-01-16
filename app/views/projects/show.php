@@ -59,14 +59,6 @@
     <?php endif; ?>
   </p>
 
-  <?php if (!empty($projectUrl)): ?>
-    <div style="margin-top:10px;">
-      <a class="btn btn-primary" href="<?= htmlspecialchars($projectUrl) ?>" target="_blank" rel="noopener noreferrer">
-        Ver proyecto
-      </a>
-    </div>
-  <?php endif; ?>
-
   <div style="margin-top:16px; display:flex; gap:8px; flex-wrap:wrap;">
     <?php if ($isAdmin): ?>
       <a class="btn" href="/projects/edit/<?= urlencode((string)($id ?? '')) ?>">Editar</a>
