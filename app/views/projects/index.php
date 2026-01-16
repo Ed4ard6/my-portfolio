@@ -62,12 +62,11 @@
 
             <?php if ($isAdmin): ?>
               <a class="btn" href="/projects/edit/<?= urlencode((string)$p['id']) ?>">Editar</a>
-              <form method="POST" action="/projects/archive/<?= urlencode((string)$p['id']) ?>" style="display:inline;">
-                <input type="hidden" name="<?= htmlspecialchars(Csrf::fieldName()) ?>" value="<?= htmlspecialchars(Csrf::token()) ?>">
-                <button class="btn btn-danger" type="submit" onclick="return confirm('¿Seguro que quieres archivar este proyecto?');">
-                  Archivar
-                </button>
-              </form>
+              <a class="btn btn-danger"
+                href="/projects/archive/<?= urlencode((string)$p['id']) ?>"
+                onclick="return confirm('¿Seguro que quieres archivar este proyecto?');">
+                Archivar
+              </a>
             <?php endif; ?>
           </div>
         </div>

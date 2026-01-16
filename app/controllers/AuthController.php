@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../../core/View.php';
 require_once __DIR__ . '/../../core/Auth.php';
-require_once __DIR__ . '/../../core/Csrf.php';
 
 class AuthController
 {
@@ -22,12 +21,6 @@ class AuthController
         if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
             http_response_code(405);
             echo 'Método HTTP no permitido. Usa POST.';
-            return;
-        }
-
-        if (!Csrf::validate($_POST[Csrf::fieldName()] ?? null)) {
-            http_response_code(400);
-            echo 'Token CSRF inválido.';
             return;
         }
 

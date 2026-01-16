@@ -2,7 +2,6 @@
 
 require_once __DIR__ . '/../../core/View.php';
 require_once __DIR__ . '/../../core/Auth.php';
-require_once __DIR__ . '/../../core/Csrf.php';
 require_once __DIR__ . '/../models/ProjectModel.php';
 require_once __DIR__ . '/../models/TechnologyModel.php';
 
@@ -322,18 +321,6 @@ class ProjectsController
     {
         $this->ensureAuthenticated();
 
-        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
-            http_response_code(405);
-            echo "Método no permitido";
-            return;
-        }
-
-        if (!Csrf::validate($_POST[Csrf::fieldName()] ?? null)) {
-            http_response_code(400);
-            echo "Token CSRF inválido.";
-            return;
-        }
-
         if ($id === null) {
             http_response_code(400);
             echo "Falta el ID del proyecto.";
@@ -366,18 +353,6 @@ class ProjectsController
     public function restore($id = null)
     {
         $this->ensureAuthenticated();
-
-        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
-            http_response_code(405);
-            echo "Método no permitido";
-            return;
-        }
-
-        if (!Csrf::validate($_POST[Csrf::fieldName()] ?? null)) {
-            http_response_code(400);
-            echo "Token CSRF inválido.";
-            return;
-        }
 
         if ($id === null) {
             http_response_code(400);
