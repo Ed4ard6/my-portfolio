@@ -59,11 +59,6 @@
 
           <div style="display:flex; gap:8px; flex-wrap:wrap;">
             <a class="btn" href="/projects/show/<?= urlencode((string)$p['id']) ?>">Ver detalle</a>
-            <?php if (!empty($p['project_url'])): ?>
-              <a class="btn btn-primary" href="<?= htmlspecialchars($p['project_url']) ?>" target="_blank" rel="noopener noreferrer">
-                Ver proyecto
-              </a>
-            <?php endif; ?>
 
             <?php if ($isAdmin): ?>
               <a class="btn" href="/projects/edit/<?= urlencode((string)$p['id']) ?>">Editar</a>

@@ -2,7 +2,6 @@
 
 require_once __DIR__ . '/../../core/View.php';
 require_once __DIR__ . '/../../core/Auth.php';
-require_once __DIR__ . '/../../core/Csrf.php';
 require_once __DIR__ . '/../models/ProjectModel.php';
 require_once __DIR__ . '/../models/TechnologyModel.php';
 
