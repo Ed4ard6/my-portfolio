@@ -10,6 +10,7 @@
   </div>
 
   <form method="POST" action="/projects/update" style="margin-top:14px;">
+    <input type="hidden" name="<?= htmlspecialchars(Csrf::fieldName()) ?>" value="<?= htmlspecialchars(Csrf::token()) ?>">
     <input type="hidden" name="id" value="<?= (int)$project['id'] ?>">
 
     <div style="margin-top:12px;">
