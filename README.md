@@ -75,14 +75,6 @@ Campos sugeridos:
 
 Se agregó un login básico para proteger la edición de proyectos.
 
-**Credenciales por defecto:**
-# my-portfolio
-Personal portfolio website showcasing my projects, skills, and experience as a developer.
-
-## Acceso de administrador
-
-Para proteger la edición de proyectos, se agregó un login básico.
-
 Credenciales por defecto:
 
 - Usuario: `admin`
@@ -114,30 +106,6 @@ Si quieres cambiarlo, define estas variables de entorno:
 - `/projects/edit/:id`
 - `/projects/archived`
 
-## ⚠️ Solución de errores comunes
-## Solución de errores comunes
-
-### Error: Cannot redeclare ProjectModel::filterByStatus()
-
-Este error aparece cuando hay **dos métodos `filterByStatus()` dentro de la clase**
-`ProjectModel`. Debes dejar **solo uno**. El método correcto es el que usa la tabla
-`project_technology` (singular) y el mismo conjunto de columnas que `all()`.
-
-## 🧭 Flujo recomendado de ramas
-
-- `main`: versión estable (producción)
-- `develop`: integración de cambios
-- `feature/*`: ramas temporales para nuevas funciones
-
-Si tienes una rama extra y ya no la necesitas, puedes eliminarla así:
-
-```bash
-# Eliminar rama local
-git branch -d nombre-rama
-
-# Eliminar rama remota
-git push origin --delete nombre-rama
-```
 
 ## 🚧 Pendientes / Próximos pasos
 
