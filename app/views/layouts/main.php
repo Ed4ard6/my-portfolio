@@ -45,6 +45,18 @@
     </main>
   </div>
 
+  <dialog id="confirmDialog" class="confirm-dialog" aria-labelledby="confirmDialogTitle">
+    <div class="confirm-dialog__card">
+      <h2 id="confirmDialogTitle" class="confirm-dialog__title" data-confirm-title>Confirmar acción</h2>
+      <p class="confirm-dialog__message" data-confirm-message>¿Estás seguro de continuar?</p>
+      <div class="confirm-dialog__actions">
+        <button class="btn btn-secondary" type="button" data-confirm-no>Cancelar</button>
+        <button class="btn btn-danger" type="button" data-confirm-yes>Confirmar</button>
+      </div>
+    </div>
+  </dialog>
+
   <script src="/js/theme.js"></script>
+  <script src="/js/modals.js"></script>
 </body>
 </html>

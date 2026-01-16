@@ -38,11 +38,12 @@
                         <?php endif; ?>
 
                         <?php if ($isAdmin): ?>
-                            <a class="btn"
-                                href="/projects/restore/<?= urlencode((string)$p['id']) ?>"
-                                onclick="return confirm('¿Restaurar este proyecto?');">
-                                Restaurar
-                            </a>
+                            <form method="POST" action="/projects/restore/<?= urlencode((string)$p['id']) ?>" style="display:inline;" data-confirm-form data-confirm-title="Restaurar proyecto" data-confirm-message="¿Quieres restaurar este proyecto?">
+                                <input type="hidden" name="<?= htmlspecialchars(Csrf::fieldName()) ?>" value="<?= htmlspecialchars(Csrf::token()) ?>">
+                                <button class="btn" type="submit">
+                                    Restaurar
+                                </button>
+                            </form>
                         <?php endif; ?>
                     </div>
                 </div>
