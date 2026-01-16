@@ -56,18 +56,18 @@ Las tablas principales que se usan en el proyecto son:
 
 Campos sugeridos:
 
-**projects**
+### projects
 - `id` (INT, PK)
 - `name` (VARCHAR)
 - `description` (TEXT)
 - `status` (VARCHAR: pending | active | completed | archived)
 - `created_at` (TIMESTAMP)
 
-**technologies**
+### technologies
 - `id` (INT, PK)
 - `name` (VARCHAR)
 
-**project_technology**
+### project_technology
 - `project_id` (FK a projects.id)
 - `technology_id` (FK a technologies.id)
 
@@ -75,7 +75,7 @@ Campos sugeridos:
 
 Se agregó un login básico para proteger la edición de proyectos.
 
-Credenciales por defecto:
+**Credenciales por defecto:**
 
 - Usuario: `admin`
 - Contraseña: `admin123`
@@ -85,37 +85,7 @@ Si quieres cambiarlo, define estas variables de entorno:
 - `PORTFOLIO_ADMIN_USER`
 - `PORTFOLIO_ADMIN_HASH` (usa `password_hash()` en PHP para generar el hash)
 
-> Nota: si cambias el hash, puedes generarlo con:
-> `php -r "echo password_hash('TuPassword', PASSWORD_DEFAULT);"`
+Ejemplo para generar el hash:
 
-## 🧪 Rutas principales
-
-### Públicas
-
-- `/` (inicio)
-- `/projects` (listado y filtros)
-- `/projects/show/:id` (detalle)
-- `/about`
-- `/contact`
-
-### Admin
-
-- `/auth/login`
-- `/auth/logout`
-- `/projects/create`
-- `/projects/edit/:id`
-- `/projects/archived`
-
-
-## 🚧 Pendientes / Próximos pasos
-
-- Añadir campo de URL del proyecto (para enlazar repos o demos)
-- Separar panel de administración en una ruta `/admin`
-- Agregar protección CSRF en formularios
-- Validaciones más robustas en edición
-
----
-
-> Nota: Si en el futuro quieres un README en inglés, se puede crear un `README.en.md`
-> y mantener este como principal en español.
-`project_technology` (singular) y el mismo conjunto de columnas que `all()`.【F:app/models/ProjectModel.php†L5-L232】
+```bash
+php -r "echo password_hash('TuPassword', PASSWORD_DEFAULT);"
