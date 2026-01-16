@@ -4,9 +4,43 @@ require_once __DIR__ . '/../../core/Database.php';
 
 class ProjectModel
 {
+    private ?bool $hasImageUrlColumn = null;
+
+    private function supportsImageUrl(PDO $pdo): bool
+    {
+        if ($this->hasImageUrlColumn !== null) {
+            return $this->hasImageUrlColumn;
+        }
+
+        try {
+            $dbStmt = $pdo->query("SELECT DATABASE() AS db_name");
+            $dbName = $dbStmt ? ($dbStmt->fetch()['db_name'] ?? null) : null;
+
+            if (!$dbName) {
+                $this->hasImageUrlColumn = false;
+                return $this->hasImageUrlColumn;
+            }
+
+            $stmt = $pdo->prepare("
+                SELECT COUNT(*) AS cnt
+                FROM information_schema.columns
+                WHERE table_schema = :db
+                  AND table_name = 'projects'
+                  AND column_name = 'image_url'
+            ");
+            $stmt->execute([':db' => $dbName]);
+            $this->hasImageUrlColumn = ((int)($stmt->fetch()['cnt'] ?? 0)) > 0;
+        } catch (Throwable $e) {
+            $this->hasImageUrlColumn = false;
+        }
+
+        return $this->hasImageUrlColumn;
+    }
+
     public function all(bool $includeArchived = false): array
     {
         $pdo = Database::connect();
+        $imageSelect = $this->supportsImageUrl($pdo) ? "p.image_url" : "'' AS image_url";
 
         $where = $includeArchived ? "" : "WHERE p.status <> 'archived'";
 
@@ -15,6 +49,7 @@ class ProjectModel
             p.id,
             p.name,
             p.description,
+            $imageSelect,
             p.status,
             p.created_at,
             GROUP_CONCAT(t.name ORDER BY t.name SEPARATOR ', ') AS technologies
@@ -55,9 +90,10 @@ class ProjectModel
         return array_column($rows, 'technology_id'); // [1,3,5]
     }
 
-    public function update(int $id, string $name, ?string $description, array $techIds): void
+    public function update(int $id, string $name, ?string $description, string $imageUrl, array $techIds): void
     {
         $pdo = Database::connect();
+        $supportsImageUrl = $this->supportsImageUrl($pdo);
 
         // Transacción = “o se guarda todo, o no se guarda nada”
         $pdo->beginTransaction();
@@ -66,12 +102,21 @@ class ProjectModel
             $status = count($techIds) > 0 ? 'active' : 'pending';
 
             // 1) Actualizar datos del proyecto
-            $stmt = $pdo->prepare("
-                UPDATE projects
-                SET name = ?, description = ?, status = ?
-                WHERE id = ?
-            ");
-            $stmt->execute([$name, $description, $status, $id]);
+            if ($supportsImageUrl) {
+                $stmt = $pdo->prepare("
+                    UPDATE projects
+                    SET name = ?, description = ?, image_url = ?, status = ?
+                    WHERE id = ?
+                ");
+                $stmt->execute([$name, $description, $imageUrl, $status, $id]);
+            } else {
+                $stmt = $pdo->prepare("
+                    UPDATE projects
+                    SET name = ?, description = ?, status = ?
+                    WHERE id = ?
+                ");
+                $stmt->execute([$name, $description, $status, $id]);
+            }
 
             // 2) Borrar relaciones viejas
             $stmt = $pdo->prepare("DELETE FROM project_technology WHERE project_id = ?");
@@ -111,19 +156,28 @@ class ProjectModel
         return array_column($stmt->fetchAll(), 'name');
     }
 
-    public function create(string $name, ?string $description, array $techIds): int
+    public function create(string $name, ?string $description, string $imageUrl, array $techIds): int
     {
         $pdo = Database::connect();
+        $supportsImageUrl = $this->supportsImageUrl($pdo);
         $pdo->beginTransaction();
 
         try {
             $status = count($techIds) > 0 ? 'active' : 'pending';
 
-            $stmt = $pdo->prepare("
-            INSERT INTO projects (name, description, status)
-            VALUES (?, ?, ?)
-        ");
-            $stmt->execute([$name, $description, $status]);
+            if ($supportsImageUrl) {
+                $stmt = $pdo->prepare("
+                INSERT INTO projects (name, description, image_url, status)
+                VALUES (?, ?, ?, ?)
+            ");
+                $stmt->execute([$name, $description, $imageUrl, $status]);
+            } else {
+                $stmt = $pdo->prepare("
+                INSERT INTO projects (name, description, status)
+                VALUES (?, ?, ?)
+            ");
+                $stmt->execute([$name, $description, $status]);
+            }
 
             $projectId = (int)$pdo->lastInsertId();
 
@@ -157,12 +211,14 @@ class ProjectModel
     public function archived(): array //es diferente a Archive
     {
         $pdo = Database::connect();
+        $imageSelect = $this->supportsImageUrl($pdo) ? "p.image_url" : "'' AS image_url";
 
         $sql = "
         SELECT 
             p.id,
             p.name,
             p.description,
+            $imageSelect,
             p.status,
             p.created_at,
             GROUP_CONCAT(t.name ORDER BY t.name SEPARATOR ', ') AS technologies
@@ -198,6 +254,7 @@ class ProjectModel
     public function filterByStatus(string $status, bool $includeArchived = false): array
     {
         $pdo = Database::connect();
+        $imageSelect = $this->supportsImageUrl($pdo) ? "p.image_url" : "'' AS image_url";
 
         $allowed = ['pending', 'active', 'completed', 'archived'];
 
@@ -217,6 +274,7 @@ class ProjectModel
             p.id,
             p.name,
             p.description,
+            $imageSelect,
             p.status,
             p.created_at,
             GROUP_CONCAT(t.name ORDER BY t.name SEPARATOR ', ') AS technologies

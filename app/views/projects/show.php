@@ -1,5 +1,11 @@
 <div class="card card-pad">
   <?php $isAdmin = class_exists('Auth') && Auth::check(); ?>
+  <?php $imageUrl = trim($image_url ?? ''); ?>
+  <?php $imageSrc = $imageUrl !== '' ? $imageUrl : '/img/project-placeholder.svg'; ?>
+
+  <div class="project-media" style="margin-bottom:16px;">
+    <img src="<?= htmlspecialchars($imageSrc) ?>" alt="Imagen de <?= htmlspecialchars($heading) ?>">
+  </div>
 
   <div class="row">
     <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
