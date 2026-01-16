@@ -3,10 +3,14 @@
 
 <hr>
 
-<div style="display:flex; gap:10px; flex-wrap:wrap; margin:12px 0;">
-  <a class="btn btn-primary" href="/projects/create">➕ Crear proyecto</a>
-  <a class="btn btn-secondary" href="/projects/archived">Ver archivados</a>
-</div>
+<?php $isAdmin = class_exists('Auth') && Auth::check(); ?>
+
+<?php if ($isAdmin): ?>
+  <div style="display:flex; gap:10px; flex-wrap:wrap; margin:12px 0;">
+    <a class="btn btn-primary" href="/projects/create">➕ Crear proyecto</a>
+    <a class="btn btn-secondary" href="/projects/archived">Ver archivados</a>
+  </div>
+<?php endif; ?>
 <?php $currentStatus = $currentStatus ?? ''; ?>
 
 <div style="display:flex; gap:10px; flex-wrap:wrap; margin:12px 0;">
@@ -55,12 +59,15 @@
 
           <div style="display:flex; gap:8px; flex-wrap:wrap;">
             <a class="btn" href="/projects/show/<?= urlencode((string)$p['id']) ?>">Ver detalle</a>
-            <a class="btn" href="/projects/edit/<?= urlencode((string)$p['id']) ?>">Editar</a>
-            <a class="btn btn-danger"
-              href="/projects/archive/<?= urlencode((string)$p['id']) ?>"
-              onclick="return confirm('¿Seguro que quieres archivar este proyecto?');">
-              Archivar
-            </a>
+
+            <?php if ($isAdmin): ?>
+              <a class="btn" href="/projects/edit/<?= urlencode((string)$p['id']) ?>">Editar</a>
+              <a class="btn btn-danger"
+                href="/projects/archive/<?= urlencode((string)$p['id']) ?>"
+                onclick="return confirm('¿Seguro que quieres archivar este proyecto?');">
+                Archivar
+              </a>
+            <?php endif; ?>
           </div>
         </div>
       </div>
