@@ -56,18 +56,22 @@ Las tablas principales que se usan en el proyecto son:
 
 Campos sugeridos:
 
-### projects
+**projects**
 - `id` (INT, PK)
 - `name` (VARCHAR)
 - `description` (TEXT)
+- `project_url` (VARCHAR, opcional)
 - `status` (VARCHAR: pending | active | completed | archived)
 - `created_at` (TIMESTAMP)
 
-### technologies
+> Si aún no tienes la columna `project_url`, puedes agregarla cuando quieras.
+> El proyecto funciona igual sin ella, pero no mostrará el botón “Ver proyecto”.
+
+**technologies**
 - `id` (INT, PK)
 - `name` (VARCHAR)
 
-### project_technology
+**project_technology**
 - `project_id` (FK a projects.id)
 - `technology_id` (FK a technologies.id)
 
@@ -85,7 +89,59 @@ Si quieres cambiarlo, define estas variables de entorno:
 - `PORTFOLIO_ADMIN_USER`
 - `PORTFOLIO_ADMIN_HASH` (usa `password_hash()` en PHP para generar el hash)
 
-Ejemplo para generar el hash:
+> Nota: si cambias el hash, puedes generarlo con:
+> `php -r "echo password_hash('TuPassword', PASSWORD_DEFAULT);"`
+
+## 🧪 Rutas principales
+
+### Públicas
+
+- `/` (inicio)
+- `/projects` (listado y filtros)
+- `/projects/show/:id` (detalle)
+- `/about`
+- `/contact`
+
+### Admin
+
+- `/auth/login`
+- `/auth/logout`
+- `/projects/create`
+- `/projects/edit/:id`
+- `/projects/archived`
+
+## ⚠️ Solución de errores comunes
+
+### Error: Cannot redeclare ProjectModel::filterByStatus()
+
+Este error aparece cuando hay **dos métodos `filterByStatus()` dentro de la clase**
+`ProjectModel`. Debes dejar **solo uno**. El método correcto es el que usa la tabla
+`project_technology` (singular) y el mismo conjunto de columnas que `all()`.
+
+## 🧭 Flujo recomendado de ramas
+
+- `main`: versión estable (producción)
+- `develop`: integración de cambios
+- `feature/*`: ramas temporales para nuevas funciones
+
+Si tienes una rama extra y ya no la necesitas, puedes eliminarla así:
 
 ```bash
-php -r "echo password_hash('TuPassword', PASSWORD_DEFAULT);"
+# Eliminar rama local
+git branch -d nombre-rama
+
+# Eliminar rama remota
+git push origin --delete nombre-rama
+```
+
+## 🚧 Pendientes / Próximos pasos
+
+- Añadir campo de URL del proyecto (para enlazar repos o demos)
+- Separar panel de administración en una ruta `/admin`
+- Agregar protección CSRF en formularios
+- Validaciones más robustas en edición
+
+---
+
+> Nota: Si en el futuro quieres un README en inglés, se puede crear un `README.en.md`
+> y mantener este como principal en español.

@@ -35,6 +35,17 @@
     </div>
 
     <div style="margin-top:12px;">
+      <label class="muted">URL del proyecto (opcional)</label><br>
+      <input
+        class="card card-pad"
+        style="width:100%; padding:10px 12px; border-radius:12px;"
+        type="url"
+        name="project_url"
+        placeholder="https://..."
+        value="<?= htmlspecialchars($project['project_url'] ?? '') ?>">
+    </div>
+
+    <div style="margin-top:12px;">
       <div class="muted" style="margin-bottom:8px;"><strong>Tecnologías</strong></div>
 
       <?php if (empty($technologies)): ?>
