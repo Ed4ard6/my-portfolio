@@ -1,4 +1,6 @@
 <div class="card card-pad">
+  <?php $isAdmin = class_exists('Auth') && Auth::check(); ?>
+
   <div class="row">
     <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
       <h1 style="margin:0;"><?= htmlspecialchars($heading) ?></h1>
@@ -15,9 +17,10 @@
     </div>
   </div>
 
-  <?php if (($status ?? 'pending') !== 'archived'): ?>
+  <?php if ($isAdmin && ($status ?? 'pending') !== 'archived'): ?>
     <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
       <form method="POST" action="/projects/updateStatus/<?= urlencode((string)($id ?? '')) ?>" style="display:inline;">
+        <input type="hidden" name="<?= htmlspecialchars(Csrf::fieldName()) ?>" value="<?= htmlspecialchars(Csrf::token()) ?>">
         <input type="hidden" name="status" value="pending">
         <button class="btn btn-status-pending" <?= ($status === 'pending') ? 'disabled' : '' ?>>
           Pending
@@ -25,6 +28,7 @@
       </form>
 
       <form method="POST" action="/projects/updateStatus/<?= urlencode((string)($id ?? '')) ?>" style="display:inline;">
+        <input type="hidden" name="<?= htmlspecialchars(Csrf::fieldName()) ?>" value="<?= htmlspecialchars(Csrf::token()) ?>">
         <input type="hidden" name="status" value="active">
         <button class="btn btn-status-active" <?= ($status === 'active') ? 'disabled' : '' ?>>
           Active
@@ -32,6 +36,7 @@
       </form>
 
       <form method="POST" action="/projects/updateStatus/<?= urlencode((string)($id ?? '')) ?>" style="display:inline;">
+        <input type="hidden" name="<?= htmlspecialchars(Csrf::fieldName()) ?>" value="<?= htmlspecialchars(Csrf::token()) ?>">
         <input type="hidden" name="status" value="completed">
         <button class="btn btn-status-completed" <?= ($status === 'completed') ? 'disabled' : '' ?>>
           Completed
@@ -55,7 +60,9 @@
   </p>
 
   <div style="margin-top:16px; display:flex; gap:8px; flex-wrap:wrap;">
-    <a class="btn" href="/projects/edit/<?= urlencode((string)($id ?? '')) ?>">Editar</a>
+    <?php if ($isAdmin): ?>
+      <a class="btn" href="/projects/edit/<?= urlencode((string)($id ?? '')) ?>">Editar</a>
+    <?php endif; ?>
     <a class="btn" href="/projects">← Volver a proyectos</a>
   </div>
 </div>

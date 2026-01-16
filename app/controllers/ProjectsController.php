@@ -1,11 +1,18 @@
 <?php
 
 require_once __DIR__ . '/../../core/View.php';
+require_once __DIR__ . '/../../core/Auth.php';
+require_once __DIR__ . '/../../core/Csrf.php';
 require_once __DIR__ . '/../models/ProjectModel.php';
 require_once __DIR__ . '/../models/TechnologyModel.php';
 
 class ProjectsController
 {
+    private function ensureAuthenticated(): void
+    {
+        Auth::requireLogin();
+    }
+
     public function index()
     {
         $status = trim($_GET['status'] ?? '');
@@ -66,6 +73,8 @@ class ProjectsController
 
     public function create()
     {
+        $this->ensureAuthenticated();
+
         // 1) El controller NO habla directo con la BD
         //    Usa el modelo correspondiente
         $techModel = new TechnologyModel();
@@ -94,6 +103,8 @@ class ProjectsController
 
     public function edit($id = null)
     {
+        $this->ensureAuthenticated();
+
         if ($id === null) {
             http_response_code(400);
             echo "Falta el ID del proyecto.";
@@ -130,9 +141,17 @@ class ProjectsController
 
     public function update()
     {
+        $this->ensureAuthenticated();
+
         if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
             http_response_code(405);
             echo "Método HTTP no permitido. Usa POST.";
+            return;
+        }
+
+        if (!Csrf::validate($_POST[Csrf::fieldName()] ?? null)) {
+            http_response_code(400);
+            echo "Token CSRF inválido.";
             return;
         }
 
@@ -158,10 +177,18 @@ class ProjectsController
 
     public function updateStatus($id = null)
     {
+        $this->ensureAuthenticated();
+
         // A) Asegurar que sea POST (seguridad + semántica)
         if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
             http_response_code(405);
             echo "Método no permitido";
+            return;
+        }
+
+        if (!Csrf::validate($_POST[Csrf::fieldName()] ?? null)) {
+            http_response_code(400);
+            echo "Token CSRF inválido.";
             return;
         }
 
@@ -218,10 +245,18 @@ class ProjectsController
 
     public function store()
     {
+        $this->ensureAuthenticated();
+
         // 1) Asegurarnos de que sea POST
         if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
             http_response_code(405);
             echo "Método HTTP no permitido. Usa POST.";
+            return;
+        }
+
+        if (!Csrf::validate($_POST[Csrf::fieldName()] ?? null)) {
+            http_response_code(400);
+            echo "Token CSRF inválido.";
             return;
         }
 
@@ -285,6 +320,20 @@ class ProjectsController
 
     public function archive($id = null)
     {
+        $this->ensureAuthenticated();
+
+        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
+            http_response_code(405);
+            echo "Método no permitido";
+            return;
+        }
+
+        if (!Csrf::validate($_POST[Csrf::fieldName()] ?? null)) {
+            http_response_code(400);
+            echo "Token CSRF inválido.";
+            return;
+        }
+
         if ($id === null) {
             http_response_code(400);
             echo "Falta el ID del proyecto.";
@@ -302,6 +351,8 @@ class ProjectsController
 
     public function archived()
     {
+        $this->ensureAuthenticated();
+
         $projectModel = new ProjectModel();
         $projects = $projectModel->archived();
 
@@ -314,6 +365,20 @@ class ProjectsController
 
     public function restore($id = null)
     {
+        $this->ensureAuthenticated();
+
+        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
+            http_response_code(405);
+            echo "Método no permitido";
+            return;
+        }
+
+        if (!Csrf::validate($_POST[Csrf::fieldName()] ?? null)) {
+            http_response_code(400);
+            echo "Token CSRF inválido.";
+            return;
+        }
+
         if ($id === null) {
             http_response_code(400);
             echo "Falta el ID del proyecto.";
