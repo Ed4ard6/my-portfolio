@@ -38,6 +38,18 @@
         </div>
 
         <div style="margin-top:12px;">
+            <label class="muted">Imagen (URL)</label><br>
+            <input
+                class="card card-pad"
+                style="width:100%; padding:10px 12px; border-radius:12px;"
+                type="url"
+                name="image_url"
+                placeholder="https://..."
+                value="<?= htmlspecialchars($old['image_url'] ?? '') ?>">
+            <div class="muted" style="margin-top:6px;">Puedes usar una URL pública o una ruta local como /img/mi-proyecto.png.</div>
+        </div>
+
+        <div style="margin-top:12px;">
             <div class="muted" style="margin-bottom:8px;"><strong>Tecnologías</strong></div>
 
             <?php $selectedTechIds = $selectedTechIds ?? []; ?>

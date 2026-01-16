@@ -39,7 +39,14 @@
     <?php foreach ($projects as $p): ?>
       <?php $status = $p['status'] ?? 'pending'; ?>
 
-      <div class="card card-pad">
+      <?php $imageUrl = trim($p['image_url'] ?? ''); ?>
+      <?php $imageSrc = $imageUrl !== '' ? $imageUrl : '/img/project-placeholder.svg'; ?>
+
+      <div class="card card-pad project-card">
+        <div class="project-media">
+          <img src="<?= htmlspecialchars($imageSrc) ?>" alt="Imagen de <?= htmlspecialchars($p['name']) ?>">
+        </div>
+
         <div class="row">
           <div>
             <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">

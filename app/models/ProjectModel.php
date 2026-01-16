@@ -15,6 +15,7 @@ class ProjectModel
             p.id,
             p.name,
             p.description,
+            p.image_url,
             p.status,
             p.created_at,
             GROUP_CONCAT(t.name ORDER BY t.name SEPARATOR ', ') AS technologies
@@ -55,7 +56,7 @@ class ProjectModel
         return array_column($rows, 'technology_id'); // [1,3,5]
     }
 
-    public function update(int $id, string $name, ?string $description, array $techIds): void
+    public function update(int $id, string $name, ?string $description, string $imageUrl, array $techIds): void
     {
         $pdo = Database::connect();
 
@@ -68,10 +69,10 @@ class ProjectModel
             // 1) Actualizar datos del proyecto
             $stmt = $pdo->prepare("
                 UPDATE projects
-                SET name = ?, description = ?, status = ?
+                SET name = ?, description = ?, image_url = ?, status = ?
                 WHERE id = ?
             ");
-            $stmt->execute([$name, $description, $status, $id]);
+            $stmt->execute([$name, $description, $imageUrl, $status, $id]);
 
             // 2) Borrar relaciones viejas
             $stmt = $pdo->prepare("DELETE FROM project_technology WHERE project_id = ?");
@@ -111,7 +112,7 @@ class ProjectModel
         return array_column($stmt->fetchAll(), 'name');
     }
 
-    public function create(string $name, ?string $description, array $techIds): int
+    public function create(string $name, ?string $description, string $imageUrl, array $techIds): int
     {
         $pdo = Database::connect();
         $pdo->beginTransaction();
@@ -120,10 +121,10 @@ class ProjectModel
             $status = count($techIds) > 0 ? 'active' : 'pending';
 
             $stmt = $pdo->prepare("
-            INSERT INTO projects (name, description, status)
-            VALUES (?, ?, ?)
+            INSERT INTO projects (name, description, image_url, status)
+            VALUES (?, ?, ?, ?)
         ");
-            $stmt->execute([$name, $description, $status]);
+            $stmt->execute([$name, $description, $imageUrl, $status]);
 
             $projectId = (int)$pdo->lastInsertId();
 
@@ -163,6 +164,7 @@ class ProjectModel
             p.id,
             p.name,
             p.description,
+            p.image_url,
             p.status,
             p.created_at,
             GROUP_CONCAT(t.name ORDER BY t.name SEPARATOR ', ') AS technologies
@@ -217,6 +219,7 @@ class ProjectModel
             p.id,
             p.name,
             p.description,
+            p.image_url,
             p.status,
             p.created_at,
             GROUP_CONCAT(t.name ORDER BY t.name SEPARATOR ', ') AS technologies
