@@ -13,23 +13,8 @@ class ProjectModel
         }
 
         try {
-            $dbStmt = $pdo->query("SELECT DATABASE() AS db_name");
-            $dbName = $dbStmt ? ($dbStmt->fetch()['db_name'] ?? null) : null;
-
-            if (!$dbName) {
-                $this->hasImageUrlColumn = false;
-                return $this->hasImageUrlColumn;
-            }
-
-            $stmt = $pdo->prepare("
-                SELECT COUNT(*) AS cnt
-                FROM information_schema.columns
-                WHERE table_schema = :db
-                  AND table_name = 'projects'
-                  AND column_name = 'image_url'
-            ");
-            $stmt->execute([':db' => $dbName]);
-            $this->hasImageUrlColumn = ((int)($stmt->fetch()['cnt'] ?? 0)) > 0;
+            $stmt = $pdo->query("SHOW COLUMNS FROM projects LIKE 'image_url'");
+            $this->hasImageUrlColumn = $stmt && $stmt->fetch() ? true : false;
         } catch (Throwable $e) {
             $this->hasImageUrlColumn = false;
         }
@@ -41,6 +26,7 @@ class ProjectModel
     {
         $pdo = Database::connect();
         $imageSelect = $this->supportsImageUrl($pdo) ? "p.image_url" : "'' AS image_url";
+
         $where = $includeArchived ? "" : "WHERE p.status <> 'archived'";
 
         $sql = "
@@ -48,7 +34,7 @@ class ProjectModel
             p.id,
             p.name,
             p.description,
-            $imageSelect,
+            p.image_url,
             p.status,
             p.created_at,
             GROUP_CONCAT(t.name ORDER BY t.name SEPARATOR ', ') AS technologies
@@ -124,30 +110,12 @@ class ProjectModel
             $status = count($techIds) > 0 ? 'active' : 'pending';
 
             // 1) Actualizar datos del proyecto
-            if ($supportsImageUrl) {
-                $stmt = $pdo->prepare("
-                    UPDATE projects
-                    SET name = ?, description = ?, image_url = ?, status = ?
-                    WHERE id = ?
-                ");
-                try {
-                    $stmt->execute([$name, $description, $imageUrl, $status, $id]);
-                } catch (PDOException $e) {
-                    $stmt = $pdo->prepare("
-                        UPDATE projects
-                        SET name = ?, description = ?, status = ?
-                        WHERE id = ?
-                    ");
-                    $stmt->execute([$name, $description, $status, $id]);
-                }
-            } else {
-                $stmt = $pdo->prepare("
-                    UPDATE projects
-                    SET name = ?, description = ?, status = ?
-                    WHERE id = ?
-                ");
-                $stmt->execute([$name, $description, $status, $id]);
-            }
+            $stmt = $pdo->prepare("
+                UPDATE projects
+                SET name = ?, description = ?, image_url = ?, status = ?
+                WHERE id = ?
+            ");
+            $stmt->execute([$name, $description, $imageUrl, $status, $id]);
 
             // 2) Borrar relaciones viejas
             $stmt = $pdo->prepare("DELETE FROM project_technology WHERE project_id = ?");
@@ -196,27 +164,11 @@ class ProjectModel
         try {
             $status = count($techIds) > 0 ? 'active' : 'pending';
 
-            if ($supportsImageUrl) {
-                $stmt = $pdo->prepare("
-                INSERT INTO projects (name, description, image_url, status)
-                VALUES (?, ?, ?, ?)
-            ");
-                try {
-                    $stmt->execute([$name, $description, $imageUrl, $status]);
-                } catch (PDOException $e) {
-                    $stmt = $pdo->prepare("
-                    INSERT INTO projects (name, description, status)
-                    VALUES (?, ?, ?)
-                ");
-                    $stmt->execute([$name, $description, $status]);
-                }
-            } else {
-                $stmt = $pdo->prepare("
-                INSERT INTO projects (name, description, status)
-                VALUES (?, ?, ?)
-            ");
-                $stmt->execute([$name, $description, $status]);
-            }
+            $stmt = $pdo->prepare("
+            INSERT INTO projects (name, description, image_url, status)
+            VALUES (?, ?, ?, ?)
+        ");
+            $stmt->execute([$name, $description, $imageUrl, $status]);
 
             $projectId = (int)$pdo->lastInsertId();
 
@@ -257,7 +209,7 @@ class ProjectModel
             p.id,
             p.name,
             p.description,
-            $imageSelect,
+            p.image_url,
             p.status,
             p.created_at,
             GROUP_CONCAT(t.name ORDER BY t.name SEPARATOR ', ') AS technologies
@@ -336,7 +288,7 @@ class ProjectModel
             p.id,
             p.name,
             p.description,
-            $imageSelect,
+            p.image_url,
             p.status,
             p.created_at,
             GROUP_CONCAT(t.name ORDER BY t.name SEPARATOR ', ') AS technologies
