@@ -2,6 +2,8 @@
 
 <p class="muted">Aquí están los proyectos ocultos. Puedes restaurarlos cuando quieras.</p>
 
+<?php $isAdmin = class_exists('Auth') && Auth::check(); ?>
+
 <?php if (empty($projects)): ?>
     <p>No hay proyectos archivados.</p>
 <?php else: ?>
@@ -30,11 +32,13 @@
                     <div style="display:flex; gap:8px; flex-wrap:wrap;">
                         <a class="btn" href="/projects/show/<?= urlencode((string)$p['id']) ?>">Ver detalle</a>
 
-                        <a class="btn"
-                            href="/projects/restore/<?= urlencode((string)$p['id']) ?>"
-                            onclick="return confirm('¿Restaurar este proyecto?');">
-                            Restaurar
-                        </a>
+                        <?php if ($isAdmin): ?>
+                            <a class="btn"
+                                href="/projects/restore/<?= urlencode((string)$p['id']) ?>"
+                                onclick="return confirm('¿Restaurar este proyecto?');">
+                                Restaurar
+                            </a>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
