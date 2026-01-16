@@ -1,11 +1,17 @@
 <?php
 
 require_once __DIR__ . '/../../core/View.php';
+require_once __DIR__ . '/../../core/Auth.php';
 require_once __DIR__ . '/../models/ProjectModel.php';
 require_once __DIR__ . '/../models/TechnologyModel.php';
 
 class ProjectsController
 {
+    private function ensureAuthenticated(): void
+    {
+        Auth::requireLogin();
+    }
+
     public function index()
     {
         $status = trim($_GET['status'] ?? '');
@@ -66,6 +72,8 @@ class ProjectsController
 
     public function create()
     {
+        $this->ensureAuthenticated();
+
         // 1) El controller NO habla directo con la BD
         //    Usa el modelo correspondiente
         $techModel = new TechnologyModel();
@@ -94,6 +102,8 @@ class ProjectsController
 
     public function edit($id = null)
     {
+        $this->ensureAuthenticated();
+
         if ($id === null) {
             http_response_code(400);
             echo "Falta el ID del proyecto.";
@@ -130,6 +140,8 @@ class ProjectsController
 
     public function update()
     {
+        $this->ensureAuthenticated();
+
         if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
             http_response_code(405);
             echo "Método HTTP no permitido. Usa POST.";
@@ -156,8 +168,72 @@ class ProjectsController
         exit;
     }
 
+    public function updateStatus($id = null)
+    {
+        $this->ensureAuthenticated();
+
+        // A) Asegurar que sea POST (seguridad + semántica)
+        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
+            http_response_code(405);
+            echo "Método no permitido";
+            return;
+        }
+
+        // B) Validar ID
+        if ($id === null) {
+            http_response_code(400);
+            echo "Falta el ID del proyecto.";
+            return;
+        }
+
+        $id = (int)$id;
+        if ($id <= 0) {
+            http_response_code(400);
+            echo "ID inválido.";
+            return;
+        }
+
+        // C) Validar status permitido (NO incluye archived)
+        $status = trim($_POST['status'] ?? '');
+        $allowed = ['pending', 'active', 'completed'];
+
+        if (!in_array($status, $allowed, true)) {
+            http_response_code(400);
+            echo "Status inválido.";
+            return;
+        }
+
+        $projectModel = new ProjectModel();
+
+        // D) Verificar que exista (y bloquear archived desde aquí también)
+        $project = $projectModel->find($id);
+        if (!$project) {
+            http_response_code(404);
+            View::render('errors/404', [
+                'title' => 'No encontrado',
+                'message' => 'Proyecto no existe'
+            ]);
+            return;
+        }
+
+        if (($project['status'] ?? '') === 'archived') {
+            http_response_code(400);
+            echo "Este proyecto está archivado. Debes restaurarlo antes de cambiar el status.";
+            return;
+        }
+
+        // E) Actualizar en BD vía Model
+        $projectModel->updateStatus($id, $status);
+
+        // F) Redirigir (PRG: evita reenvío al refrescar)
+        header('Location: /projects/show/' . $id);
+        exit;
+    }
+
     public function store()
     {
+        $this->ensureAuthenticated();
+
         // 1) Asegurarnos de que sea POST
         if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
             http_response_code(405);
@@ -225,6 +301,8 @@ class ProjectsController
 
     public function archive($id = null)
     {
+        $this->ensureAuthenticated();
+
         if ($id === null) {
             http_response_code(400);
             echo "Falta el ID del proyecto.";
@@ -242,6 +320,8 @@ class ProjectsController
 
     public function archived()
     {
+        $this->ensureAuthenticated();
+
         $projectModel = new ProjectModel();
         $projects = $projectModel->archived();
 
@@ -254,6 +334,8 @@ class ProjectsController
 
     public function restore($id = null)
     {
+        $this->ensureAuthenticated();
+
         if ($id === null) {
             http_response_code(400);
             echo "Falta el ID del proyecto.";
