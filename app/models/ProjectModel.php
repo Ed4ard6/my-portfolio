@@ -4,9 +4,28 @@ require_once __DIR__ . '/../../core/Database.php';
 
 class ProjectModel
 {
+    private ?bool $hasImageUrlColumn = null;
+
+    private function supportsImageUrl(PDO $pdo): bool
+    {
+        if ($this->hasImageUrlColumn !== null) {
+            return $this->hasImageUrlColumn;
+        }
+
+        try {
+            $stmt = $pdo->query("SHOW COLUMNS FROM projects LIKE 'image_url'");
+            $this->hasImageUrlColumn = $stmt && $stmt->fetch() ? true : false;
+        } catch (Throwable $e) {
+            $this->hasImageUrlColumn = false;
+        }
+
+        return $this->hasImageUrlColumn;
+    }
+
     public function all(bool $includeArchived = false): array
     {
         $pdo = Database::connect();
+        $imageSelect = $this->supportsImageUrl($pdo) ? "p.image_url" : "'' AS image_url";
 
         $where = $includeArchived ? "" : "WHERE p.status <> 'archived'";
 
@@ -59,6 +78,7 @@ class ProjectModel
     public function update(int $id, string $name, ?string $description, string $imageUrl, array $techIds): void
     {
         $pdo = Database::connect();
+        $supportsImageUrl = $this->supportsImageUrl($pdo);
 
         // Transacción = “o se guarda todo, o no se guarda nada”
         $pdo->beginTransaction();
@@ -115,6 +135,7 @@ class ProjectModel
     public function create(string $name, ?string $description, string $imageUrl, array $techIds): int
     {
         $pdo = Database::connect();
+        $supportsImageUrl = $this->supportsImageUrl($pdo);
         $pdo->beginTransaction();
 
         try {
@@ -158,6 +179,7 @@ class ProjectModel
     public function archived(): array //es diferente a Archive
     {
         $pdo = Database::connect();
+        $imageSelect = $this->supportsImageUrl($pdo) ? "p.image_url" : "'' AS image_url";
 
         $sql = "
         SELECT 
@@ -200,6 +222,7 @@ class ProjectModel
     public function filterByStatus(string $status, bool $includeArchived = false): array
     {
         $pdo = Database::connect();
+        $imageSelect = $this->supportsImageUrl($pdo) ? "p.image_url" : "'' AS image_url";
 
         $allowed = ['pending', 'active', 'completed', 'archived'];
 
