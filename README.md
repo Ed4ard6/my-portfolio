@@ -76,6 +76,14 @@ Campos sugeridos:
 Se agregó un login básico para proteger la edición de proyectos.
 
 **Credenciales por defecto:**
+# my-portfolio
+Personal portfolio website showcasing my projects, skills, and experience as a developer.
+
+## Acceso de administrador
+
+Para proteger la edición de proyectos, se agregó un login básico.
+
+Credenciales por defecto:
 
 - Usuario: `admin`
 - Contraseña: `admin123`
@@ -107,6 +115,7 @@ Si quieres cambiarlo, define estas variables de entorno:
 - `/projects/archived`
 
 ## ⚠️ Solución de errores comunes
+## Solución de errores comunes
 
 ### Error: Cannot redeclare ProjectModel::filterByStatus()
 
@@ -141,3 +150,4 @@ git push origin --delete nombre-rama
 
 > Nota: Si en el futuro quieres un README en inglés, se puede crear un `README.en.md`
 > y mantener este como principal en español.
+`project_technology` (singular) y el mismo conjunto de columnas que `all()`.【F:app/models/ProjectModel.php†L5-L232】
