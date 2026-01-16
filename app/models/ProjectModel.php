@@ -41,7 +41,6 @@ class ProjectModel
     {
         $pdo = Database::connect();
         $imageSelect = $this->supportsImageUrl($pdo) ? "p.image_url" : "'' AS image_url";
-
         $where = $includeArchived ? "" : "WHERE p.status <> 'archived'";
 
         $sql = "
@@ -61,7 +60,30 @@ class ProjectModel
         ORDER BY p.id DESC
         ";
 
-        return $pdo->query($sql)->fetchAll();
+        try {
+            return $pdo->query($sql)->fetchAll();
+        } catch (PDOException $e) {
+            if ($imageSelect !== "'' AS image_url") {
+                $fallbackSql = "
+                SELECT 
+                    p.id,
+                    p.name,
+                    p.description,
+                    '' AS image_url,
+                    p.status,
+                    p.created_at,
+                    GROUP_CONCAT(t.name ORDER BY t.name SEPARATOR ', ') AS technologies
+                FROM projects p
+                LEFT JOIN project_technology pt ON pt.project_id = p.id
+                LEFT JOIN technologies t ON t.id = pt.technology_id
+                $where
+                GROUP BY p.id
+                ORDER BY p.id DESC
+                ";
+                return $pdo->query($fallbackSql)->fetchAll();
+            }
+            throw $e;
+        }
     }
 
     public function find(int $id): ?array
@@ -108,7 +130,16 @@ class ProjectModel
                     SET name = ?, description = ?, image_url = ?, status = ?
                     WHERE id = ?
                 ");
-                $stmt->execute([$name, $description, $imageUrl, $status, $id]);
+                try {
+                    $stmt->execute([$name, $description, $imageUrl, $status, $id]);
+                } catch (PDOException $e) {
+                    $stmt = $pdo->prepare("
+                        UPDATE projects
+                        SET name = ?, description = ?, status = ?
+                        WHERE id = ?
+                    ");
+                    $stmt->execute([$name, $description, $status, $id]);
+                }
             } else {
                 $stmt = $pdo->prepare("
                     UPDATE projects
@@ -170,7 +201,15 @@ class ProjectModel
                 INSERT INTO projects (name, description, image_url, status)
                 VALUES (?, ?, ?, ?)
             ");
-                $stmt->execute([$name, $description, $imageUrl, $status]);
+                try {
+                    $stmt->execute([$name, $description, $imageUrl, $status]);
+                } catch (PDOException $e) {
+                    $stmt = $pdo->prepare("
+                    INSERT INTO projects (name, description, status)
+                    VALUES (?, ?, ?)
+                ");
+                    $stmt->execute([$name, $description, $status]);
+                }
             } else {
                 $stmt = $pdo->prepare("
                 INSERT INTO projects (name, description, status)
@@ -229,7 +268,30 @@ class ProjectModel
         GROUP BY p.id
         ORDER BY p.id DESC
         ";
-        return $pdo->query($sql)->fetchAll();
+        try {
+            return $pdo->query($sql)->fetchAll();
+        } catch (PDOException $e) {
+            if ($imageSelect !== "'' AS image_url") {
+                $fallbackSql = "
+                SELECT 
+                    p.id,
+                    p.name,
+                    p.description,
+                    '' AS image_url,
+                    p.status,
+                    p.created_at,
+                    GROUP_CONCAT(t.name ORDER BY t.name SEPARATOR ', ') AS technologies
+                FROM projects p
+                LEFT JOIN project_technology pt ON pt.project_id = p.id
+                LEFT JOIN technologies t ON t.id = pt.technology_id
+                WHERE p.status = 'archived'
+                GROUP BY p.id
+                ORDER BY p.id DESC
+                ";
+                return $pdo->query($fallbackSql)->fetchAll();
+            }
+            throw $e;
+        }
     }
 
     public function restore(int $id): void
@@ -287,10 +349,35 @@ class ProjectModel
         ORDER BY p.id DESC
         ";
 
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute([':status' => $status]);
-
-        return $stmt->fetchAll();
+        try {
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute([':status' => $status]);
+            return $stmt->fetchAll();
+        } catch (PDOException $e) {
+            if ($imageSelect !== "'' AS image_url") {
+                $fallbackSql = "
+                SELECT 
+                    p.id,
+                    p.name,
+                    p.description,
+                    '' AS image_url,
+                    p.status,
+                    p.created_at,
+                    GROUP_CONCAT(t.name ORDER BY t.name SEPARATOR ', ') AS technologies
+                FROM projects p
+                LEFT JOIN project_technology pt ON pt.project_id = p.id
+                LEFT JOIN technologies t ON t.id = pt.technology_id
+                WHERE p.status = :status
+                $extra
+                GROUP BY p.id
+                ORDER BY p.id DESC
+                ";
+                $stmt = $pdo->prepare($fallbackSql);
+                $stmt->execute([':status' => $status]);
+                return $stmt->fetchAll();
+            }
+            throw $e;
+        }
     }
 
     public function updateStatus(int $id, string $status): bool
