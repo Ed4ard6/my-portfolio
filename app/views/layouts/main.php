@@ -24,10 +24,20 @@
         <a class="btn" href="/contact">Contacto</a>
       </nav>
 
-      <!-- Toggle elegante -->
-      <button id="themeToggle" class="icon-toggle" type="button" aria-label="Cambiar tema">
-        <span class="icon" aria-hidden="true">🌙</span>
-      </button>
+      <?php $isAdmin = class_exists('Auth') && Auth::check(); ?>
+
+      <div style="display:flex; gap:10px; align-items:center;">
+        <?php if ($isAdmin): ?>
+          <a class="btn btn-secondary" href="/auth/logout">Cerrar sesión</a>
+        <?php else: ?>
+          <a class="btn btn-secondary" href="/auth/login">Admin</a>
+        <?php endif; ?>
+
+        <!-- Toggle elegante -->
+        <button id="themeToggle" class="icon-toggle" type="button" aria-label="Cambiar tema">
+          <span class="icon" aria-hidden="true">🌙</span>
+        </button>
+      </div>
     </header>
 
     <main>

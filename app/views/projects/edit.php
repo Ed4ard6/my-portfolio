@@ -10,6 +10,7 @@
   </div>
 
   <form method="POST" action="/projects/update" style="margin-top:14px;">
+    <input type="hidden" name="<?= htmlspecialchars(Csrf::fieldName()) ?>" value="<?= htmlspecialchars(Csrf::token()) ?>">
     <input type="hidden" name="id" value="<?= (int)$project['id'] ?>">
 
     <div style="margin-top:12px;">
@@ -31,6 +32,17 @@
         name="description"
         rows="4"
         required><?= htmlspecialchars($project['description'] ?? '') ?></textarea>
+    </div>
+
+    <div style="margin-top:12px;">
+      <label class="muted">URL del proyecto (opcional)</label><br>
+      <input
+        class="card card-pad"
+        style="width:100%; padding:10px 12px; border-radius:12px;"
+        type="url"
+        name="project_url"
+        placeholder="https://..."
+        value="<?= htmlspecialchars($project['project_url'] ?? '') ?>">
     </div>
 
     <div style="margin-top:12px;">
