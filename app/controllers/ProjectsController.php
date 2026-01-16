@@ -66,6 +66,7 @@ class ProjectsController
             'id' => $project['id'],
             'techNames' => $techNames,
             'status' => $project['status'] ?? 'pending',
+            'image_url' => $project['image_url'] ?? '',
 
         ]);
     }
@@ -151,6 +152,7 @@ class ProjectsController
         $id = (int)($_POST['id'] ?? 0);
         $name = trim($_POST['name'] ?? '');
         $description = trim($_POST['description'] ?? '');
+        $imageUrl = trim($_POST['image_url'] ?? '');
 
         $techIds = $_POST['technologies'] ?? [];
         if (!is_array($techIds)) $techIds = [];
@@ -161,8 +163,15 @@ class ProjectsController
             return;
         }
 
+        $isValidImageUrl = $imageUrl === '' || filter_var($imageUrl, FILTER_VALIDATE_URL) || str_starts_with($imageUrl, '/');
+        if (!$isValidImageUrl) {
+            http_response_code(400);
+            echo "La URL de la imagen no es válida.";
+            return;
+        }
+
         $projectModel = new ProjectModel();
-        $projectModel->update($id, $name, $description, $techIds);
+        $projectModel->update($id, $name, $description, $imageUrl, $techIds);
 
         header("Location: /projects/show/$id");
         exit;
@@ -244,6 +253,7 @@ class ProjectsController
         // 2) Tomar datos del formulario
         $name = trim($_POST['name'] ?? '');
         $description = trim($_POST['description'] ?? '');
+        $imageUrl = trim($_POST['image_url'] ?? '');
 
         // technologies[] llega como array (o no llega si no marcaron nada)
         $techIds = $_POST['technologies'] ?? [];
@@ -267,6 +277,11 @@ class ProjectsController
             $errors[] = 'La descripción debe tener al menos 10 caracteres.';
         }
 
+        $isValidImageUrl = $imageUrl === '' || filter_var($imageUrl, FILTER_VALIDATE_URL) || str_starts_with($imageUrl, '/');
+        if (!$isValidImageUrl) {
+            $errors[] = 'La URL de la imagen no es válida.';
+        }
+
         // 4) Si hay errores, volvemos a mostrar el formulario con:
         //    - errores
         //    - old inputs
@@ -283,6 +298,7 @@ class ProjectsController
                 'old' => [
                     'name' => $name,
                     'description' => $description,
+                    'image_url' => $imageUrl,
                 ],
                 'technologies' => $technologies,
                 'selectedTechIds' => $techIds
@@ -292,7 +308,7 @@ class ProjectsController
 
         // 5) Guardar en BD (proyecto + tabla pivote)
         $projectModel = new ProjectModel();
-        $newId = $projectModel->create($name, $description, $techIds);
+        $newId = $projectModel->create($name, $description, $imageUrl, $techIds);
 
         // 6) Redirigir al detalle del nuevo proyecto
         header("Location: /projects/show/$newId");
