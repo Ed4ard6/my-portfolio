@@ -9,6 +9,13 @@ Este proyecto busca concentrar en un solo lugar todos los proyectos realizados,
 permitiendo a cualquier visitante verlos y a un administrador gestionarlos
 (crear, editar, archivar y restaurar).
 
+## 🚀 Cómo ejecutar el proyecto (local)
+
+1. Configura tu servidor local (Laragon, XAMPP, etc.) apuntando a `public/`.
+2. Crea la base de datos y las tablas necesarias (ver esquema abajo).
+3. Ajusta las credenciales en `core/Database.php`.
+4. Inicia el servidor y entra a `http://localhost/`.
+
 ## ⚙️ Tecnologías y arquitectura
 
 - **PHP** (MVC simple con `controllers`, `models`, `views`)
@@ -39,6 +46,31 @@ Estructura principal:
 - Archivar y restaurar proyectos
 - Ver listado de archivados
 
+## 🗃️ Esquema de base de datos (mínimo)
+
+Las tablas principales que se usan en el proyecto son:
+
+- `projects`
+- `technologies`
+- `project_technology` (tabla pivote)
+
+Campos sugeridos:
+
+**projects**
+- `id` (INT, PK)
+- `name` (VARCHAR)
+- `description` (TEXT)
+- `status` (VARCHAR: pending | active | completed | archived)
+- `created_at` (TIMESTAMP)
+
+**technologies**
+- `id` (INT, PK)
+- `name` (VARCHAR)
+
+**project_technology**
+- `project_id` (FK a projects.id)
+- `technology_id` (FK a technologies.id)
+
 ## 🔐 Acceso de administrador
 
 Se agregó un login básico para proteger la edición de proyectos.
@@ -60,6 +92,9 @@ Si quieres cambiarlo, define estas variables de entorno:
 
 - `PORTFOLIO_ADMIN_USER`
 - `PORTFOLIO_ADMIN_HASH` (usa `password_hash()` en PHP para generar el hash)
+
+> Nota: si cambias el hash, puedes generarlo con:
+> `php -r "echo password_hash('TuPassword', PASSWORD_DEFAULT);"`
 
 ## 🧪 Rutas principales
 
@@ -87,6 +122,22 @@ Si quieres cambiarlo, define estas variables de entorno:
 Este error aparece cuando hay **dos métodos `filterByStatus()` dentro de la clase**
 `ProjectModel`. Debes dejar **solo uno**. El método correcto es el que usa la tabla
 `project_technology` (singular) y el mismo conjunto de columnas que `all()`.
+
+## 🧭 Flujo recomendado de ramas
+
+- `main`: versión estable (producción)
+- `develop`: integración de cambios
+- `feature/*`: ramas temporales para nuevas funciones
+
+Si tienes una rama extra y ya no la necesitas, puedes eliminarla así:
+
+```bash
+# Eliminar rama local
+git branch -d nombre-rama
+
+# Eliminar rama remota
+git push origin --delete nombre-rama
+```
 
 ## 🚧 Pendientes / Próximos pasos
 
