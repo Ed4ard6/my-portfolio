@@ -148,6 +148,12 @@ class ProjectsController
             return;
         }
 
+        if (!Csrf::validate($_POST[Csrf::fieldName()] ?? null)) {
+            http_response_code(400);
+            echo "Token CSRF inválido.";
+            return;
+        }
+
         $id = (int)($_POST['id'] ?? 0);
         $name = trim($_POST['name'] ?? '');
         $description = trim($_POST['description'] ?? '');
@@ -176,6 +182,12 @@ class ProjectsController
         if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
             http_response_code(405);
             echo "Método no permitido";
+            return;
+        }
+
+        if (!Csrf::validate($_POST[Csrf::fieldName()] ?? null)) {
+            http_response_code(400);
+            echo "Token CSRF inválido.";
             return;
         }
 
@@ -238,6 +250,12 @@ class ProjectsController
         if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
             http_response_code(405);
             echo "Método HTTP no permitido. Usa POST.";
+            return;
+        }
+
+        if (!Csrf::validate($_POST[Csrf::fieldName()] ?? null)) {
+            http_response_code(400);
+            echo "Token CSRF inválido.";
             return;
         }
 
