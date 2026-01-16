@@ -63,6 +63,7 @@ class ProjectsController
             'title' => $project['name'],
             'heading' => $project['name'],
             'description' => $project['description'],
+            'projectUrl' => $project['project_url'] ?? null,
             'id' => $project['id'],
             'techNames' => $techNames,
             'status' => $project['status'] ?? 'pending',
@@ -157,6 +158,8 @@ class ProjectsController
         $id = (int)($_POST['id'] ?? 0);
         $name = trim($_POST['name'] ?? '');
         $description = trim($_POST['description'] ?? '');
+        $projectUrl = trim($_POST['project_url'] ?? '');
+        $projectUrl = $projectUrl !== '' ? $projectUrl : null;
 
         $techIds = $_POST['technologies'] ?? [];
         if (!is_array($techIds)) $techIds = [];
@@ -168,7 +171,7 @@ class ProjectsController
         }
 
         $projectModel = new ProjectModel();
-        $projectModel->update($id, $name, $description, $techIds);
+        $projectModel->update($id, $name, $description, $projectUrl, $techIds);
 
         header("Location: /projects/show/$id");
         exit;
@@ -262,6 +265,8 @@ class ProjectsController
         // 2) Tomar datos del formulario
         $name = trim($_POST['name'] ?? '');
         $description = trim($_POST['description'] ?? '');
+        $projectUrl = trim($_POST['project_url'] ?? '');
+        $projectUrl = $projectUrl !== '' ? $projectUrl : null;
 
         // technologies[] llega como array (o no llega si no marcaron nada)
         $techIds = $_POST['technologies'] ?? [];
@@ -301,6 +306,7 @@ class ProjectsController
                 'old' => [
                     'name' => $name,
                     'description' => $description,
+                    'project_url' => $projectUrl,
                 ],
                 'technologies' => $technologies,
                 'selectedTechIds' => $techIds
@@ -310,7 +316,7 @@ class ProjectsController
 
         // 5) Guardar en BD (proyecto + tabla pivote)
         $projectModel = new ProjectModel();
-        $newId = $projectModel->create($name, $description, $techIds);
+        $newId = $projectModel->create($name, $description, $projectUrl, $techIds);
 
         // 6) Redirigir al detalle del nuevo proyecto
         header("Location: /projects/show/$newId");
