@@ -20,6 +20,7 @@
   <?php if ($isAdmin && ($status ?? 'pending') !== 'archived'): ?>
     <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
       <form method="POST" action="/projects/updateStatus/<?= urlencode((string)($id ?? '')) ?>" style="display:inline;">
+        <input type="hidden" name="<?= htmlspecialchars(Csrf::fieldName()) ?>" value="<?= htmlspecialchars(Csrf::token()) ?>">
         <input type="hidden" name="status" value="pending">
         <button class="btn btn-status-pending" <?= ($status === 'pending') ? 'disabled' : '' ?>>
           Pending
@@ -27,6 +28,7 @@
       </form>
 
       <form method="POST" action="/projects/updateStatus/<?= urlencode((string)($id ?? '')) ?>" style="display:inline;">
+        <input type="hidden" name="<?= htmlspecialchars(Csrf::fieldName()) ?>" value="<?= htmlspecialchars(Csrf::token()) ?>">
         <input type="hidden" name="status" value="active">
         <button class="btn btn-status-active" <?= ($status === 'active') ? 'disabled' : '' ?>>
           Active
@@ -34,6 +36,7 @@
       </form>
 
       <form method="POST" action="/projects/updateStatus/<?= urlencode((string)($id ?? '')) ?>" style="display:inline;">
+        <input type="hidden" name="<?= htmlspecialchars(Csrf::fieldName()) ?>" value="<?= htmlspecialchars(Csrf::token()) ?>">
         <input type="hidden" name="status" value="completed">
         <button class="btn btn-status-completed" <?= ($status === 'completed') ? 'disabled' : '' ?>>
           Completed
@@ -55,6 +58,14 @@
       <?= htmlspecialchars(implode(', ', $techNames)) ?>
     <?php endif; ?>
   </p>
+
+  <?php if (!empty($projectUrl)): ?>
+    <div style="margin-top:10px;">
+      <a class="btn btn-primary" href="<?= htmlspecialchars($projectUrl) ?>" target="_blank" rel="noopener noreferrer">
+        Ver proyecto
+      </a>
+    </div>
+  <?php endif; ?>
 
   <div style="margin-top:16px; display:flex; gap:8px; flex-wrap:wrap;">
     <?php if ($isAdmin): ?>

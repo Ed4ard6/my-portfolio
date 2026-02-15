@@ -15,6 +15,7 @@
     <?php endif; ?>
 
     <form method="POST" action="/auth/authenticate" style="margin-top:16px;">
+        <input type="hidden" name="<?= htmlspecialchars(Csrf::fieldName()) ?>" value="<?= htmlspecialchars(Csrf::token()) ?>">
         <div style="margin-top:12px;">
             <label class="muted">Usuario</label><br>
             <input

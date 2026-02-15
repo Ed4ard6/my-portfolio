@@ -16,6 +16,7 @@
     <?php endif; ?>
 
     <form method="post" action="/projects/store" style="margin-top:14px;">
+        <input type="hidden" name="<?= htmlspecialchars(Csrf::fieldName()) ?>" value="<?= htmlspecialchars(Csrf::token()) ?>">
         <div style="margin-top:12px;">
             <label class="muted">Nombre del proyecto</label><br>
             <input
@@ -35,6 +36,17 @@
                 name="description"
                 rows="4"
                 required><?= htmlspecialchars($old['description'] ?? '') ?></textarea>
+        </div>
+
+        <div style="margin-top:12px;">
+            <label class="muted">URL del proyecto (opcional)</label><br>
+            <input
+                class="card card-pad"
+                style="width:100%; padding:10px 12px; border-radius:12px;"
+                type="url"
+                name="project_url"
+                placeholder="https://..."
+                value="<?= htmlspecialchars($old['project_url'] ?? '') ?>">
         </div>
 
         <div style="margin-top:12px;">

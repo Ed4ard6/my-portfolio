@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../../core/View.php';
 require_once __DIR__ . '/../../core/Auth.php';
+require_once __DIR__ . '/../../core/Csrf.php';
 
 class AuthController
 {
@@ -24,6 +25,12 @@ class AuthController
             return;
         }
 
+        if (!Csrf::validate($_POST[Csrf::fieldName()] ?? null)) {
+            http_response_code(400);
+            echo 'Token CSRF inválido.';
+            return;
+        }
+
         $username = trim($_POST['username'] ?? '');
         $password = trim($_POST['password'] ?? '');
 
@@ -36,11 +43,18 @@ class AuthController
             return;
         }
 
-        if (!Auth::login($username, $password)) {
+        try {
+            $ok = Auth::login($username, $password);
+        } catch (Throwable $e) {
+            error_log('[AuthController] Error autenticando: ' . $e->getMessage());
+            $ok = false;
+        }
+
+        if (!$ok) {
             View::render('auth/login', [
                 'title' => 'Iniciar sesión',
                 'heading' => 'Acceso privado',
-                'error' => 'Credenciales inválidas.',
+                'error' => 'Credenciales inválidas o configuración de autenticación incompleta.',
             ]);
             return;
         }

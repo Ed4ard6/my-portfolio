@@ -2,12 +2,11 @@
 
 declare(strict_types=1);
 
+require_once __DIR__ . '/../app/models/AdminUserModel.php';
+
 class Auth
 {
     private const SESSION_KEY = 'auth_user';
-
-    private const DEFAULT_USERNAME = 'admin';
-    private const DEFAULT_PASSWORD_HASH = '$2y$12$JPo8hC0c..ix566Xxt4T3eLPJT74q9LBRp7VY4Z0GH9oOp4dnhV32';
 
     public static function check(): bool
     {
@@ -21,18 +20,18 @@ class Auth
 
     public static function login(string $username, string $password): bool
     {
-        $expectedUser = getenv('PORTFOLIO_ADMIN_USER') ?: self::DEFAULT_USERNAME;
-        $expectedHash = getenv('PORTFOLIO_ADMIN_HASH') ?: self::DEFAULT_PASSWORD_HASH;
+        $model = new AdminUserModel();
+        $user = $model->findByUsername($username);
 
-        if ($username !== $expectedUser) {
+        if (!$user || (int)($user['is_active'] ?? 0) !== 1) {
             return false;
         }
 
-        if (!password_verify($password, $expectedHash)) {
+        if (!password_verify($password, (string)$user['password_hash'])) {
             return false;
         }
 
-        $_SESSION[self::SESSION_KEY] = $username;
+        $_SESSION[self::SESSION_KEY] = (string)$user['username'];
         session_regenerate_id(true);
         return true;
     }
