@@ -24,3 +24,12 @@ vendor/
 # Variables privadas
 # =========================
 .env
+.env.*
+.emp
+.emp.*
+*.pem
+*.key
+
+# Templates permitidos
+!.env.example
+!.emp.example

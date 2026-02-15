@@ -2,12 +2,11 @@
 
 declare(strict_types=1);
 
+require_once __DIR__ . '/../app/models/AdminUserModel.php';
+
 class Auth
 {
     private const SESSION_KEY = 'auth_user';
-
-    private const DEFAULT_USERNAME = 'admin';
-    private const DEFAULT_PASSWORD_HASH = '$2y$12$JPo8hC0c..ix566Xxt4T3eLPJT74q9LBRp7VY4Z0GH9oOp4dnhV32';
 
     public static function check(): bool
     {
@@ -19,22 +18,31 @@ class Auth
         return $_SESSION[self::SESSION_KEY] ?? null;
     }
 
+    public static function attempt(string $username, string $password): array
+    {
+        $model = new AdminUserModel();
+        $user = $model->findByUsername($username);
+
+        if (!$user) {
+            return ['ok' => false, 'reason' => 'invalid_credentials'];
+        }
+
+        if ((int)($user['is_active'] ?? 0) !== 1) {
+            return ['ok' => false, 'reason' => 'inactive_user'];
+        }
+
+        if (!password_verify($password, (string)$user['password_hash'])) {
+            return ['ok' => false, 'reason' => 'invalid_credentials'];
+        }
+
+        $_SESSION[self::SESSION_KEY] = (string)$user['username'];
+        session_regenerate_id(true);
+        return ['ok' => true, 'reason' => 'ok'];
+    }
+
     public static function login(string $username, string $password): bool
     {
-        $expectedUser = getenv('PORTFOLIO_ADMIN_USER') ?: self::DEFAULT_USERNAME;
-        $expectedHash = getenv('PORTFOLIO_ADMIN_HASH') ?: self::DEFAULT_PASSWORD_HASH;
-
-        if ($username !== $expectedUser) {
-            return false;
-        }
-
-        if (!password_verify($password, $expectedHash)) {
-            return false;
-        }
-
-        $_SESSION[self::SESSION_KEY] = $username;
-        session_regenerate_id(true);
-        return true;
+        return (bool)(self::attempt($username, $password)['ok'] ?? false);
     }
 
     public static function logout(): void
