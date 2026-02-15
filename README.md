@@ -6,8 +6,8 @@ de proyectos y tecnologías desde una base de datos.
 ## 🧭 Propósito
 
 Este proyecto busca concentrar en un solo lugar todos los proyectos realizados,
-permitiendo a cualquier visitante verlos y a un administrador gestionarlos
-(crear, editar, archivar y restaurar).
+permitiendo a cualquier visitante verlos sin registro previo y a uno o más
+administradores gestionarlos (crear, editar, archivar y restaurar).
 
 ## 🚀 Cómo ejecutar el proyecto (local)
 
@@ -59,6 +59,7 @@ Estructura principal:
 - Actualizar estados
 - Archivar y restaurar proyectos
 - Ver listado de archivados
+- CRUD de administradores (`/admins`)
 
 ## 🗃️ Esquema de base de datos (mínimo)
 
@@ -172,6 +173,9 @@ Con eso ya debe funcionar `/auth/login` con:
 - `/projects/create`
 - `/projects/edit/:id`
 - `/projects/archived`
+- `/admins`
+- `/admins/create`
+- `/admins/edit/:id`
 
 ## 🛡️ Recomendaciones de seguridad (prioridad)
 
@@ -186,7 +190,7 @@ Con eso ya debe funcionar `/auth/login` con:
 
 - Separar panel de administración en ruta `/admin`.
 - Agregar recuperación/cambio de contraseña de admin.
-- Añadir autorización por roles/permisos (más de un tipo de usuario).
+- Implementar recuperación de contraseña con token por correo.
 - Implementar tests mínimos para autenticación y modelo de proyectos.
 - Agregar migraciones SQL versionadas.
 - Configurar CI para validación automática (lint + smoke tests).
