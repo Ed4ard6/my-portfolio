@@ -18,22 +18,31 @@ class Auth
         return $_SESSION[self::SESSION_KEY] ?? null;
     }
 
-    public static function login(string $username, string $password): bool
+    public static function attempt(string $username, string $password): array
     {
         $model = new AdminUserModel();
         $user = $model->findByUsername($username);
 
-        if (!$user || (int)($user['is_active'] ?? 0) !== 1) {
-            return false;
+        if (!$user) {
+            return ['ok' => false, 'reason' => 'invalid_credentials'];
+        }
+
+        if ((int)($user['is_active'] ?? 0) !== 1) {
+            return ['ok' => false, 'reason' => 'inactive_user'];
         }
 
         if (!password_verify($password, (string)$user['password_hash'])) {
-            return false;
+            return ['ok' => false, 'reason' => 'invalid_credentials'];
         }
 
         $_SESSION[self::SESSION_KEY] = (string)$user['username'];
         session_regenerate_id(true);
-        return true;
+        return ['ok' => true, 'reason' => 'ok'];
+    }
+
+    public static function login(string $username, string $password): bool
+    {
+        return (bool)(self::attempt($username, $password)['ok'] ?? false);
     }
 
     public static function logout(): void
