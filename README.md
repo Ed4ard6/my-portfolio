@@ -94,6 +94,67 @@ Generar hash seguro en local:
 php -r "echo password_hash('TuPasswordSegura', PASSWORD_DEFAULT), PHP_EOL;"
 ```
 
+
+## 🧩 ¿Qué pasó con el error fatal que viste?
+
+El error que te apareció:
+
+- `Table 'portfolio.admin_users' doesn't exist`
+
+significa que el código ya está intentando validar el login en la tabla `admin_users`,
+pero esa tabla aún no existe en tu base de datos local.
+
+Piensa así:
+
+1. Antes: el usuario admin estaba "quemado" en código.
+2. Ahora: el usuario admin se busca en DB (más seguro y escalable).
+3. Si la tabla no existe todavía, MySQL no sabe dónde buscar y explota.
+
+Para evitar pantalla blanca/fatal, ahora el sistema valida si la tabla existe. Si no existe,
+el login falla de forma controlada con mensaje de credenciales/configuración en vez de romper todo.
+
+## 🧱 SQL completo (copiar y pegar) para dejar `admin_users` lista
+
+> Ejecuta esto en tu base `portfolio` (phpMyAdmin, MySQL Workbench o consola).
+
+```sql
+USE portfolio;
+
+CREATE TABLE IF NOT EXISTS admin_users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  username VARCHAR(80) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  is_active TINYINT(1) NOT NULL DEFAULT 1,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+```
+
+### Crear tu primer admin (paso a paso)
+
+1) Genera el hash en PHP (NO guardes contraseña en texto plano):
+
+```bash
+php -r "echo password_hash('admin123', PASSWORD_DEFAULT), PHP_EOL;"
+```
+
+2) Copia el hash resultante y ejecuta:
+
+```sql
+INSERT INTO admin_users (username, password_hash, is_active)
+VALUES ('admin', 'PEGA_AQUI_EL_HASH', 1);
+```
+
+3) Verifica:
+
+```sql
+SELECT id, username, is_active, created_at FROM admin_users;
+```
+
+Con eso ya debe funcionar `/auth/login` con:
+
+- Usuario: `admin`
+- Contraseña: la que usaste al generar el hash (por ejemplo `admin123`).
+
 ## 🧪 Rutas principales
 
 ### Públicas
