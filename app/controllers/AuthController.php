@@ -43,11 +43,18 @@ class AuthController
             return;
         }
 
-        if (!Auth::login($username, $password)) {
+        try {
+            $ok = Auth::login($username, $password);
+        } catch (Throwable $e) {
+            error_log('[AuthController] Error autenticando: ' . $e->getMessage());
+            $ok = false;
+        }
+
+        if (!$ok) {
             View::render('auth/login', [
                 'title' => 'Iniciar sesión',
                 'heading' => 'Acceso privado',
-                'error' => 'Credenciales inválidas.',
+                'error' => 'Credenciales inválidas o configuración de autenticación incompleta.',
             ]);
             return;
         }
