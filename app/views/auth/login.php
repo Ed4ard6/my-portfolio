@@ -41,6 +41,7 @@
         <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
             <button class="btn btn-primary" type="submit">Entrar</button>
             <a class="btn btn-secondary" href="/">Cancelar</a>
+            <a class="btn" href="/auth/forgot">Olvidé mi contraseña</a>
         </div>
     </form>
 </div>

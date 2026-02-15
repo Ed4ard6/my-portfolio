@@ -545,3 +545,45 @@ small {
 .mt16 {
   margin-top: 16px;
 }
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  margin-left: 8px;
+  border: 1px solid transparent;
+}
+
+.status-pill-active {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.45);
+}
+
+.status-pill-inactive {
+  background: rgba(255, 0, 90, 0.12);
+  border-color: rgba(255, 0, 90, 0.35);
+}
+
+.audit-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 720px;
+}
+
+.audit-table th,
+.audit-table td {
+  border-bottom: 1px solid var(--border);
+  padding: 10px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.audit-table th {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.audit-table td {
+  font-size: 14px;
+}
