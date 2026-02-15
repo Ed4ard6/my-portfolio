@@ -43,11 +43,24 @@ class AuthController
             return;
         }
 
-        if (!Auth::login($username, $password)) {
+        try {
+            $result = Auth::attempt($username, $password);
+        } catch (Throwable $e) {
+            error_log('[AuthController] Error autenticando: ' . $e->getMessage());
+            $result = ['ok' => false, 'reason' => 'server_error'];
+        }
+
+        if (!(bool)($result['ok'] ?? false)) {
+            $message = 'Credenciales inválidas o configuración de autenticación incompleta.';
+
+            if (($result['reason'] ?? '') === 'inactive_user') {
+                $message = 'Tu usuario administrador está inactivo. Contacta a otro administrador para reactivarlo.';
+            }
+
             View::render('auth/login', [
                 'title' => 'Iniciar sesión',
                 'heading' => 'Acceso privado',
-                'error' => 'Credenciales inválidas.',
+                'error' => $message,
             ]);
             return;
         }
