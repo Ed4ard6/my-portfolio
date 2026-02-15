@@ -15,6 +15,12 @@
         </div>
     <?php endif; ?>
 
+    <?php if (empty($emailSupported)): ?>
+        <div class="card card-pad" style="margin-top:12px; border-color: rgba(245,158,11,.35); background: rgba(245,158,11,.10);">
+            Aviso: tu tabla <code>admin_users</code> aún no tiene columna <code>email</code>. El acceso admin funciona, pero la recuperación por token no estará disponible hasta aplicar la migración SQL del README.
+        </div>
+    <?php endif; ?>
+
     <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:12px;">
         <a class="btn <?= ($currentStatus ?? 'all') === 'all' ? 'btn-primary' : '' ?>" href="/admins?status=all">Todos</a>
         <a class="btn <?= ($currentStatus ?? '') === 'active' ? 'btn-primary' : '' ?>" href="/admins?status=active">Activos</a>

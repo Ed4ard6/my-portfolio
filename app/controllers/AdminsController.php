@@ -56,6 +56,7 @@ class AdminsController
             'currentStatus' => $status,
             'flash' => $this->consumeFlash(),
             'auditLogs' => $this->auditModel->latest(15),
+            'emailSupported' => $this->model->supportsEmail(),
         ]);
     }
 
@@ -68,6 +69,7 @@ class AdminsController
             'heading' => 'Crear administrador',
             'errors' => [],
             'old' => ['username' => '', 'email' => '', 'is_active' => '1'],
+            'emailSupported' => $this->model->supportsEmail(),
         ]);
     }
 
@@ -105,6 +107,7 @@ class AdminsController
                     'email' => $email,
                     'is_active' => $isActive ? '1' : '0',
                 ],
+                'emailSupported' => $this->model->supportsEmail(),
             ]);
             return;
         }
@@ -144,6 +147,7 @@ class AdminsController
             'heading' => 'Editar administrador',
             'admin' => $admin,
             'errors' => [],
+            'emailSupported' => $this->model->supportsEmail(),
         ]);
     }
 
@@ -192,6 +196,7 @@ class AdminsController
                 'heading' => 'Editar administrador',
                 'admin' => $admin,
                 'errors' => $errors,
+                'emailSupported' => $this->model->supportsEmail(),
             ]);
             return;
         }
@@ -272,12 +277,14 @@ class AdminsController
             $errors[] = 'Ese nombre de usuario ya existe.';
         }
 
-        if ($email === '') {
-            $errors[] = 'El correo es obligatorio.';
-        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $errors[] = 'El formato del correo no es válido.';
-        } elseif ($this->model->emailExists($email, $ignoreId)) {
-            $errors[] = 'Ese correo ya está registrado.';
+        if ($this->model->supportsEmail()) {
+            if ($email === '') {
+                $errors[] = 'El correo es obligatorio.';
+            } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $errors[] = 'El formato del correo no es válido.';
+            } elseif ($this->model->emailExists($email, $ignoreId)) {
+                $errors[] = 'Ese correo ya está registrado.';
+            }
         }
 
         if (!$isUpdate || $password !== '') {

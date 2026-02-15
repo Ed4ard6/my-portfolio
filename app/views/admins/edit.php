@@ -23,10 +23,16 @@
             <input class="card card-pad" style="width:100%; padding:10px 12px; border-radius:12px;" type="text" name="username" value="<?= htmlspecialchars((string)$admin['username']) ?>" required>
         </div>
 
-        <div>
-            <label class="muted">Correo (para recuperación de contraseña)</label><br>
-            <input class="card card-pad" style="width:100%; padding:10px 12px; border-radius:12px;" type="email" name="email" value="<?= htmlspecialchars((string)($admin['email'] ?? '')) ?>" required>
-        </div>
+        <?php if (!empty($emailSupported)): ?>
+            <div>
+                <label class="muted">Correo (para recuperación de contraseña)</label><br>
+                <input class="card card-pad" style="width:100%; padding:10px 12px; border-radius:12px;" type="email" name="email" value="<?= htmlspecialchars((string)($admin['email'] ?? '')) ?>" required>
+            </div>
+        <?php else: ?>
+            <div class="card card-pad" style="border-color: rgba(245,158,11,.35); background: rgba(245,158,11,.10);">
+                Tu tabla <code>admin_users</code> no tiene la columna <code>email</code> todavía. El login funciona, pero ejecuta la migración del README para habilitar recuperación por token.
+            </div>
+        <?php endif; ?>
 
         <div>
             <label class="muted">Nueva contraseña (opcional)</label><br>

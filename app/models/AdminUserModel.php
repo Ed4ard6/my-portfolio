@@ -7,6 +7,7 @@ require_once __DIR__ . '/../../core/Database.php';
 class AdminUserModel
 {
     private ?bool $tableExists = null;
+    private ?bool $emailColumnExists = null;
 
     private function hasAdminUsersTable(PDO $pdo): bool
     {
@@ -26,6 +27,36 @@ class AdminUserModel
         return $this->tableExists;
     }
 
+    private function hasEmailColumn(PDO $pdo): bool
+    {
+        if ($this->emailColumnExists !== null) {
+            return $this->emailColumnExists;
+        }
+
+        $stmt = $pdo->prepare('
+            SELECT COUNT(*) AS cnt
+            FROM information_schema.COLUMNS
+            WHERE TABLE_SCHEMA = DATABASE()
+              AND TABLE_NAME = ?
+              AND COLUMN_NAME = ?
+        ');
+        $stmt->execute(['admin_users', 'email']);
+
+        $this->emailColumnExists = ((int)($stmt->fetch()['cnt'] ?? 0)) > 0;
+        return $this->emailColumnExists;
+    }
+
+    public function supportsEmail(): bool
+    {
+        $pdo = Database::connect();
+
+        if (!$this->hasAdminUsersTable($pdo)) {
+            return false;
+        }
+
+        return $this->hasEmailColumn($pdo);
+    }
+
     public function findByUsername(string $username): ?array
     {
         $pdo = Database::connect();
@@ -34,12 +65,9 @@ class AdminUserModel
             return null;
         }
 
-        $stmt = $pdo->prepare('
-            SELECT id, username, email, password_hash, is_active, created_at
-            FROM admin_users
-            WHERE username = ?
-            LIMIT 1
-        ');
+        $emailSelect = $this->hasEmailColumn($pdo) ? 'email' : 'NULL AS email';
+
+        $stmt = $pdo->prepare("\n            SELECT id, username, {$emailSelect}, password_hash, is_active, created_at\n            FROM admin_users\n            WHERE username = ?\n            LIMIT 1\n        ");
         $stmt->execute([$username]);
 
         $row = $stmt->fetch();
@@ -54,27 +82,16 @@ class AdminUserModel
             return [];
         }
 
+        $emailSelect = $this->hasEmailColumn($pdo) ? 'email' : 'NULL AS email';
+        $where = '';
+
         if ($status === 'active') {
-            $stmt = $pdo->query('
-                SELECT id, username, email, is_active, created_at
-                FROM admin_users
-                WHERE is_active = 1
-                ORDER BY id DESC
-            ');
+            $where = 'WHERE is_active = 1';
         } elseif ($status === 'inactive') {
-            $stmt = $pdo->query('
-                SELECT id, username, email, is_active, created_at
-                FROM admin_users
-                WHERE is_active = 0
-                ORDER BY id DESC
-            ');
-        } else {
-            $stmt = $pdo->query('
-                SELECT id, username, email, is_active, created_at
-                FROM admin_users
-                ORDER BY id DESC
-            ');
+            $where = 'WHERE is_active = 0';
         }
+
+        $stmt = $pdo->query("\n            SELECT id, username, {$emailSelect}, is_active, created_at\n            FROM admin_users\n            {$where}\n            ORDER BY id DESC\n        ");
 
         return $stmt->fetchAll();
     }
@@ -87,12 +104,9 @@ class AdminUserModel
             return null;
         }
 
-        $stmt = $pdo->prepare('
-            SELECT id, username, email, password_hash, is_active, created_at
-            FROM admin_users
-            WHERE id = ?
-            LIMIT 1
-        ');
+        $emailSelect = $this->hasEmailColumn($pdo) ? 'email' : 'NULL AS email';
+
+        $stmt = $pdo->prepare("\n            SELECT id, username, {$emailSelect}, password_hash, is_active, created_at\n            FROM admin_users\n            WHERE id = ?\n            LIMIT 1\n        ");
         $stmt->execute([$id]);
 
         $row = $stmt->fetch();
@@ -108,18 +122,10 @@ class AdminUserModel
         }
 
         if ($ignoreId !== null) {
-            $stmt = $pdo->prepare('
-                SELECT COUNT(*) AS cnt
-                FROM admin_users
-                WHERE username = ? AND id <> ?
-            ');
+            $stmt = $pdo->prepare('\n                SELECT COUNT(*) AS cnt\n                FROM admin_users\n                WHERE username = ? AND id <> ?\n            ');
             $stmt->execute([$username, $ignoreId]);
         } else {
-            $stmt = $pdo->prepare('
-                SELECT COUNT(*) AS cnt
-                FROM admin_users
-                WHERE username = ?
-            ');
+            $stmt = $pdo->prepare('\n                SELECT COUNT(*) AS cnt\n                FROM admin_users\n                WHERE username = ?\n            ');
             $stmt->execute([$username]);
         }
 
@@ -130,23 +136,15 @@ class AdminUserModel
     {
         $pdo = Database::connect();
 
-        if (!$this->hasAdminUsersTable($pdo)) {
+        if (!$this->hasAdminUsersTable($pdo) || !$this->hasEmailColumn($pdo)) {
             return false;
         }
 
         if ($ignoreId !== null) {
-            $stmt = $pdo->prepare('
-                SELECT COUNT(*) AS cnt
-                FROM admin_users
-                WHERE email = ? AND id <> ?
-            ');
+            $stmt = $pdo->prepare('\n                SELECT COUNT(*) AS cnt\n                FROM admin_users\n                WHERE email = ? AND id <> ?\n            ');
             $stmt->execute([$email, $ignoreId]);
         } else {
-            $stmt = $pdo->prepare('
-                SELECT COUNT(*) AS cnt
-                FROM admin_users
-                WHERE email = ?
-            ');
+            $stmt = $pdo->prepare('\n                SELECT COUNT(*) AS cnt\n                FROM admin_users\n                WHERE email = ?\n            ');
             $stmt->execute([$email]);
         }
 
@@ -157,16 +155,22 @@ class AdminUserModel
     {
         $pdo = Database::connect();
 
-        $stmt = $pdo->prepare('
-            INSERT INTO admin_users (username, email, password_hash, is_active)
-            VALUES (?, ?, ?, ?)
-        ');
-        $stmt->execute([
-            $username,
-            $email,
-            password_hash($plainPassword, PASSWORD_DEFAULT),
-            $isActive ? 1 : 0,
-        ]);
+        if ($this->hasEmailColumn($pdo)) {
+            $stmt = $pdo->prepare('\n                INSERT INTO admin_users (username, email, password_hash, is_active)\n                VALUES (?, ?, ?, ?)\n            ');
+            $stmt->execute([
+                $username,
+                $email,
+                password_hash($plainPassword, PASSWORD_DEFAULT),
+                $isActive ? 1 : 0,
+            ]);
+        } else {
+            $stmt = $pdo->prepare('\n                INSERT INTO admin_users (username, password_hash, is_active)\n                VALUES (?, ?, ?)\n            ');
+            $stmt->execute([
+                $username,
+                password_hash($plainPassword, PASSWORD_DEFAULT),
+                $isActive ? 1 : 0,
+            ]);
+        }
 
         return (int)$pdo->lastInsertId();
     }
@@ -175,23 +179,20 @@ class AdminUserModel
     {
         $pdo = Database::connect();
 
-        $stmt = $pdo->prepare('
-            UPDATE admin_users
-            SET username = ?, email = ?, is_active = ?
-            WHERE id = ?
-        ');
-        $stmt->execute([$username, $email, $isActive ? 1 : 0, $id]);
+        if ($this->hasEmailColumn($pdo)) {
+            $stmt = $pdo->prepare('\n                UPDATE admin_users\n                SET username = ?, email = ?, is_active = ?\n                WHERE id = ?\n            ');
+            $stmt->execute([$username, $email, $isActive ? 1 : 0, $id]);
+        } else {
+            $stmt = $pdo->prepare('\n                UPDATE admin_users\n                SET username = ?, is_active = ?\n                WHERE id = ?\n            ');
+            $stmt->execute([$username, $isActive ? 1 : 0, $id]);
+        }
     }
 
     public function updatePassword(int $id, string $plainPassword): void
     {
         $pdo = Database::connect();
 
-        $stmt = $pdo->prepare('
-            UPDATE admin_users
-            SET password_hash = ?
-            WHERE id = ?
-        ');
+        $stmt = $pdo->prepare('\n            UPDATE admin_users\n            SET password_hash = ?\n            WHERE id = ?\n        ');
         $stmt->execute([password_hash($plainPassword, PASSWORD_DEFAULT), $id]);
     }
 

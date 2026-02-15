@@ -153,13 +153,31 @@ VALUES ('admin', 'admin@tu-dominio.com', 'PEGA_AQUI_EL_HASH', 1);
 SELECT id, username, email, is_active, created_at FROM admin_users;
 ```
 
-Si ya tenías la tabla creada sin correo, actualízala así:
+Si ya tenías la tabla creada sin correo, **no uses** `NOT NULL UNIQUE` en un solo paso (puede fallar con error 1062 por valores duplicados vacíos). Haz esta migración segura en 4 pasos:
 
 ```sql
+-- 1) Agregar columna permitiendo NULL temporalmente
 ALTER TABLE admin_users
-  ADD COLUMN email VARCHAR(190) NOT NULL UNIQUE AFTER username;
+  ADD COLUMN email VARCHAR(190) NULL AFTER username;
+
+-- 2) Rellenar emails únicos para filas existentes (ejemplo temporal)
+UPDATE admin_users
+SET email = CONCAT('admin', id, '@change-me.local')
+WHERE email IS NULL OR email = '';
+
+-- 3) Verificar que no haya duplicados antes de crear índice UNIQUE
+SELECT email, COUNT(*) AS total
+FROM admin_users
+GROUP BY email
+HAVING COUNT(*) > 1;
+
+-- 4) Ya limpio: forzar NOT NULL + UNIQUE
+ALTER TABLE admin_users
+  MODIFY COLUMN email VARCHAR(190) NOT NULL,
+  ADD UNIQUE KEY uq_admin_users_email (email);
 ```
 
+> Después de eso, edita cada admin y reemplaza los correos temporales (`@change-me.local`) por correos reales.
 
 Con eso ya debe funcionar `/auth/login` con:
 

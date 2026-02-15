@@ -22,10 +22,16 @@
             <input class="card card-pad" style="width:100%; padding:10px 12px; border-radius:12px;" type="text" name="username" value="<?= htmlspecialchars((string)($old['username'] ?? '')) ?>" required>
         </div>
 
-        <div>
-            <label class="muted">Correo (para recuperación de contraseña)</label><br>
-            <input class="card card-pad" style="width:100%; padding:10px 12px; border-radius:12px;" type="email" name="email" value="<?= htmlspecialchars((string)($old['email'] ?? '')) ?>" required>
-        </div>
+        <?php if (!empty($emailSupported)): ?>
+            <div>
+                <label class="muted">Correo (para recuperación de contraseña)</label><br>
+                <input class="card card-pad" style="width:100%; padding:10px 12px; border-radius:12px;" type="email" name="email" value="<?= htmlspecialchars((string)($old['email'] ?? '')) ?>" required>
+            </div>
+        <?php else: ?>
+            <div class="card card-pad" style="border-color: rgba(245,158,11,.35); background: rgba(245,158,11,.10);">
+                La columna <code>email</code> aún no existe en <code>admin_users</code>. Puedes crear admins, pero para recuperación por token debes ejecutar el ALTER TABLE del README.
+            </div>
+        <?php endif; ?>
 
         <div>
             <label class="muted">Contraseña (mínimo 8 caracteres)</label><br>
