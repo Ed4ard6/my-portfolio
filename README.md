@@ -13,20 +13,33 @@ permitiendo a cualquier visitante verlos y a un administrador gestionarlos
 
 1. Configura tu servidor local (Laragon, XAMPP, etc.) apuntando a `public/`.
 2. Crea la base de datos y las tablas necesarias (ver esquema abajo).
-3. Ajusta las credenciales en `core/Database.php`.
+3. Crea un archivo `.emp` (o `.env`) a partir de `.emp.example` y completa las credenciales de DB.
 4. Inicia el servidor y entra a `http://localhost/`.
+
+## 🔐 Configuración de entorno
+
+El proyecto carga variables primero desde `.env` y, si no existe, desde `.emp`.
+
+Variables usadas:
+
+- `DB_HOST`
+- `DB_DATABASE`
+- `DB_USERNAME`
+- `DB_PASSWORD`
+- `DB_CHARSET` (opcional, default `utf8mb4`)
+
+> Nunca subas `.env` o `.emp` al repositorio. Ya están excluidos en `.gitignore`.
 
 ## ⚙️ Tecnologías y arquitectura
 
 - **PHP** (MVC simple con `controllers`, `models`, `views`)
-- **MySQL** (persistencia de proyectos y tecnologías)
+- **MySQL** (persistencia de proyectos, tecnologías y usuarios admin)
 - **HTML/CSS** (interfaz y estilos)
 
 Estructura principal:
 
 - `app/controllers`: controladores de la aplicación
 - `app/models`: acceso a base de datos
-- `app/views`: vistas renderizadas
 - `core`: router, vista y utilidades
 - `public`: punto de entrada (`index.php`)
 
@@ -40,6 +53,7 @@ Estructura principal:
 
 ### Administración (solo admin)
 
+- Login de administrador contra tabla `admin_users`
 - Crear proyectos
 - Editar proyectos
 - Actualizar estados
@@ -53,44 +67,32 @@ Las tablas principales que se usan en el proyecto son:
 - `projects`
 - `technologies`
 - `project_technology` (tabla pivote)
+- `admin_users`
 
-Campos sugeridos:
+### SQL base recomendado
 
-**projects**
-- `id` (INT, PK)
-- `name` (VARCHAR)
-- `description` (TEXT)
-- `project_url` (VARCHAR, opcional)
-- `status` (VARCHAR: pending | active | completed | archived)
-- `created_at` (TIMESTAMP)
+```sql
+CREATE TABLE admin_users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  username VARCHAR(80) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  is_active TINYINT(1) NOT NULL DEFAULT 1,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
 
-> Si aún no tienes la columna `project_url`, puedes agregarla cuando quieras.
-> El proyecto funciona igual sin ella, pero no mostrará el botón “Ver proyecto”.
+Insertar un admin inicial (ejemplo):
 
-**technologies**
-- `id` (INT, PK)
-- `name` (VARCHAR)
+```sql
+INSERT INTO admin_users (username, password_hash, is_active)
+VALUES ('admin', '$2y$12$REEMPLAZAR_CON_HASH_REAL', 1);
+```
 
-**project_technology**
-- `project_id` (FK a projects.id)
-- `technology_id` (FK a technologies.id)
+Generar hash seguro en local:
 
-## 🔐 Acceso de administrador
-
-Se agregó un login básico para proteger la edición de proyectos.
-
-**Credenciales por defecto:**
-
-- Usuario: `admin`
-- Contraseña: `admin123`
-
-Si quieres cambiarlo, define estas variables de entorno:
-
-- `PORTFOLIO_ADMIN_USER`
-- `PORTFOLIO_ADMIN_HASH` (usa `password_hash()` en PHP para generar el hash)
-
-> Nota: si cambias el hash, puedes generarlo con:
-> `php -r "echo password_hash('TuPassword', PASSWORD_DEFAULT);"`
+```bash
+php -r "echo password_hash('TuPasswordSegura', PASSWORD_DEFAULT), PHP_EOL;"
+```
 
 ## 🧪 Rutas principales
 
@@ -110,36 +112,29 @@ Si quieres cambiarlo, define estas variables de entorno:
 - `/projects/edit/:id`
 - `/projects/archived`
 
-## ⚠️ Solución de errores comunes
+## 🛡️ Recomendaciones de seguridad (prioridad)
 
-### Error: Cannot redeclare ProjectModel::filterByStatus()
+1. Limitar intentos de login (rate limiting o bloqueo temporal).
+2. Registrar auditoría básica (fecha IP/usuario de login correcto e incorrecto).
+3. Forzar HTTPS en despliegue y cookies de sesión `Secure`, `HttpOnly`, `SameSite`.
+4. Rotar contraseñas y evitar usuarios admin compartidos.
+5. Definir política de backups y restauración de la DB.
+6. Evitar mensajes de error detallados en producción (`display_errors=Off`).
 
-Este error aparece cuando hay **dos métodos `filterByStatus()` dentro de la clase**
-`ProjectModel`. Debes dejar **solo uno**. El método correcto es el que usa la tabla
-`project_technology` (singular) y el mismo conjunto de columnas que `all()`.
+## 🚧 Pendientes / Próximos pasos sugeridos
+
+- Separar panel de administración en ruta `/admin`.
+- Agregar recuperación/cambio de contraseña de admin.
+- Añadir autorización por roles/permisos (más de un tipo de usuario).
+- Implementar tests mínimos para autenticación y modelo de proyectos.
+- Agregar migraciones SQL versionadas.
+- Configurar CI para validación automática (lint + smoke tests).
 
 ## 🧭 Flujo recomendado de ramas
 
 - `main`: versión estable (producción)
 - `develop`: integración de cambios
 - `feature/*`: ramas temporales para nuevas funciones
-
-Si tienes una rama extra y ya no la necesitas, puedes eliminarla así:
-
-```bash
-# Eliminar rama local
-git branch -d nombre-rama
-
-# Eliminar rama remota
-git push origin --delete nombre-rama
-```
-
-## 🚧 Pendientes / Próximos pasos
-
-- Añadir campo de URL del proyecto (para enlazar repos o demos)
-- Separar panel de administración en una ruta `/admin`
-- Agregar protección CSRF en formularios
-- Validaciones más robustas en edición
 
 ---
 
