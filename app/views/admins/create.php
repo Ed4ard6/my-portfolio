@@ -23,6 +23,11 @@
         </div>
 
         <div>
+            <label class="muted">Correo (para recuperación de contraseña)</label><br>
+            <input class="card card-pad" style="width:100%; padding:10px 12px; border-radius:12px;" type="email" name="email" value="<?= htmlspecialchars((string)($old['email'] ?? '')) ?>" required>
+        </div>
+
+        <div>
             <label class="muted">Contraseña (mínimo 8 caracteres)</label><br>
             <input class="card card-pad" style="width:100%; padding:10px 12px; border-radius:12px;" type="password" name="password" required>
         </div>

@@ -35,7 +35,7 @@ class AdminUserModel
         }
 
         $stmt = $pdo->prepare('
-            SELECT id, username, password_hash, is_active, created_at
+            SELECT id, username, email, password_hash, is_active, created_at
             FROM admin_users
             WHERE username = ?
             LIMIT 1
@@ -46,7 +46,7 @@ class AdminUserModel
         return $row ?: null;
     }
 
-    public function all(): array
+    public function all(string $status = 'all'): array
     {
         $pdo = Database::connect();
 
@@ -54,11 +54,27 @@ class AdminUserModel
             return [];
         }
 
-        $stmt = $pdo->query('
-            SELECT id, username, is_active, created_at
-            FROM admin_users
-            ORDER BY id DESC
-        ');
+        if ($status === 'active') {
+            $stmt = $pdo->query('
+                SELECT id, username, email, is_active, created_at
+                FROM admin_users
+                WHERE is_active = 1
+                ORDER BY id DESC
+            ');
+        } elseif ($status === 'inactive') {
+            $stmt = $pdo->query('
+                SELECT id, username, email, is_active, created_at
+                FROM admin_users
+                WHERE is_active = 0
+                ORDER BY id DESC
+            ');
+        } else {
+            $stmt = $pdo->query('
+                SELECT id, username, email, is_active, created_at
+                FROM admin_users
+                ORDER BY id DESC
+            ');
+        }
 
         return $stmt->fetchAll();
     }
@@ -72,7 +88,7 @@ class AdminUserModel
         }
 
         $stmt = $pdo->prepare('
-            SELECT id, username, password_hash, is_active, created_at
+            SELECT id, username, email, password_hash, is_active, created_at
             FROM admin_users
             WHERE id = ?
             LIMIT 1
@@ -110,16 +126,44 @@ class AdminUserModel
         return ((int)($stmt->fetch()['cnt'] ?? 0)) > 0;
     }
 
-    public function create(string $username, string $plainPassword, bool $isActive): int
+    public function emailExists(string $email, ?int $ignoreId = null): bool
+    {
+        $pdo = Database::connect();
+
+        if (!$this->hasAdminUsersTable($pdo)) {
+            return false;
+        }
+
+        if ($ignoreId !== null) {
+            $stmt = $pdo->prepare('
+                SELECT COUNT(*) AS cnt
+                FROM admin_users
+                WHERE email = ? AND id <> ?
+            ');
+            $stmt->execute([$email, $ignoreId]);
+        } else {
+            $stmt = $pdo->prepare('
+                SELECT COUNT(*) AS cnt
+                FROM admin_users
+                WHERE email = ?
+            ');
+            $stmt->execute([$email]);
+        }
+
+        return ((int)($stmt->fetch()['cnt'] ?? 0)) > 0;
+    }
+
+    public function create(string $username, string $email, string $plainPassword, bool $isActive): int
     {
         $pdo = Database::connect();
 
         $stmt = $pdo->prepare('
-            INSERT INTO admin_users (username, password_hash, is_active)
-            VALUES (?, ?, ?)
+            INSERT INTO admin_users (username, email, password_hash, is_active)
+            VALUES (?, ?, ?, ?)
         ');
         $stmt->execute([
             $username,
+            $email,
             password_hash($plainPassword, PASSWORD_DEFAULT),
             $isActive ? 1 : 0,
         ]);
@@ -127,16 +171,16 @@ class AdminUserModel
         return (int)$pdo->lastInsertId();
     }
 
-    public function update(int $id, string $username, bool $isActive): void
+    public function update(int $id, string $username, string $email, bool $isActive): void
     {
         $pdo = Database::connect();
 
         $stmt = $pdo->prepare('
             UPDATE admin_users
-            SET username = ?, is_active = ?
+            SET username = ?, email = ?, is_active = ?
             WHERE id = ?
         ');
-        $stmt->execute([$username, $isActive ? 1 : 0, $id]);
+        $stmt->execute([$username, $email, $isActive ? 1 : 0, $id]);
     }
 
     public function updatePassword(int $id, string $plainPassword): void

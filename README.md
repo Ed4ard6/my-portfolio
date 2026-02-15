@@ -76,6 +76,7 @@ Las tablas principales que se usan en el proyecto son:
 CREATE TABLE admin_users (
   id INT AUTO_INCREMENT PRIMARY KEY,
   username VARCHAR(80) NOT NULL UNIQUE,
+  email VARCHAR(190) NOT NULL UNIQUE,
   password_hash VARCHAR(255) NOT NULL,
   is_active TINYINT(1) NOT NULL DEFAULT 1,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -85,8 +86,8 @@ CREATE TABLE admin_users (
 Insertar un admin inicial (ejemplo):
 
 ```sql
-INSERT INTO admin_users (username, password_hash, is_active)
-VALUES ('admin', '$2y$12$REEMPLAZAR_CON_HASH_REAL', 1);
+INSERT INTO admin_users (username, email, password_hash, is_active)
+VALUES ('admin', 'admin@tu-dominio.com', '$2y$12$REEMPLAZAR_CON_HASH_REAL', 1);
 ```
 
 Generar hash seguro en local:
@@ -124,6 +125,7 @@ USE portfolio;
 CREATE TABLE IF NOT EXISTS admin_users (
   id INT AUTO_INCREMENT PRIMARY KEY,
   username VARCHAR(80) NOT NULL UNIQUE,
+  email VARCHAR(190) NOT NULL UNIQUE,
   password_hash VARCHAR(255) NOT NULL,
   is_active TINYINT(1) NOT NULL DEFAULT 1,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -141,20 +143,49 @@ php -r "echo password_hash('admin123', PASSWORD_DEFAULT), PHP_EOL;"
 2) Copia el hash resultante y ejecuta:
 
 ```sql
-INSERT INTO admin_users (username, password_hash, is_active)
-VALUES ('admin', 'PEGA_AQUI_EL_HASH', 1);
+INSERT INTO admin_users (username, email, password_hash, is_active)
+VALUES ('admin', 'admin@tu-dominio.com', 'PEGA_AQUI_EL_HASH', 1);
 ```
 
 3) Verifica:
 
 ```sql
-SELECT id, username, is_active, created_at FROM admin_users;
+SELECT id, username, email, is_active, created_at FROM admin_users;
 ```
+
+Si ya tenías la tabla creada sin correo, actualízala así:
+
+```sql
+ALTER TABLE admin_users
+  ADD COLUMN email VARCHAR(190) NOT NULL UNIQUE AFTER username;
+```
+
 
 Con eso ya debe funcionar `/auth/login` con:
 
 - Usuario: `admin`
 - Contraseña: la que usaste al generar el hash (por ejemplo `admin123`).
+
+## 🧾 Historial de cambios de administradores (opcional recomendado)
+
+Para registrar quién modificó a qué admin y cuándo, crea esta tabla:
+
+```sql
+CREATE TABLE IF NOT EXISTS admin_audit_logs (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  action VARCHAR(80) NOT NULL,
+  performed_by VARCHAR(80) NOT NULL,
+  target_admin_id INT NULL,
+  details VARCHAR(255) NOT NULL DEFAULT '',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_admin_audit_target (target_admin_id),
+  CONSTRAINT fk_admin_audit_target
+    FOREIGN KEY (target_admin_id) REFERENCES admin_users(id)
+    ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+```
+
+> Si no creas esta tabla, el sistema igual funciona; solo no mostrará historial.
 
 ## 🧪 Rutas principales
 
@@ -189,8 +220,8 @@ Con eso ya debe funcionar `/auth/login` con:
 ## 🚧 Pendientes / Próximos pasos sugeridos
 
 - Separar panel de administración en ruta `/admin`.
-- Agregar recuperación/cambio de contraseña de admin.
-- Implementar recuperación de contraseña con token por correo.
+- Implementar recuperación de contraseña con token por correo (usando el campo `email`).
+- Añadir historial de cambios para proyectos (similar al historial de admins).
 - Implementar tests mínimos para autenticación y modelo de proyectos.
 - Agregar migraciones SQL versionadas.
 - Configurar CI para validación automática (lint + smoke tests).

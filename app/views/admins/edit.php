@@ -14,13 +14,18 @@
         </div>
     <?php endif; ?>
 
-    <form method="POST" action="/admins/update" style="margin-top:16px; display:grid; gap:12px;">
+    <form method="POST" action="/admins/update" style="margin-top:16px; display:grid; gap:12px;" onsubmit="return confirm('¿Guardar cambios de este administrador?');">
         <input type="hidden" name="<?= htmlspecialchars(Csrf::fieldName()) ?>" value="<?= htmlspecialchars(Csrf::token()) ?>">
         <input type="hidden" name="id" value="<?= (int)$admin['id'] ?>">
 
         <div>
             <label class="muted">Usuario</label><br>
             <input class="card card-pad" style="width:100%; padding:10px 12px; border-radius:12px;" type="text" name="username" value="<?= htmlspecialchars((string)$admin['username']) ?>" required>
+        </div>
+
+        <div>
+            <label class="muted">Correo (para recuperación de contraseña)</label><br>
+            <input class="card card-pad" style="width:100%; padding:10px 12px; border-radius:12px;" type="email" name="email" value="<?= htmlspecialchars((string)($admin['email'] ?? '')) ?>" required>
         </div>
 
         <div>

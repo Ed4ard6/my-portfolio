@@ -6,14 +6,17 @@ require_once __DIR__ . '/../../core/View.php';
 require_once __DIR__ . '/../../core/Auth.php';
 require_once __DIR__ . '/../../core/Csrf.php';
 require_once __DIR__ . '/../models/AdminUserModel.php';
+require_once __DIR__ . '/../models/AdminAuditModel.php';
 
 class AdminsController
 {
     private AdminUserModel $model;
+    private AdminAuditModel $auditModel;
 
     public function __construct()
     {
         $this->model = new AdminUserModel();
+        $this->auditModel = new AdminAuditModel();
     }
 
     private function ensureAuthenticated(): void
@@ -21,15 +24,38 @@ class AdminsController
         Auth::requireLogin();
     }
 
+    private function setFlash(string $type, string $message): void
+    {
+        $_SESSION['flash'] = [
+            'type' => $type,
+            'message' => $message,
+        ];
+    }
+
+    private function consumeFlash(): ?array
+    {
+        $flash = $_SESSION['flash'] ?? null;
+        unset($_SESSION['flash']);
+        return is_array($flash) ? $flash : null;
+    }
+
     public function index(): void
     {
         $this->ensureAuthenticated();
 
+        $status = trim((string)($_GET['status'] ?? 'all'));
+        if (!in_array($status, ['all', 'active', 'inactive'], true)) {
+            $status = 'all';
+        }
+
         View::render('admins/index', [
             'title' => 'Administradores',
             'heading' => 'Administradores',
-            'admins' => $this->model->all(),
+            'admins' => $this->model->all($status),
             'currentUser' => Auth::user(),
+            'currentStatus' => $status,
+            'flash' => $this->consumeFlash(),
+            'auditLogs' => $this->auditModel->latest(15),
         ]);
     }
 
@@ -41,7 +67,7 @@ class AdminsController
             'title' => 'Crear administrador',
             'heading' => 'Crear administrador',
             'errors' => [],
-            'old' => ['username' => '', 'is_active' => '1'],
+            'old' => ['username' => '', 'email' => '', 'is_active' => '1'],
         ]);
     }
 
@@ -62,11 +88,12 @@ class AdminsController
         }
 
         $username = trim($_POST['username'] ?? '');
+        $email = mb_strtolower(trim($_POST['email'] ?? ''));
         $password = trim($_POST['password'] ?? '');
         $confirmPassword = trim($_POST['password_confirm'] ?? '');
         $isActive = ($_POST['is_active'] ?? '1') === '1';
 
-        $errors = $this->validateInput($username, $password, $confirmPassword, null);
+        $errors = $this->validateInput($username, $email, $password, $confirmPassword, null);
 
         if (!empty($errors)) {
             View::render('admins/create', [
@@ -75,13 +102,17 @@ class AdminsController
                 'errors' => $errors,
                 'old' => [
                     'username' => $username,
+                    'email' => $email,
                     'is_active' => $isActive ? '1' : '0',
                 ],
             ]);
             return;
         }
 
-        $this->model->create($username, $password, $isActive);
+        $id = $this->model->create($username, $email, $password, $isActive);
+        $this->auditModel->log('admin_created', (string)Auth::user(), $id, 'Se creó un nuevo administrador.');
+        $this->setFlash('success', 'Administrador creado correctamente.');
+
         header('Location: /admins');
         exit;
     }
@@ -134,6 +165,7 @@ class AdminsController
 
         $id = (int)($_POST['id'] ?? 0);
         $username = trim($_POST['username'] ?? '');
+        $email = mb_strtolower(trim($_POST['email'] ?? ''));
         $password = trim($_POST['password'] ?? '');
         $confirmPassword = trim($_POST['password_confirm'] ?? '');
         $isActive = ($_POST['is_active'] ?? '1') === '1';
@@ -149,9 +181,10 @@ class AdminsController
             return;
         }
 
-        $errors = $this->validateInput($username, $password, $confirmPassword, $id, true);
+        $errors = $this->validateInput($username, $email, $password, $confirmPassword, $id, true);
         if (!empty($errors)) {
             $admin['username'] = $username;
+            $admin['email'] = $email;
             $admin['is_active'] = $isActive ? 1 : 0;
 
             View::render('admins/edit', [
@@ -163,12 +196,15 @@ class AdminsController
             return;
         }
 
-        $this->model->update($id, $username, $isActive);
+        $this->model->update($id, $username, $email, $isActive);
+        $this->auditModel->log('admin_updated', (string)Auth::user(), $id, 'Se actualizó username/email/estado.');
 
         if ($password !== '') {
             $this->model->updatePassword($id, $password);
+            $this->auditModel->log('admin_password_updated', (string)Auth::user(), $id, 'Se cambió la contraseña del administrador.');
         }
 
+        $this->setFlash('success', 'Cambios guardados correctamente.');
         header('Location: /admins');
         exit;
     }
@@ -198,23 +234,27 @@ class AdminsController
 
         $admin = $this->model->findById($id);
         if (!$admin) {
+            $this->setFlash('error', 'No se encontró el administrador que intentabas eliminar.');
             header('Location: /admins');
             exit;
         }
 
         if ((string)$admin['username'] === (string)Auth::user()) {
-            http_response_code(400);
-            echo 'No puedes eliminar tu propio usuario en sesión.';
-            return;
+            $this->setFlash('error', 'No puedes eliminar tu propio usuario en sesión.');
+            header('Location: /admins');
+            exit;
         }
 
         $this->model->delete($id);
+        $this->auditModel->log('admin_deleted', (string)Auth::user(), $id, 'Se eliminó un administrador.');
+        $this->setFlash('success', 'Administrador eliminado correctamente.');
         header('Location: /admins');
         exit;
     }
 
     private function validateInput(
         string $username,
+        string $email,
         string $password,
         string $confirmPassword,
         ?int $ignoreId,
@@ -230,6 +270,14 @@ class AdminsController
 
         if ($this->model->usernameExists($username, $ignoreId)) {
             $errors[] = 'Ese nombre de usuario ya existe.';
+        }
+
+        if ($email === '') {
+            $errors[] = 'El correo es obligatorio.';
+        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $errors[] = 'El formato del correo no es válido.';
+        } elseif ($this->model->emailExists($email, $ignoreId)) {
+            $errors[] = 'Ese correo ya está registrado.';
         }
 
         if (!$isUpdate || $password !== '') {
