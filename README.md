@@ -179,10 +179,101 @@ ALTER TABLE admin_users
 
 > Después de eso, edita cada admin y reemplaza los correos temporales (`@change-me.local`) por correos reales.
 
+
+Si en tu gestor visual ves datos "corridos" (por ejemplo el email bajo columna `password_hash`), revisa la estructura real:
+
+```sql
+SHOW CREATE TABLE admin_users;
+```
+
+Debe incluir columnas en este orden recomendado:
+`id, username, email, password_hash, is_active, created_at`.
+
 Con eso ya debe funcionar `/auth/login` con:
 
 - Usuario: `admin`
 - Contraseña: la que usaste al generar el hash (por ejemplo `admin123`).
+
+
+## 🔑 Recuperación de contraseña por token (base de datos)
+
+Para habilitar recuperación por token, crea esta tabla:
+
+```sql
+CREATE TABLE IF NOT EXISTS admin_password_resets (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  admin_user_id INT NOT NULL,
+  token_hash CHAR(64) NOT NULL,
+  expires_at DATETIME NOT NULL,
+  used_at DATETIME NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_admin_password_resets_token (token_hash),
+  INDEX idx_admin_password_resets_admin (admin_user_id),
+  CONSTRAINT fk_admin_password_resets_admin
+    FOREIGN KEY (admin_user_id) REFERENCES admin_users(id)
+    ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+```
+
+Rutas incluidas:
+- `/auth/forgot`
+- `/auth/reset/{token}`
+
+> En local, el enlace de recuperación se escribe en `storage/password_reset_links.log` (y también en `error_log`).
+
+### ¿Cómo probar recuperación por token en local? (paso a paso)
+
+1. Abre `/auth/forgot` e ingresa un correo admin existente.
+2. El sistema genera un token y escribe el enlace en el log del servidor (no envía correo real todavía).
+3. Busca una línea similar a:
+   `Token reset para correo@dominio.com: http://localhost/auth/reset/TOKEN...`
+4. Copia ese enlace y pégalo en el navegador.
+5. Define nueva contraseña y confirma.
+
+> El token vence en **30 minutos**. Si falla de inmediato, revisa hora/zona horaria del servidor MySQL y PHP.
+
+Ejemplos de dónde revisar logs:
+- **Primera opción recomendada**: archivo del proyecto `storage/password_reset_links.log`.
+- **También disponible**: `error.log` de Apache/PHP si tu servidor lo permite.
+
+> Si el correo no existe en `admin_users`, ahora el sistema te lo informa antes de generar token.
+> Si quieres correo real, el siguiente paso es configurar SMTP y reemplazar el `error_log(...)`/archivo local por envío de email.
+
+
+
+## 🔗 Enlaces de proyectos y estados (requisito para producción)
+
+Para que el botón **Abrir proyecto** funcione correctamente por estado (`pending`, `active`, `completed`), la tabla `projects` debe tener una columna de URL.
+
+Migración recomendada:
+
+```sql
+ALTER TABLE projects
+  ADD COLUMN project_url VARCHAR(255) NULL AFTER description;
+```
+
+También dejé este SQL listo para ejecutar en local:
+
+- `database/migrations/20260216_add_project_url.sql`
+
+Si en tu BD ya existe una columna legacy (`project_link` o `url`), el sistema la detecta automáticamente. Aun así, lo ideal es estandarizar en `project_url`.
+
+> Nota: al guardar/editar un proyecto con URL, el sistema intenta crear `project_url` automáticamente si tu usuario MySQL tiene permisos de `ALTER TABLE`. En producción, igual se recomienda ejecutar la migración de forma explícita antes del despliegue.
+
+
+Comportamiento del botón **Abrir proyecto**:
+
+- `pending`: muestra vista informativa (**proyecto aún no iniciado**).
+- `active`: redirige al enlace si existe y es válido; si no existe, muestra aviso.
+- `completed`: redirige al enlace final si existe y es válido; si no existe, muestra aviso.
+
+Validación sugerida antes de subir a producción:
+
+```sql
+SELECT id, name, status, project_url
+FROM projects
+ORDER BY id DESC;
+```
 
 ## 🧾 Historial de cambios de administradores (opcional recomendado)
 
@@ -205,6 +296,21 @@ CREATE TABLE IF NOT EXISTS admin_audit_logs (
 
 > Si no creas esta tabla, el sistema igual funciona; solo no mostrará historial.
 
+### Mejora opcional de auditoría (recomendada)
+
+Para que el historial siga mostrando correctamente el **nombre actual** del admin que realizó cambios, guarda también su ID:
+
+```sql
+ALTER TABLE admin_audit_logs
+  ADD COLUMN performed_by_admin_id INT NULL AFTER performed_by,
+  ADD INDEX idx_admin_audit_performer (performed_by_admin_id),
+  ADD CONSTRAINT fk_admin_audit_performer
+    FOREIGN KEY (performed_by_admin_id) REFERENCES admin_users(id)
+    ON DELETE SET NULL;
+```
+
+> Si no aplicas este ALTER, el sistema sigue funcionando y usa el nombre guardado en texto (`performed_by`).
+
 ## 🧪 Rutas principales
 
 ### Públicas
@@ -219,6 +325,8 @@ CREATE TABLE IF NOT EXISTS admin_audit_logs (
 
 - `/auth/login`
 - `/auth/logout`
+- `/auth/forgot`
+- `/auth/reset/:token`
 - `/projects/create`
 - `/projects/edit/:id`
 - `/projects/archived`
@@ -228,7 +336,7 @@ CREATE TABLE IF NOT EXISTS admin_audit_logs (
 
 ## 🛡️ Recomendaciones de seguridad (prioridad)
 
-1. Limitar intentos de login (rate limiting o bloqueo temporal).
+1. Limitar intentos de login (rate limiting o bloqueo temporal). ✅ Implementado en sesión por usuario+IP.
 2. Registrar auditoría básica (fecha IP/usuario de login correcto e incorrecto).
 3. Forzar HTTPS en despliegue y cookies de sesión `Secure`, `HttpOnly`, `SameSite`.
 4. Rotar contraseñas y evitar usuarios admin compartidos.
@@ -238,7 +346,7 @@ CREATE TABLE IF NOT EXISTS admin_audit_logs (
 ## 🚧 Pendientes / Próximos pasos sugeridos
 
 - Separar panel de administración en ruta `/admin`.
-- Implementar recuperación de contraseña con token por correo (usando el campo `email`).
+- Conectar envío real de correos SMTP para recuperación por token (actualmente se registra en log para entorno local).
 - Añadir historial de cambios para proyectos (similar al historial de admins).
 - Implementar tests mínimos para autenticación y modelo de proyectos.
 - Agregar migraciones SQL versionadas.

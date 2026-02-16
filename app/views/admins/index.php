@@ -7,7 +7,7 @@
         </div>
     </div>
 
-    <p class="muted" style="margin-top:8px;">Solo los administradores autenticados pueden gestionar estos usuarios.</p>
+    <p class="muted" style="margin-top:8px;">Gestiona usuarios administradores, su estado y cambios de seguridad.</p>
 
     <?php if (!empty($flash)): ?>
         <div class="card card-pad" style="margin-top:12px; border-color: <?= ($flash['type'] ?? '') === 'success' ? 'rgba(16,185,129,.30)' : 'rgba(255,0,90,.25)' ?>; background: <?= ($flash['type'] ?? '') === 'success' ? 'rgba(16,185,129,.10)' : 'rgba(255,0,90,.08)' ?>;">
@@ -25,6 +25,10 @@
         <a class="btn <?= ($currentStatus ?? 'all') === 'all' ? 'btn-primary' : '' ?>" href="/admins?status=all">Todos</a>
         <a class="btn <?= ($currentStatus ?? '') === 'active' ? 'btn-primary' : '' ?>" href="/admins?status=active">Activos</a>
         <a class="btn <?= ($currentStatus ?? '') === 'inactive' ? 'btn-primary' : '' ?>" href="/admins?status=inactive">Inactivos</a>
+
+        <?php if (!empty($targetAdminId)): ?>
+            <a class="btn" href="/admins?status=<?= urlencode((string)($currentStatus ?? 'all')) ?>">Limpiar filtro de historial</a>
+        <?php endif; ?>
     </div>
 
     <?php if (empty($admins)): ?>
@@ -37,10 +41,16 @@
                 <div class="card card-pad">
                     <div class="row" style="align-items:center;">
                         <div>
-                            <strong><?= htmlspecialchars($admin['username']) ?></strong>
-                            <span class="status-pill <?= ((int)$admin['is_active'] === 1) ? 'status-pill-active' : 'status-pill-inactive' ?>">
-                                <?= ((int)$admin['is_active'] === 1) ? 'Activo' : 'Inactivo' ?>
-                            </span>
+                            <div>
+                                <span class="muted">Usuario:</span>
+                                <strong><?= htmlspecialchars((string)$admin['username']) ?></strong>
+                            </div>
+                            <div style="margin-top:6px;">
+                                <span class="muted">Estado:</span>
+                                <span class="status-pill <?= ((int)$admin['is_active'] === 1) ? 'status-pill-active' : 'status-pill-inactive' ?>">
+                                    <?= ((int)$admin['is_active'] === 1) ? 'Activo' : 'Inactivo' ?>
+                                </span>
+                            </div>
                             <div class="muted" style="margin-top:4px;">
                                 Correo: <?= htmlspecialchars((string)($admin['email'] ?? '-')) ?>
                             </div>
@@ -54,6 +64,7 @@
 
                         <div style="display:flex; gap:8px; flex-wrap:wrap;">
                             <a class="btn" href="/admins/edit/<?= (int)$admin['id'] ?>">Editar</a>
+                            <a class="btn" href="/admins?status=<?= urlencode((string)($currentStatus ?? 'all')) ?>&target_admin_id=<?= (int)$admin['id'] ?>">Historial de este admin</a>
 
                             <?php if (($currentUser ?? '') !== $admin['username']): ?>
                                 <form method="POST" action="/admins/delete/<?= (int)$admin['id'] ?>" onsubmit="return confirm('¿Eliminar este administrador? Esta acción no se puede deshacer.');" style="margin:0;">
@@ -70,22 +81,35 @@
 
     <div class="card card-pad" style="margin-top:14px;">
         <h3 style="margin:0 0 10px 0;">Historial reciente de cambios de administradores</h3>
+        <?php if (!empty($targetAdminId)): ?>
+            <div class="muted" style="margin-bottom:8px;">Mostrando historial filtrado por admin ID: <?= (int)$targetAdminId ?></div>
+        <?php endif; ?>
+
         <?php if (empty($auditLogs)): ?>
-            <div class="muted">No hay historial disponible (crea la tabla <code>admin_audit_logs</code> para activarlo).</div>
+            <div class="muted">No hay historial disponible con el filtro actual.</div>
         <?php else: ?>
-            <ul style="margin:0; padding-left:18px;">
-                <?php foreach ($auditLogs as $log): ?>
-                    <li style="margin-bottom:8px;">
-                        <strong><?= htmlspecialchars((string)$log['action']) ?></strong>
-                        · por <?= htmlspecialchars((string)$log['performed_by']) ?>
-                        · admin objetivo #<?= htmlspecialchars((string)($log['target_admin_id'] ?? '-')) ?>
-                        · <?= htmlspecialchars((string)$log['created_at']) ?>
-                        <?php if (!empty($log['details'])): ?>
-                            <div class="muted"><?= htmlspecialchars((string)$log['details']) ?></div>
-                        <?php endif; ?>
-                    </li>
-                <?php endforeach; ?>
-            </ul>
+            <div style="overflow:auto;">
+                <table class="audit-table">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Realizado por</th>
+                            <th>Admin afectado</th>
+                            <th>Detalle</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($auditLogs as $log): ?>
+                            <tr>
+                                <td><?= htmlspecialchars((string)$log['created_at']) ?></td>
+                                <td><?= htmlspecialchars((string)($log['performed_by_name'] ?? $log['performed_by'] ?? '-')) ?></td>
+                                <td><?= htmlspecialchars((string)($log['target_admin_name'] ?? ('#' . (string)($log['target_admin_id'] ?? '-')))) ?></td>
+                                <td><?= htmlspecialchars((string)($log['details'] ?? '')) ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
         <?php endif; ?>
     </div>
 </div>

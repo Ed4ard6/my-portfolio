@@ -59,13 +59,14 @@
     <?php endif; ?>
   </p>
 
-  <?php if (!empty($projectUrl)): ?>
-    <div style="margin-top:10px;">
-      <a class="btn btn-primary" href="<?= htmlspecialchars($projectUrl) ?>" target="_blank" rel="noopener noreferrer">
-        Ver proyecto
+  <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
+    <a class="btn btn-primary" href="/projects/open/<?= urlencode((string)($id ?? "")) ?>">Abrir proyecto</a>
+    <?php if (!empty($projectUrl)): ?>
+      <a class="btn" href="<?= htmlspecialchars($projectUrl) ?>" target="_blank" rel="noopener noreferrer">
+        Ver URL guardada
       </a>
-    </div>
-  <?php endif; ?>
+    <?php endif; ?>
+  </div>
 
   <div style="margin-top:16px; display:flex; gap:8px; flex-wrap:wrap;">
     <?php if ($isAdmin): ?>
