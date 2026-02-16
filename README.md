@@ -239,6 +239,35 @@ Ejemplos de dónde revisar logs:
 > Si el correo no existe en `admin_users`, ahora el sistema te lo informa antes de generar token.
 > Si quieres correo real, el siguiente paso es configurar SMTP y reemplazar el `error_log(...)`/archivo local por envío de email.
 
+
+
+## 🔗 Enlaces de proyectos y estados (requisito para producción)
+
+Para que el botón **Abrir proyecto** funcione correctamente por estado (`pending`, `active`, `completed`), la tabla `projects` debe tener una columna de URL.
+
+Migración recomendada:
+
+```sql
+ALTER TABLE projects
+  ADD COLUMN project_url VARCHAR(255) NULL AFTER description;
+```
+
+Si en tu BD ya existe una columna legacy (`project_link` o `url`), el sistema la detecta automáticamente. Aun así, lo ideal es estandarizar en `project_url`.
+
+Comportamiento del botón **Abrir proyecto**:
+
+- `pending`: muestra vista informativa (**proyecto aún no iniciado**).
+- `active`: redirige al enlace si existe y es válido; si no existe, muestra aviso.
+- `completed`: redirige al enlace final si existe y es válido; si no existe, muestra aviso.
+
+Validación sugerida antes de subir a producción:
+
+```sql
+SELECT id, name, status, project_url
+FROM projects
+ORDER BY id DESC;
+```
+
 ## 🧾 Historial de cambios de administradores (opcional recomendado)
 
 Para registrar quién modificó a qué admin y cuándo, crea esta tabla:

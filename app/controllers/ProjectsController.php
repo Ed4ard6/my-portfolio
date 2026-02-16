@@ -13,6 +13,30 @@ class ProjectsController
         Auth::requireLogin();
     }
 
+    private function renderProjectUnavailable(array $project, string $reason): void
+    {
+        http_response_code(200);
+
+        $status = (string)($project['status'] ?? 'pending');
+        $name = (string)($project['name'] ?? 'Proyecto');
+
+        $message = 'Este proyecto aún no está disponible.';
+        if ($reason === 'pending') {
+            $message = 'Este proyecto aún no se ha iniciado. Cuando pase a activo tendrás el enlace disponible.';
+        } elseif ($reason === 'missing_url') {
+            $message = 'Este proyecto está en progreso, pero todavía no tiene un enlace público configurado.';
+        } elseif ($reason === 'invalid_url') {
+            $message = 'Este proyecto tiene un enlace configurado, pero no es válido. Revisa la URL desde el panel de edición.';
+        }
+
+        View::render('projects/unavailable', [
+            'title' => 'Proyecto no disponible',
+            'heading' => $name,
+            'status' => $status,
+            'message' => $message,
+        ]);
+    }
+
     public function index()
     {
         $status = trim($_GET['status'] ?? '');
@@ -72,6 +96,51 @@ class ProjectsController
         ]);
     }
 
+
+    public function open($id = null)
+    {
+        if ($id === null) {
+            http_response_code(400);
+            echo "Falta el ID del proyecto.";
+            return;
+        }
+
+        $id = (int)$id;
+        $projectModel = new ProjectModel();
+        $project = $projectModel->find($id);
+
+        if (!$project) {
+            http_response_code(404);
+            View::render('errors/404', [
+                'title' => 'No encontrado',
+                'heading' => 'Proyecto no encontrado',
+                'message' => "No existe un proyecto con id $id.",
+            ]);
+            return;
+        }
+
+        $status = (string)($project['status'] ?? 'pending');
+        $projectUrl = trim((string)($project['project_url'] ?? ''));
+
+        if ($status === 'pending') {
+            $this->renderProjectUnavailable($project, 'pending');
+            return;
+        }
+
+        if ($projectUrl === '') {
+            $this->renderProjectUnavailable($project, 'missing_url');
+            return;
+        }
+
+        if (!filter_var($projectUrl, FILTER_VALIDATE_URL)) {
+            $this->renderProjectUnavailable($project, 'invalid_url');
+            return;
+        }
+
+        header('Location: ' . $projectUrl, true, 302);
+        exit;
+    }
+
     public function create()
     {
         $this->ensureAuthenticated();
@@ -98,7 +167,8 @@ class ProjectsController
             'selectedTechIds' => [],
             // Para que no falle si vienes desde errores
             'errors' => [],
-            'old' => []
+            'old' => [],
+            'supportsProjectUrl' => (new ProjectModel())->supportsProjectUrl(),
         ]);
     }
 
@@ -136,7 +206,8 @@ class ProjectsController
             'heading' => 'Editar proyecto',
             'project' => $project,
             'technologies' => $technologies,
-            'selectedTechIds' => $selectedTechIds
+            'selectedTechIds' => $selectedTechIds,
+            'supportsProjectUrl' => $projectModel->supportsProjectUrl(),
         ]);
     }
 
@@ -168,6 +239,12 @@ class ProjectsController
         if ($id <= 0 || $name === '' || $description === '') {
             http_response_code(400);
             echo "Datos inválidos.";
+            return;
+        }
+
+        if ($projectUrl !== null && !filter_var($projectUrl, FILTER_VALIDATE_URL)) {
+            http_response_code(400);
+            echo "La URL del proyecto no es válida.";
             return;
         }
 
@@ -291,6 +368,10 @@ class ProjectsController
             $errors[] = 'La descripción debe tener al menos 10 caracteres.';
         }
 
+        if ($projectUrl !== null && !filter_var($projectUrl, FILTER_VALIDATE_URL)) {
+            $errors[] = 'La URL del proyecto debe tener un formato válido (ejemplo: https://tu-dominio.com).';
+        }
+
         // 4) Si hay errores, volvemos a mostrar el formulario con:
         //    - errores
         //    - old inputs
@@ -310,7 +391,8 @@ class ProjectsController
                     'project_url' => $projectUrl,
                 ],
                 'technologies' => $technologies,
-                'selectedTechIds' => $techIds
+                'selectedTechIds' => $techIds,
+                'supportsProjectUrl' => (new ProjectModel())->supportsProjectUrl(),
             ]);
             return;
         }

@@ -4,26 +4,48 @@ require_once __DIR__ . '/../../core/Database.php';
 
 class ProjectModel
 {
-    private function hasProjectUrlColumn(): bool
+    private function projectUrlColumn(): ?string
     {
-        static $hasColumn = null;
-
-        if ($hasColumn !== null) {
-            return $hasColumn;
+        static $column = null;
+        if ($column !== null) {
+            return $column;
         }
 
         $pdo = Database::connect();
-        $stmt = $pdo->prepare("
-            SELECT COUNT(*) AS cnt
-            FROM information_schema.COLUMNS
-            WHERE TABLE_SCHEMA = DATABASE()
-              AND TABLE_NAME = 'projects'
-              AND COLUMN_NAME = 'project_url'
-        ");
+        $stmt = $pdo->prepare(
+            "SELECT COLUMN_NAME
+             FROM information_schema.COLUMNS
+             WHERE TABLE_SCHEMA = DATABASE()
+               AND TABLE_NAME = 'projects'
+               AND COLUMN_NAME IN ('project_url', 'project_link', 'url')
+             ORDER BY FIELD(COLUMN_NAME, 'project_url', 'project_link', 'url')
+             LIMIT 1"
+        );
         $stmt->execute();
-        $hasColumn = ((int)($stmt->fetch()['cnt'] ?? 0)) > 0;
 
-        return $hasColumn;
+        $column = $stmt->fetchColumn();
+        return is_string($column) && $column !== '' ? $column : null;
+    }
+
+    public function supportsProjectUrl(): bool
+    {
+        return $this->projectUrlColumn() !== null;
+    }
+
+    private function normalizeProjectRow(array $row): array
+    {
+        if (!array_key_exists('project_url', $row)) {
+            $legacyColumn = $this->projectUrlColumn();
+            if ($legacyColumn !== null && array_key_exists($legacyColumn, $row)) {
+                $row['project_url'] = $row[$legacyColumn];
+            }
+        }
+
+        if (!array_key_exists('project_url', $row)) {
+            $row['project_url'] = null;
+        }
+
+        return $row;
     }
 
     public function all(bool $includeArchived = false): array
@@ -40,8 +62,11 @@ class ProjectModel
             'p.created_at',
         ];
 
-        if ($this->hasProjectUrlColumn()) {
-            $columns[] = 'p.project_url';
+        $urlColumn = $this->projectUrlColumn();
+        if ($urlColumn !== null) {
+            $columns[] = "p.{$urlColumn} AS project_url";
+        } else {
+            $columns[] = 'NULL AS project_url';
         }
 
         $selectColumns = implode(",\n            ", $columns);
@@ -69,62 +94,42 @@ class ProjectModel
         $stmt->execute([$id]);
 
         $row = $stmt->fetch();
-        return $row ?: null;
+        return is_array($row) ? $this->normalizeProjectRow($row) : null;
     }
 
     public function technologyIds(int $projectId): array
     {
         $pdo = Database::connect();
 
-        $stmt = $pdo->prepare("
-            SELECT technology_id
-            FROM project_technology
-            WHERE project_id = ?
-        ");
+        $stmt = $pdo->prepare("SELECT technology_id FROM project_technology WHERE project_id = ?");
         $stmt->execute([$projectId]);
 
         $rows = $stmt->fetchAll();
-        return array_column($rows, 'technology_id'); // [1,3,5]
+        return array_column($rows, 'technology_id');
     }
 
     public function update(int $id, string $name, ?string $description, ?string $projectUrl, array $techIds): void
     {
         $pdo = Database::connect();
-
-        // Transacción = “o se guarda todo, o no se guarda nada”
         $pdo->beginTransaction();
 
         try {
             $status = count($techIds) > 0 ? 'active' : 'pending';
+            $urlColumn = $this->projectUrlColumn();
 
-            // 1) Actualizar datos del proyecto
-            if ($this->hasProjectUrlColumn()) {
-                $stmt = $pdo->prepare("
-                    UPDATE projects
-                    SET name = ?, description = ?, project_url = ?, status = ?
-                    WHERE id = ?
-                ");
+            if ($urlColumn !== null) {
+                $stmt = $pdo->prepare("UPDATE projects SET name = ?, description = ?, {$urlColumn} = ?, status = ? WHERE id = ?");
                 $stmt->execute([$name, $description, $projectUrl, $status, $id]);
             } else {
-                $stmt = $pdo->prepare("
-                    UPDATE projects
-                    SET name = ?, description = ?, status = ?
-                    WHERE id = ?
-                ");
+                $stmt = $pdo->prepare("UPDATE projects SET name = ?, description = ?, status = ? WHERE id = ?");
                 $stmt->execute([$name, $description, $status, $id]);
             }
 
-            // 2) Borrar relaciones viejas
             $stmt = $pdo->prepare("DELETE FROM project_technology WHERE project_id = ?");
             $stmt->execute([$id]);
 
-            // 3) Insertar relaciones nuevas
             if (count($techIds) > 0) {
-                $stmt = $pdo->prepare("
-                    INSERT INTO project_technology (project_id, technology_id)
-                    VALUES (?, ?)
-                ");
-
+                $stmt = $pdo->prepare("INSERT INTO project_technology (project_id, technology_id) VALUES (?, ?)");
                 foreach ($techIds as $techId) {
                     $stmt->execute([$id, (int)$techId]);
                 }
@@ -141,12 +146,13 @@ class ProjectModel
     {
         $pdo = Database::connect();
 
-        $stmt = $pdo->prepare("
-        SELECT t.name
-        FROM technologies t
-        INNER JOIN project_technology pt ON pt.technology_id = t.id
-        WHERE pt.project_id = ?
-        ORDER BY t.name ASC");
+        $stmt = $pdo->prepare(
+            "SELECT t.name
+             FROM technologies t
+             INNER JOIN project_technology pt ON pt.technology_id = t.id
+             WHERE pt.project_id = ?
+             ORDER BY t.name ASC"
+        );
         $stmt->execute([$projectId]);
 
         return array_column($stmt->fetchAll(), 'name');
@@ -159,29 +165,20 @@ class ProjectModel
 
         try {
             $status = count($techIds) > 0 ? 'active' : 'pending';
+            $urlColumn = $this->projectUrlColumn();
 
-            if ($this->hasProjectUrlColumn()) {
-                $stmt = $pdo->prepare("
-                    INSERT INTO projects (name, description, project_url, status)
-                    VALUES (?, ?, ?, ?)
-                ");
+            if ($urlColumn !== null) {
+                $stmt = $pdo->prepare("INSERT INTO projects (name, description, {$urlColumn}, status) VALUES (?, ?, ?, ?)");
                 $stmt->execute([$name, $description, $projectUrl, $status]);
             } else {
-                $stmt = $pdo->prepare("
-                    INSERT INTO projects (name, description, status)
-                    VALUES (?, ?, ?)
-                ");
+                $stmt = $pdo->prepare("INSERT INTO projects (name, description, status) VALUES (?, ?, ?)");
                 $stmt->execute([$name, $description, $status]);
             }
 
             $projectId = (int)$pdo->lastInsertId();
 
             if (count($techIds) > 0) {
-                $stmt = $pdo->prepare("
-                INSERT INTO project_technology (project_id, technology_id)
-                VALUES (?, ?)
-            ");
-
+                $stmt = $pdo->prepare("INSERT INTO project_technology (project_id, technology_id) VALUES (?, ?)");
                 foreach ($techIds as $techId) {
                     $stmt->execute([$projectId, (int)$techId]);
                 }
@@ -195,15 +192,14 @@ class ProjectModel
         }
     }
 
-    public function archive(int $id): void //Es diferente a archived
+    public function archive(int $id): void
     {
         $pdo = Database::connect();
-
         $stmt = $pdo->prepare("UPDATE projects SET status = 'archived' WHERE id = ?");
         $stmt->execute([$id]);
     }
 
-    public function archived(): array //es diferente a Archive
+    public function archived(): array
     {
         $pdo = Database::connect();
 
@@ -215,8 +211,11 @@ class ProjectModel
             'p.created_at',
         ];
 
-        if ($this->hasProjectUrlColumn()) {
-            $columns[] = 'p.project_url';
+        $urlColumn = $this->projectUrlColumn();
+        if ($urlColumn !== null) {
+            $columns[] = "p.{$urlColumn} AS project_url";
+        } else {
+            $columns[] = 'NULL AS project_url';
         }
 
         $selectColumns = implode(",\n            ", $columns);
@@ -232,6 +231,7 @@ class ProjectModel
         GROUP BY p.id
         ORDER BY p.id DESC
         ";
+
         return $pdo->query($sql)->fetchAll();
     }
 
@@ -239,12 +239,7 @@ class ProjectModel
     {
         $pdo = Database::connect();
 
-        // Si tiene tecnologías, lo restauramos como active; si no, pending
-        $stmt = $pdo->prepare("
-        SELECT COUNT(*) AS cnt
-        FROM project_technology
-        WHERE project_id = ?
-        ");
+        $stmt = $pdo->prepare("SELECT COUNT(*) AS cnt FROM project_technology WHERE project_id = ?");
         $stmt->execute([$id]);
         $cnt = (int)($stmt->fetch()['cnt'] ?? 0);
 
@@ -259,17 +254,11 @@ class ProjectModel
         $pdo = Database::connect();
 
         $allowed = ['pending', 'active', 'completed', 'archived'];
-
         if (!in_array($status, $allowed, true)) {
-            return $this->all($includeArchived); // fallback seguro
+            return $this->all($includeArchived);
         }
 
-        // Si no queremos archived dentro de /projects, lo filtramos aquí también
-        // (aunque en tu caso solo lo llamaremos con pending/active/completed)
-        $extra = '';
-        if (!$includeArchived) {
-            $extra = "AND p.status <> 'archived'";
-        }
+        $extra = !$includeArchived ? "AND p.status <> 'archived'" : '';
 
         $columns = [
             'p.id',
@@ -279,8 +268,11 @@ class ProjectModel
             'p.created_at',
         ];
 
-        if ($this->hasProjectUrlColumn()) {
-            $columns[] = 'p.project_url';
+        $urlColumn = $this->projectUrlColumn();
+        if ($urlColumn !== null) {
+            $columns[] = "p.{$urlColumn} AS project_url";
+        } else {
+            $columns[] = 'NULL AS project_url';
         }
 
         $selectColumns = implode(",\n            ", $columns);
@@ -308,12 +300,12 @@ class ProjectModel
     {
         $pdo = Database::connect();
 
-        $stmt = $pdo->prepare("
-        UPDATE projects
-        SET status = :status
-        WHERE id = :id
-          AND status <> 'archived'
-        ");
+        $stmt = $pdo->prepare(
+            "UPDATE projects
+             SET status = :status
+             WHERE id = :id
+               AND status <> 'archived'"
+        );
 
         return $stmt->execute([
             ':status' => $status,

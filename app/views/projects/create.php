@@ -15,6 +15,13 @@
         </div>
     <?php endif; ?>
 
+    <?php if (empty($supportsProjectUrl)): ?>
+        <div class="card card-pad" style="margin-top:12px; border-color: rgba(245,158,11,.35); background: rgba(245,158,11,.10);">
+            Tu tabla <code>projects</code> todavía no tiene columna de enlace (<code>project_url</code>, <code>project_link</code> o <code>url</code>).
+            Puedes guardar el proyecto, pero el link no se persistirá hasta aplicar la migración de BD.
+        </div>
+    <?php endif; ?>
+
     <form method="post" action="/projects/store" style="margin-top:14px;">
         <input type="hidden" name="<?= htmlspecialchars(Csrf::fieldName()) ?>" value="<?= htmlspecialchars(Csrf::token()) ?>">
         <div style="margin-top:12px;">
