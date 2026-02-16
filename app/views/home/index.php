@@ -152,6 +152,16 @@ $featuredProjects = [
     <?php endif; ?>
 </section>
 
+<section class="card card-pad home-section">
+    <h2 class="section-title"><?= htmlspecialchars((string)($content['learning_title'] ?? 'Actualmente aprendiendo')) ?></h2>
+    <p style="white-space:pre-wrap;"><?= htmlspecialchars((string)($content['learning_body'] ?? '')) ?></p>
+</section>
+
+<section class="card card-pad home-section">
+    <h2 class="section-title"><?= htmlspecialchars((string)($content['goal_title'] ?? 'Mi objetivo')) ?></h2>
+    <p style="white-space:pre-wrap;"><?= htmlspecialchars((string)($content['goal_body'] ?? '')) ?></p>
+</section>
+
 <section class="card card-pad home-section" id="contacto">
     <h2 class="section-title">Contacto</h2>
     <p style="margin-bottom:6px;">¿Hablamos? Estoy abierto a oportunidades junior backend/fullstack.</p>
