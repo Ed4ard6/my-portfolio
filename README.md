@@ -230,6 +230,8 @@ Rutas incluidas:
 4. Copia ese enlace y pégalo en el navegador.
 5. Define nueva contraseña y confirma.
 
+> El token vence en **30 minutos**. Si falla de inmediato, revisa hora/zona horaria del servidor MySQL y PHP.
+
 Ejemplos de dónde revisar logs:
 - **Primera opción recomendada**: archivo del proyecto `storage/password_reset_links.log`.
 - **También disponible**: `error.log` de Apache/PHP si tu servidor lo permite.

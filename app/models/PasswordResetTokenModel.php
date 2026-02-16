@@ -59,30 +59,36 @@ class PasswordResetTokenModel
 
         $hash = hash('sha256', $plainToken);
 
-        $stmt = $pdo->prepare('
-            SELECT id, admin_user_id, expires_at, used_at
-            FROM admin_password_resets
-            WHERE token_hash = ?
-            LIMIT 1
-        ');
-        $stmt->execute([$hash]);
-        $row = $stmt->fetch();
+        $pdo->beginTransaction();
 
-        if (!$row) {
-            return null;
+        try {
+            $stmt = $pdo->prepare(
+                'SELECT id, admin_user_id, expires_at, used_at
+                 FROM admin_password_resets
+                 WHERE token_hash = ?
+                   AND used_at IS NULL
+                   AND expires_at >= NOW()
+                 LIMIT 1
+                 FOR UPDATE'
+            );
+            $stmt->execute([$hash]);
+            $row = $stmt->fetch();
+
+            if (!$row) {
+                $pdo->rollBack();
+                return null;
+            }
+
+            $update = $pdo->prepare('UPDATE admin_password_resets SET used_at = NOW() WHERE id = ?');
+            $update->execute([(int)$row['id']]);
+
+            $pdo->commit();
+            return $row;
+        } catch (Throwable $e) {
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+            throw $e;
         }
-
-        if (!empty($row['used_at'])) {
-            return null;
-        }
-
-        if (strtotime((string)$row['expires_at']) < time()) {
-            return null;
-        }
-
-        $update = $pdo->prepare('UPDATE admin_password_resets SET used_at = NOW() WHERE id = ?');
-        $update->execute([(int)$row['id']]);
-
-        return $row;
     }
 }

@@ -11,6 +11,8 @@ require_once __DIR__ . '/../models/AdminAuditModel.php';
 
 class AuthController
 {
+    private const RESET_TOKEN_MINUTES = 30;
+
     public function login(): void
     {
         View::render('auth/login', [
@@ -149,7 +151,7 @@ class AuthController
         }
 
         $token = bin2hex(random_bytes(32));
-        $ok = $resetModel->create((int)$user['id'], $token, 30);
+        $ok = $resetModel->create((int)$user['id'], $token, self::RESET_TOKEN_MINUTES);
 
         if (!$ok) {
             View::render('auth/forgot', [
@@ -178,7 +180,7 @@ class AuthController
             'title' => 'Recuperar contraseña',
             'heading' => 'Recuperar contraseña de administrador',
             'error' => null,
-            'success' => 'Enlace generado. Revisa storage/password_reset_links.log en tu proyecto local.',
+            'success' => 'Token generado correctamente. Expira en ' . self::RESET_TOKEN_MINUTES . ' minutos.',
             'emailSupported' => true,
             'tokenSupported' => true,
         ]);
@@ -251,7 +253,7 @@ class AuthController
                 'title' => 'Restablecer contraseña',
                 'heading' => 'Restablecer contraseña',
                 'token' => $token,
-                'error' => 'El token no es válido o ya expiró.',
+                'error' => 'El token no es válido, ya fue usado o expiró (vigencia: ' . self::RESET_TOKEN_MINUTES . ' minutos).',
                 'success' => null,
                 'enabled' => true,
             ]);
