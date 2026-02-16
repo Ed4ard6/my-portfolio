@@ -33,6 +33,21 @@ class TechnologyModel
         return ((int)($stmt->fetch()['cnt'] ?? 0)) > 0;
     }
 
+    private function ensureIsActiveColumn(PDO $pdo): bool
+    {
+        if ($this->hasIsActiveColumn($pdo)) {
+            return true;
+        }
+
+        try {
+            $pdo->exec('ALTER TABLE technologies ADD COLUMN is_active TINYINT(1) NOT NULL DEFAULT 1 AFTER name');
+        } catch (Throwable $e) {
+            // Puede fallar por permisos en hosting compartido.
+        }
+
+        return $this->hasIsActiveColumn($pdo);
+    }
+
     public function supportsActiveFlag(): bool
     {
         $pdo = Database::connect();
@@ -41,7 +56,7 @@ class TechnologyModel
             return false;
         }
 
-        return $this->hasIsActiveColumn($pdo);
+        return $this->ensureIsActiveColumn($pdo);
     }
 
     public function all(bool $onlyActive = false): array
@@ -52,9 +67,10 @@ class TechnologyModel
             return [];
         }
 
-        $activeColumn = $this->hasIsActiveColumn($pdo) ? 'is_active' : '1 AS is_active';
+        $hasActive = $this->ensureIsActiveColumn($pdo);
+        $activeColumn = $hasActive ? 'is_active' : '1 AS is_active';
 
-        if ($onlyActive && $this->hasIsActiveColumn($pdo)) {
+        if ($onlyActive && $hasActive) {
             $stmt = $pdo->query("SELECT id, name, {$activeColumn}, created_at FROM technologies WHERE is_active = 1 ORDER BY name ASC");
         } else {
             $stmt = $pdo->query("SELECT id, name, {$activeColumn}, created_at FROM technologies ORDER BY name ASC");
@@ -76,7 +92,8 @@ class TechnologyModel
             return null;
         }
 
-        $activeColumn = $this->hasIsActiveColumn($pdo) ? 'is_active' : '1 AS is_active';
+        $hasActive = $this->ensureIsActiveColumn($pdo);
+        $activeColumn = $hasActive ? 'is_active' : '1 AS is_active';
         $stmt = $pdo->prepare("SELECT id, name, {$activeColumn}, created_at FROM technologies WHERE id = ? LIMIT 1");
         $stmt->execute([$id]);
 
@@ -113,7 +130,7 @@ class TechnologyModel
     {
         $pdo = Database::connect();
 
-        if ($this->hasIsActiveColumn($pdo)) {
+        if ($this->ensureIsActiveColumn($pdo)) {
             $stmt = $pdo->prepare('INSERT INTO technologies (name, is_active) VALUES (?, ?)');
             $stmt->execute([$name, $isActive ? 1 : 0]);
         } else {
@@ -128,7 +145,7 @@ class TechnologyModel
     {
         $pdo = Database::connect();
 
-        if ($this->hasIsActiveColumn($pdo)) {
+        if ($this->ensureIsActiveColumn($pdo)) {
             $stmt = $pdo->prepare('UPDATE technologies SET name = ?, is_active = ? WHERE id = ?');
             $stmt->execute([$name, $isActive ? 1 : 0, $id]);
             return;
@@ -142,7 +159,7 @@ class TechnologyModel
     {
         $pdo = Database::connect();
 
-        if (!$this->hasIsActiveColumn($pdo)) {
+        if (!$this->ensureIsActiveColumn($pdo)) {
             return;
         }
 

@@ -6,7 +6,8 @@
 
     <?php if (empty($supportsActiveFlag)): ?>
         <div class="card card-pad" style="margin-top:12px; border-color: rgba(245,158,11,.35); background: rgba(245,158,11,.10);">
-            La tabla <code>technologies</code> aún no tiene columna <code>is_active</code>. Puedes crear/editar nombres, pero no activar/inactivar hasta aplicar la migración.
+            La tabla <code>technologies</code> aún no tiene columna <code>is_active</code> o no hay permisos para crearla automáticamente.
+            Puedes crear y editar nombres, pero no activar/inactivar hasta aplicar la migración.
         </div>
     <?php endif; ?>
 

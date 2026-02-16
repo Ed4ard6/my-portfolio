@@ -292,6 +292,19 @@ Archivo listo para ejecutar:
 
 > Si no aplicas esta migración, el CRUD seguirá funcionando en modo básico (solo nombre, sin estado).
 
+
+
+## ✍️ Edición de contenido público (Sobre mí y Contacto)
+
+Cuando un administrador inicia sesión, en la vista **/about** aparece un panel para editar el contenido público de:
+
+- Sobre mí
+- Contacto
+
+Ese contenido se guarda en `storage/site_content.json` (sin requerir cambios de base de datos).
+
+Si no existe el archivo, se usan valores por defecto.
+
 ## 🧾 Historial de cambios de administradores (opcional recomendado)
 
 Para registrar quién modificó a qué admin y cuándo, crea esta tabla:
@@ -336,7 +349,7 @@ ALTER TABLE admin_audit_logs
 - `/projects` (listado y filtros)
 - `/projects/show/:id` (detalle)
 - `/about`
-- `/contact`
+- `/contact` (redirige a `/about#contacto`)
 
 ### Admin
 
@@ -350,6 +363,10 @@ ALTER TABLE admin_audit_logs
 - `/admins`
 - `/admins/create`
 - `/admins/edit/:id`
+- `/technologies`
+- `/technologies/create`
+- `/technologies/edit/:id`
+- `/about/save` (editar Sobre mí/Contacto desde panel admin)
 
 ## 🛡️ Recomendaciones de seguridad (prioridad)
 
