@@ -16,9 +16,9 @@
         </div>
     <?php endif; ?>
 
-    <?php if (empty($emailSupported) || empty($tokenSupported)): ?>
+    <?php if (empty($tokenSupported)): ?>
         <div class="card card-pad" style="margin-top:12px; border-color: rgba(245,158,11,.35); background: rgba(245,158,11,.10);">
-            Para activar esta sección debes tener columna <code>email</code> en <code>admin_users</code> y tabla <code>admin_password_resets</code>.
+            Para activar esta sección debes tener la tabla <code>admin_password_resets</code>.
         </div>
     <?php endif; ?>
 
@@ -26,8 +26,8 @@
         <input type="hidden" name="<?= htmlspecialchars(Csrf::fieldName()) ?>" value="<?= htmlspecialchars(Csrf::token()) ?>">
 
         <div>
-            <label class="muted">Correo del administrador</label><br>
-            <input class="card card-pad" style="width:100%; padding:10px 12px; border-radius:12px;" type="email" name="email" required>
+            <label class="muted">Usuario o correo del administrador</label><br>
+            <input class="card card-pad" style="width:100%; padding:10px 12px; border-radius:12px;" type="text" name="identifier" autocomplete="username" required>
         </div>
 
         <div style="display:flex; gap:10px; flex-wrap:wrap;">

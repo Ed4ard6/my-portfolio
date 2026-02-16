@@ -36,20 +36,20 @@ class AuthController
             return;
         }
 
-        $username = trim($_POST['username'] ?? '');
+        $identifier = trim($_POST['username'] ?? '');
         $password = trim($_POST['password'] ?? '');
 
-        if ($username === '' || $password === '') {
+        if ($identifier === '' || $password === '') {
             View::render('auth/login', [
                 'title' => 'Iniciar sesión',
                 'heading' => 'Acceso privado',
-                'error' => 'Debes completar usuario y contraseña.',
+                'error' => 'Debes completar usuario o correo y contraseña.',
             ]);
             return;
         }
 
         try {
-            $result = Auth::attempt($username, $password);
+            $result = Auth::attempt($identifier, $password);
         } catch (Throwable $e) {
             error_log('[AuthController] Error autenticando: ' . $e->getMessage());
             $result = ['ok' => false, 'reason' => 'server_error'];
@@ -57,6 +57,11 @@ class AuthController
 
         if (!(bool)($result['ok'] ?? false)) {
             $message = 'Credenciales inválidas o configuración de autenticación incompleta.';
+            $remainingAttempts = (int)($result['remaining_attempts'] ?? 0);
+
+            if (($result['reason'] ?? '') === 'invalid_credentials' && $remainingAttempts > 0) {
+                $message = "Credenciales inválidas. Te quedan {$remainingAttempts} intento(s) antes del bloqueo temporal.";
+            }
 
             if (($result['reason'] ?? '') === 'inactive_user') {
                 $message = 'Tu usuario administrador está inactivo. Contacta a otro administrador para reactivarlo.';
@@ -90,7 +95,6 @@ class AuthController
             'heading' => 'Recuperar contraseña de administrador',
             'error' => null,
             'success' => null,
-            'emailSupported' => $userModel->supportsEmail(),
             'tokenSupported' => $resetModel->supported(),
         ]);
     }
@@ -109,42 +113,44 @@ class AuthController
             return;
         }
 
-        $email = mb_strtolower(trim($_POST['email'] ?? ''));
+        $identifier = trim($_POST['identifier'] ?? '');
         $userModel = new AdminUserModel();
         $resetModel = new PasswordResetTokenModel();
 
-        if (!$userModel->supportsEmail() || !$resetModel->supported()) {
+        if (!$resetModel->supported()) {
             View::render('auth/forgot', [
                 'title' => 'Recuperar contraseña',
                 'heading' => 'Recuperar contraseña de administrador',
                 'error' => 'Falta configuración de base de datos para recuperación por token (email o tabla de tokens).',
                 'success' => null,
-                'emailSupported' => $userModel->supportsEmail(),
                 'tokenSupported' => $resetModel->supported(),
             ]);
             return;
         }
 
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        if ($identifier === '') {
             View::render('auth/forgot', [
                 'title' => 'Recuperar contraseña',
                 'heading' => 'Recuperar contraseña de administrador',
-                'error' => 'Ingresa un correo válido.',
+                'error' => 'Ingresa tu usuario o correo.',
                 'success' => null,
-                'emailSupported' => true,
                 'tokenSupported' => true,
             ]);
             return;
         }
 
-        $user = $userModel->findByEmail($email);
+        $normalizedEmail = mb_strtolower($identifier);
+        $isEmail = filter_var($normalizedEmail, FILTER_VALIDATE_EMAIL) !== false;
+        $user = $isEmail
+            ? $userModel->findByEmail($normalizedEmail)
+            : $userModel->findByUsername($identifier);
+
         if (!$user) {
             View::render('auth/forgot', [
                 'title' => 'Recuperar contraseña',
                 'heading' => 'Recuperar contraseña de administrador',
-                'error' => 'El correo ingresado no existe en administradores.',
+                'error' => 'El usuario o correo ingresado no existe en administradores.',
                 'success' => null,
-                'emailSupported' => true,
                 'tokenSupported' => true,
             ]);
             return;
@@ -159,7 +165,6 @@ class AuthController
                 'heading' => 'Recuperar contraseña de administrador',
                 'error' => 'No se pudo generar el token de recuperación.',
                 'success' => null,
-                'emailSupported' => true,
                 'tokenSupported' => true,
             ]);
             return;
@@ -168,10 +173,10 @@ class AuthController
         $baseUrl = rtrim((string)(getenv('APP_URL') ?: 'http://localhost'), '/');
         $link = $baseUrl . '/auth/reset/' . rawurlencode($token);
 
-        $logLine = date('Y-m-d H:i:s') . ' | ' . $email . ' | ' . $link . PHP_EOL;
+        $logLine = date('Y-m-d H:i:s') . ' | ' . ($user['email'] ?? $user['username'] ?? $identifier) . ' | ' . $link . PHP_EOL;
         $logFile = dirname(__DIR__, 2) . '/storage/password_reset_links.log';
         @file_put_contents($logFile, $logLine, FILE_APPEND);
-        error_log('[AuthController] Token reset para ' . $email . ': ' . $link);
+        error_log('[AuthController] Token reset para ' . ($user['email'] ?? $user['username'] ?? $identifier) . ': ' . $link);
 
         $audit = new AdminAuditModel();
         $audit->log('password_reset_requested', (int)$user['id'], (int)$user['id'], 'Solicitud de recuperación de contraseña.');
@@ -181,7 +186,6 @@ class AuthController
             'heading' => 'Recuperar contraseña de administrador',
             'error' => null,
             'success' => 'Token generado correctamente. Expira en ' . self::RESET_TOKEN_MINUTES . ' minutos.',
-            'emailSupported' => true,
             'tokenSupported' => true,
         ]);
     }
@@ -197,7 +201,7 @@ class AuthController
             'token' => (string)($token ?? ''),
             'error' => null,
             'success' => null,
-            'enabled' => $userModel->supportsEmail() && $resetModel->supported(),
+            'enabled' => $resetModel->supported(),
         ]);
     }
 
@@ -221,7 +225,7 @@ class AuthController
 
         $userModel = new AdminUserModel();
         $resetModel = new PasswordResetTokenModel();
-        $enabled = $userModel->supportsEmail() && $resetModel->supported();
+        $enabled = $resetModel->supported();
 
         if (!$enabled) {
             View::render('auth/reset', [
