@@ -177,6 +177,15 @@ hr.sep {
   margin: 14px 0 16px;
 }
 
+
+.home-section {
+  margin-top: 14px;
+}
+
+.home-section:first-of-type {
+  margin-top: 18px;
+}
+
 /* =========================================================
    BUTTONS
 ========================================================= */
