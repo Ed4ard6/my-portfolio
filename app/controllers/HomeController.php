@@ -13,11 +13,16 @@ class HomeController
         $contentModel = new SiteContentModel();
         $projectModel = new ProjectModel();
 
-        $projects = array_slice($projectModel->all(), 0, 4);
+        $projects = [];
+        try {
+            $projects = array_slice($projectModel->all(), 0, 4);
+        } catch (Throwable $e) {
+            $projects = [];
+        }
 
         View::render('home/index', [
-            'title' => 'Inicio',
-            'heading' => 'Bienvenido a mi Portafolio 👍🏽',
+            'title' => 'Eduardo Machacón | Backend PHP Developer',
+            'heading' => 'Portafolio profesional',
             'content' => $contentModel->get(),
             'projects' => $projects,
         ]);
