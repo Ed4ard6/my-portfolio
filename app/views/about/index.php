@@ -1,7 +1,11 @@
 <?php $isAdmin = !empty($isAdmin); ?>
 
-<div class="card card-pad" style="max-width:920px; margin:0 auto;">
-    <h1 style="margin-top:0;"><?= htmlspecialchars((string)($content['about_title'] ?? 'Sobre mí')) ?></h1>
+<div class="card card-pad about-pro" style="max-width:920px; margin:0 auto;">
+    <div class="row" style="align-items:center;">
+        <h1 style="margin:0;"><?= htmlspecialchars((string)($content['about_title'] ?? 'Sobre mí')) ?></h1>
+        <a class="btn" href="/">Volver al inicio</a>
+    </div>
+
     <p style="white-space:pre-wrap;"><?= htmlspecialchars((string)($content['about_body'] ?? '')) ?></p>
 
     <hr class="sep">
@@ -27,9 +31,9 @@
 
     <hr class="sep">
 
-    <section id="contacto">
+    <section id="contacto" class="about-contact">
         <h2 style="margin-top:0;"><?= htmlspecialchars((string)($content['contact_title'] ?? 'Contacto')) ?></h2>
-        <p style="white-space:pre-wrap;"><?= htmlspecialchars((string)($content['contact_body'] ?? '')) ?></p>
+        <p style="white-space:pre-wrap; margin:0;"><?= htmlspecialchars((string)($content['contact_body'] ?? '')) ?></p>
     </section>
 </div>
 
