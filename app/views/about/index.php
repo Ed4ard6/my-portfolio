@@ -1,35 +1,46 @@
 <?php $isAdmin = !empty($isAdmin); ?>
 
-<div class="card card-pad" style="max-width:920px; margin:0 auto;">
-    <h1 style="margin-top:0;"><?= htmlspecialchars((string)($content['about_title'] ?? 'Sobre mí')) ?></h1>
-    <p style="white-space:pre-wrap;"><?= htmlspecialchars((string)($content['about_body'] ?? '')) ?></p>
+<div class="card card-pad about-pro" style="max-width:980px; margin:0 auto;">
+    <span class="badge badge--active"><span class="badge-dot"></span>Perfil profesional</span>
+    <h1 style="margin-top:12px;">Sobre mí</h1>
+
+    <p>Soy <strong>Eduardo Machacón</strong>, desarrollador backend radicado en Bogotá, Colombia.</p>
+    <p>Mi transición a tecnología empezó desde una formación técnica en electrónica y evolucionó hacia el desarrollo de software. Tras estudiar en SENA y trabajar en proyectos reales, consolidé un enfoque fuerte en backend con PHP, bases de datos relacionales y arquitectura MVC.</p>
+    <p>Me caracteriza la constancia para construir productos desde cero, iterar versiones y mejorar hasta lograr una solución sólida, segura y mantenible.</p>
 
     <hr class="sep">
 
     <section>
-        <h2 style="margin-top:0;"><?= htmlspecialchars((string)($content['skills_title'] ?? 'Tecnologías y habilidades')) ?></h2>
+        <h2 style="margin-top:0;">Qué he construido</h2>
+        <ul class="about-list">
+            <li><strong>Portafolio MVC con panel administrativo:</strong> autenticación, protección CSRF, auditoría de acciones, migraciones y gestión de contenido.</li>
+            <li><strong>Sistema de control de gastos (en desarrollo):</strong> ingresos, gastos, deudas, proyecciones de ahorro y reportes visuales.</li>
+            <li><strong>Sistema web para lavandería (SENA):</strong> usuarios, órdenes, facturación y reportes; primer despliegue real en hosting propio.</li>
+        </ul>
+    </section>
+
+    <hr class="sep">
+
+    <section>
+        <h2 style="margin-top:0;">Stack técnico</h2>
         <p style="white-space:pre-wrap;"><?= htmlspecialchars((string)($content['skills_body'] ?? '')) ?></p>
     </section>
 
     <hr class="sep">
 
     <section>
-        <h2 style="margin-top:0;"><?= htmlspecialchars((string)($content['learning_title'] ?? 'Actualmente aprendiendo')) ?></h2>
-        <p style="white-space:pre-wrap;"><?= htmlspecialchars((string)($content['learning_body'] ?? '')) ?></p>
+        <h2 style="margin-top:0;">Qué busco</h2>
+        <p>Estoy buscando mi primera oportunidad como <strong>desarrollador junior backend/fullstack</strong>, donde pueda aportar en desarrollo de producto, continuar creciendo en arquitectura de software y contribuir con soluciones reales para usuarios.</p>
+        <p style="white-space:pre-wrap; margin-bottom:0;"><?= htmlspecialchars((string)($content['goal_body'] ?? '')) ?></p>
     </section>
 
     <hr class="sep">
 
-    <section>
-        <h2 style="margin-top:0;"><?= htmlspecialchars((string)($content['goal_title'] ?? 'Mi objetivo')) ?></h2>
-        <p style="white-space:pre-wrap;"><?= htmlspecialchars((string)($content['goal_body'] ?? '')) ?></p>
-    </section>
-
-    <hr class="sep">
-
-    <section id="contacto">
-        <h2 style="margin-top:0;"><?= htmlspecialchars((string)($content['contact_title'] ?? 'Contacto')) ?></h2>
-        <p style="white-space:pre-wrap;"><?= htmlspecialchars((string)($content['contact_body'] ?? '')) ?></p>
+    <section id="contacto" class="about-contact">
+        <h2 style="margin-top:0;">Contacto</h2>
+        <p style="margin:0 0 6px;">📧 <a href="mailto:ej.machacon@gmail.com">ej.machacon@gmail.com</a></p>
+        <p style="margin:0 0 6px;">💼 <a href="https://www.linkedin.com/in/eduardo-machacon/" target="_blank" rel="noopener noreferrer">LinkedIn</a></p>
+        <p style="margin:0;">🐙 <a href="https://github.com/Ed4ard6" target="_blank" rel="noopener noreferrer">GitHub</a></p>
     </section>
 </div>
 
