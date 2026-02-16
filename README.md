@@ -275,6 +275,23 @@ FROM projects
 ORDER BY id DESC;
 ```
 
+
+
+## 🧪 Migración para activar/inactivar tecnologías
+
+Para habilitar el nuevo CRUD de tecnologías con estado (`activa` / `inactiva`), ejecuta:
+
+```sql
+ALTER TABLE technologies
+  ADD COLUMN is_active TINYINT(1) NOT NULL DEFAULT 1 AFTER name;
+```
+
+Archivo listo para ejecutar:
+
+- `database/migrations/20260216_add_technology_is_active.sql`
+
+> Si no aplicas esta migración, el CRUD seguirá funcionando en modo básico (solo nombre, sin estado).
+
 ## 🧾 Historial de cambios de administradores (opcional recomendado)
 
 Para registrar quién modificó a qué admin y cuándo, crea esta tabla:

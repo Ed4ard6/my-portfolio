@@ -156,7 +156,7 @@ class ProjectsController
         //      ['id'=>2,'name'=>'MySQL'],
         //      ...
         //    ]
-        $technologies = $techModel->all();
+        $technologies = $techModel->all(true);
 
         // 3) Renderizamos la vista y le pasamos los datos
         View::render('projects/create', [
@@ -198,7 +198,7 @@ class ProjectsController
             return;
         }
 
-        $technologies = $techModel->all();
+        $technologies = $techModel->all(false);
         $selectedTechIds = $projectModel->technologyIds($id);
 
         View::render('projects/edit', [
@@ -379,7 +379,7 @@ class ProjectsController
         //    - selectedTechIds (para mantener checks)
         if (!empty($errors)) {
             $techModel = new TechnologyModel();
-            $technologies = $techModel->all();
+            $technologies = $techModel->all(true);
 
             View::render('projects/create', [
                 'title' => 'Crear proyecto',

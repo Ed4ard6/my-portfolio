@@ -54,6 +54,11 @@
         value="<?= htmlspecialchars($project['project_url'] ?? '') ?>">
     </div>
 
+    <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
+      <a class="btn" href="/technologies">Gestionar tecnologías</a>
+      <a class="btn btn-secondary" href="/technologies/create">Crear tecnología</a>
+    </div>
+
     <div style="margin-top:12px;">
       <div class="muted" style="margin-bottom:8px;"><strong>Tecnologías</strong></div>
 

@@ -29,6 +29,7 @@
       <div style="display:flex; gap:10px; align-items:center;">
         <?php if ($isAdmin): ?>
           <a class="btn" href="/admins">Administradores</a>
+          <a class="btn" href="/technologies">Tecnologías</a>
           <a class="btn btn-secondary" href="/auth/logout">Cerrar sesión</a>
         <?php else: ?>
           <a class="btn btn-secondary" href="/auth/login">Admin</a>
