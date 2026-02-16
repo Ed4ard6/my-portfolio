@@ -9,6 +9,15 @@
     </span>
   </div>
 
+
+
+  <?php if (empty($supportsProjectUrl)): ?>
+    <div class="card card-pad" style="margin-top:12px; border-color: rgba(245,158,11,.35); background: rgba(245,158,11,.10);">
+      Tu tabla <code>projects</code> todavía no tiene columna de enlace (<code>project_url</code>, <code>project_link</code> o <code>url</code>).
+      Puedes editar el resto de campos, pero el link no se persistirá hasta aplicar la migración de BD.
+    </div>
+  <?php endif; ?>
+
   <form method="POST" action="/projects/update" style="margin-top:14px;">
     <input type="hidden" name="<?= htmlspecialchars(Csrf::fieldName()) ?>" value="<?= htmlspecialchars(Csrf::token()) ?>">
     <input type="hidden" name="id" value="<?= (int)$project['id'] ?>">
@@ -43,6 +52,11 @@
         name="project_url"
         placeholder="https://..."
         value="<?= htmlspecialchars($project['project_url'] ?? '') ?>">
+    </div>
+
+    <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
+      <a class="btn" href="/technologies">Gestionar tecnologías</a>
+      <a class="btn btn-secondary" href="/technologies/create">Crear tecnología</a>
     </div>
 
     <div style="margin-top:12px;">
