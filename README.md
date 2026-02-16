@@ -252,7 +252,14 @@ ALTER TABLE projects
   ADD COLUMN project_url VARCHAR(255) NULL AFTER description;
 ```
 
+También dejé este SQL listo para ejecutar en local:
+
+- `database/migrations/20260216_add_project_url.sql`
+
 Si en tu BD ya existe una columna legacy (`project_link` o `url`), el sistema la detecta automáticamente. Aun así, lo ideal es estandarizar en `project_url`.
+
+> Nota: al guardar/editar un proyecto con URL, el sistema intenta crear `project_url` automáticamente si tu usuario MySQL tiene permisos de `ALTER TABLE`. En producción, igual se recomienda ejecutar la migración de forma explícita antes del despliegue.
+
 
 Comportamiento del botón **Abrir proyecto**:
 

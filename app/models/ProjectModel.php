@@ -4,27 +4,69 @@ require_once __DIR__ . '/../../core/Database.php';
 
 class ProjectModel
 {
+    private function listProjectColumns(PDO $pdo): array
+    {
+        $columns = [];
+
+        try {
+            $stmt = $pdo->query('SHOW COLUMNS FROM projects');
+            foreach ($stmt->fetchAll() as $row) {
+                $field = (string)($row['Field'] ?? '');
+                if ($field !== '') {
+                    $columns[] = $field;
+                }
+            }
+        } catch (Throwable $e) {
+            return [];
+        }
+
+        return $columns;
+    }
+
     private function projectUrlColumn(): ?string
     {
-        static $column = null;
-        if ($column !== null) {
-            return $column;
+        $pdo = Database::connect();
+        $fields = $this->listProjectColumns($pdo);
+        $priority = ['project_url', 'project_link', 'url'];
+
+        foreach ($priority as $candidate) {
+            if (in_array($candidate, $fields, true)) {
+                return $candidate;
+            }
+        }
+
+        return null;
+    }
+
+    private function ensureProjectUrlColumn(): ?string
+    {
+        $urlColumn = $this->projectUrlColumn();
+        if ($urlColumn !== null) {
+            return $urlColumn;
         }
 
         $pdo = Database::connect();
-        $stmt = $pdo->prepare(
-            "SELECT COLUMN_NAME
-             FROM information_schema.COLUMNS
-             WHERE TABLE_SCHEMA = DATABASE()
-               AND TABLE_NAME = 'projects'
-               AND COLUMN_NAME IN ('project_url', 'project_link', 'url')
-             ORDER BY FIELD(COLUMN_NAME, 'project_url', 'project_link', 'url')
-             LIMIT 1"
-        );
-        $stmt->execute();
 
-        $column = $stmt->fetchColumn();
-        return is_string($column) && $column !== '' ? $column : null;
+        try {
+            $pdo->exec("ALTER TABLE projects ADD COLUMN project_url VARCHAR(255) NULL AFTER description");
+        } catch (Throwable $e) {
+            // Puede fallar por permisos o porque la columna ya existe en otra forma.
+        }
+
+        // Revalidación directa sin depender de caché de projectUrlColumn().
+        $fields = $this->listProjectColumns($pdo);
+        if (in_array('project_url', $fields, true)) {
+            return 'project_url';
+        }
+
+        $legacyPriority = ['project_link', 'url'];
+        foreach ($legacyPriority as $candidate) {
+            if (in_array($candidate, $fields, true)) {
+                return $candidate;
+            }
+        }
+
+        return null;
     }
 
     public function supportsProjectUrl(): bool
@@ -51,7 +93,6 @@ class ProjectModel
     public function all(bool $includeArchived = false): array
     {
         $pdo = Database::connect();
-
         $where = $includeArchived ? "" : "WHERE p.status <> 'archived'";
 
         $columns = [
@@ -63,16 +104,12 @@ class ProjectModel
         ];
 
         $urlColumn = $this->projectUrlColumn();
-        if ($urlColumn !== null) {
-            $columns[] = "p.{$urlColumn} AS project_url";
-        } else {
-            $columns[] = 'NULL AS project_url';
-        }
+        $columns[] = $urlColumn !== null ? "p.{$urlColumn} AS project_url" : 'NULL AS project_url';
 
         $selectColumns = implode(",\n            ", $columns);
 
         $sql = "
-        SELECT 
+        SELECT
             $selectColumns,
             GROUP_CONCAT(t.name ORDER BY t.name SEPARATOR ', ') AS technologies
         FROM projects p
@@ -104,8 +141,7 @@ class ProjectModel
         $stmt = $pdo->prepare("SELECT technology_id FROM project_technology WHERE project_id = ?");
         $stmt->execute([$projectId]);
 
-        $rows = $stmt->fetchAll();
-        return array_column($rows, 'technology_id');
+        return array_column($stmt->fetchAll(), 'technology_id');
     }
 
     public function update(int $id, string $name, ?string $description, ?string $projectUrl, array $techIds): void
@@ -115,7 +151,7 @@ class ProjectModel
 
         try {
             $status = count($techIds) > 0 ? 'active' : 'pending';
-            $urlColumn = $this->projectUrlColumn();
+            $urlColumn = $projectUrl !== null ? $this->ensureProjectUrlColumn() : $this->projectUrlColumn();
 
             if ($urlColumn !== null) {
                 $stmt = $pdo->prepare("UPDATE projects SET name = ?, description = ?, {$urlColumn} = ?, status = ? WHERE id = ?");
@@ -165,7 +201,7 @@ class ProjectModel
 
         try {
             $status = count($techIds) > 0 ? 'active' : 'pending';
-            $urlColumn = $this->projectUrlColumn();
+            $urlColumn = $projectUrl !== null ? $this->ensureProjectUrlColumn() : $this->projectUrlColumn();
 
             if ($urlColumn !== null) {
                 $stmt = $pdo->prepare("INSERT INTO projects (name, description, {$urlColumn}, status) VALUES (?, ?, ?, ?)");
@@ -212,16 +248,12 @@ class ProjectModel
         ];
 
         $urlColumn = $this->projectUrlColumn();
-        if ($urlColumn !== null) {
-            $columns[] = "p.{$urlColumn} AS project_url";
-        } else {
-            $columns[] = 'NULL AS project_url';
-        }
+        $columns[] = $urlColumn !== null ? "p.{$urlColumn} AS project_url" : 'NULL AS project_url';
 
         $selectColumns = implode(",\n            ", $columns);
 
         $sql = "
-        SELECT 
+        SELECT
             $selectColumns,
             GROUP_CONCAT(t.name ORDER BY t.name SEPARATOR ', ') AS technologies
         FROM projects p
@@ -269,16 +301,12 @@ class ProjectModel
         ];
 
         $urlColumn = $this->projectUrlColumn();
-        if ($urlColumn !== null) {
-            $columns[] = "p.{$urlColumn} AS project_url";
-        } else {
-            $columns[] = 'NULL AS project_url';
-        }
+        $columns[] = $urlColumn !== null ? "p.{$urlColumn} AS project_url" : 'NULL AS project_url';
 
         $selectColumns = implode(",\n            ", $columns);
 
         $sql = "
-        SELECT 
+        SELECT
             $selectColumns,
             GROUP_CONCAT(t.name ORDER BY t.name SEPARATOR ', ') AS technologies
         FROM projects p
