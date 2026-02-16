@@ -3,7 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title><?= isset($title) ? htmlspecialchars($title) : 'Mi Portafolio' ?></title>
+  <?php $pageTitle = isset($title) ? htmlspecialchars((string)$title) : 'Mi Portafolio'; ?>
+  <title><?= $pageTitle ?></title>
+  <meta name="description" content="Portafolio de Eduardo Machacón, desarrollador backend especializado en PHP, MVC y MySQL.">
+  <meta property="og:title" content="<?= $pageTitle ?>">
+  <meta property="og:description" content="Conoce proyectos backend en PHP con enfoque en arquitectura MVC, seguridad y experiencia de usuario.">
+  <meta property="og:type" content="website">
 
   <link rel="icon" href="/img/favicon.png" type="image/png">
   <link rel="stylesheet" href="/css/app.css">
@@ -20,6 +25,8 @@
 
       <nav class="links">
         <a class="btn" href="/projects">Proyectos</a>
+        <a class="btn" href="/#sobre-mi">Sobre mí</a>
+        <a class="btn" href="/#contacto">Contacto</a>
         <?php if ($isAdmin): ?>
           <a class="btn" href="/about#admin-content-panel">Editar contenido</a>
         <?php endif; ?>
@@ -45,7 +52,7 @@
     </main>
 
     <footer class="card card-pad" style="margin-top:16px; text-align:center;">
-      <small class="muted">© <?= date('Y') ?> Mi Portafolio · Hecho con PHP MVC</small>
+      <small class="muted">© <?= date('Y') ?> Eduardo Machacón · Portafolio Backend en PHP MVC</small>
     </footer>
   </div>
 

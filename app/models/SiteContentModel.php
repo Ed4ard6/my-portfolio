@@ -6,7 +6,7 @@ class SiteContentModel
 {
     private const DEFAULTS = [
         'about_title' => 'Sobre mí',
-        'about_body' => "Soy Eduardo Machacón, Junior Web Developer enfocado en construir aplicaciones web y mejorar mis habilidades de desarrollo cada día.\n\nMi experiencia en soporte al cliente fortaleció mi pensamiento analítico, mis habilidades de comunicación y mi capacidad para entender las necesidades de los usuarios; competencias que hoy aplico al crear soluciones de software.\n\nTrabajo con flujos de Git, arquitectura MVC y fundamentos de desarrollo web mientras construyo proyectos personales para ganar experiencia práctica.\n\nActualmente estoy en transición hacia el desarrollo de software y buscando activamente mi primera oportunidad profesional como desarrollador.",
+        'about_body' => "Soy Eduardo Machacón, desarrollador backend enfocado en PHP y arquitectura MVC, con experiencia creando aplicaciones web seguras y mantenibles.\n\nHe desarrollado soluciones con autenticación, protección CSRF, auditoría de acciones y gestión de contenido, priorizando tanto la calidad del código como la experiencia final del usuario.\n\nMi objetivo es unirme a un equipo de producto donde pueda aportar en desarrollo backend, diseño de bases de datos y construcción de APIs, mientras sigo creciendo en buenas prácticas de arquitectura y escalabilidad.",
         'skills_title' => 'Tecnologías y habilidades',
         'skills_body' => "Frontend\n• HTML5\n• CSS3\n• JavaScript\n\nBackend\n• PHP\n• Arquitectura MVC\n• MySQL\n\nHerramientas\n• Git y GitHub\n• VS Code\n• Hosting y despliegue\n\nHabilidades blandas\n• Resolución de problemas\n• Comunicación\n• Aprendizaje continuo",
         'learning_title' => 'Actualmente aprendiendo',
@@ -14,9 +14,9 @@ class SiteContentModel
         'goal_title' => 'Mi objetivo',
         'goal_body' => 'Mi objetivo es unirme a un equipo de desarrollo donde pueda aportar, seguir aprendiendo y crecer profesionalmente mientras construyo soluciones de software con impacto.',
         'projects_title' => 'Proyectos',
-        'projects_body' => 'Aquí encontrarás algunos de los proyectos en los que he trabajado y sigo mejorando.',
+        'projects_body' => 'Estos son proyectos orientados a resolver problemas reales con foco en seguridad, mantenibilidad y resultados medibles.',
         'contact_title' => 'Contacto',
-        'contact_body' => 'Escríbeme a tu-email@dominio.com o por LinkedIn para colaborar.',
+        'contact_body' => '¿Hablamos? Escríbeme a contacto@eduardomachacon.com o conéctate por LinkedIn para oportunidades y colaboraciones.',
     ];
 
     private function filePath(): string
