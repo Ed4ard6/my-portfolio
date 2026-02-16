@@ -1,12 +1,23 @@
 <?php
 
-// Define la ruta base del sitio de forma dinámica
-if (strpos($_SERVER['HTTP_HOST'], 'localhost') !== false || strpos($_SERVER['HTTP_HOST'], '127.0.0.1') !== false) {
-    // Entorno local
-    define('BASE_PATH', '/local/PHP/Ruta%20PHP/hosting/');
-} else {
-    // Entorno de producción (Hostinger)
-    define('BASE_PATH', '/');
-}
-
+define('BASE_PATH', '/hangman/');
+define('PROJECTS_PATH', '/projects');
 define('MAX_INTENTOS', 6);
+define('HANGMAN_SESSION_KEY', 'hangman_game');
+define('HANGMAN_WORDS', [
+    'casa',
+    'perro',
+    'gato',
+    'elefante',
+    'jirafa',
+    'programacion',
+    'computadora',
+    'algoritmo',
+    'javascript',
+    'php',
+    'backend',
+    'frontend',
+    'servidor',
+    'proyecto',
+    'tecnologia',
+]);

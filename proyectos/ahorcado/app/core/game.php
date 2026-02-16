@@ -1,127 +1,171 @@
 <?php
 
-// Palabras posibles
-
-// Inicializa el juego en sesión
-function init_game() {
-    //global $palabras; // eliminamos por que da error al momento de usar con el global 
-    $palabras = ['casa', 'perro', 'gato', 'elefante', 'jirafa'];
-    $_SESSION['palabra'] = $palabras[array_rand($palabras)];
-    $_SESSION['descubiertas'] = str_repeat('_', mb_strlen($_SESSION['palabra']));
-    $_SESSION['intentos'] = 0;
-    $_SESSION['letras'] = [];
-    $_SESSION['flash'] = '';
+function hangman_state(): array
+{
+    $state = $_SESSION[HANGMAN_SESSION_KEY] ?? null;
+    return is_array($state) ? $state : [];
 }
 
-// Resetea el juego por completo
-function reset_game() {
-    session_unset();
-    session_destroy();
-    session_start();
+function set_hangman_state(array $state): void
+{
+    $_SESSION[HANGMAN_SESSION_KEY] = $state;
+}
+
+function init_game(): void
+{
+    $word = HANGMAN_WORDS[array_rand(HANGMAN_WORDS)];
+
+    set_hangman_state([
+        'palabra' => $word,
+        'descubiertas' => str_repeat('_', mb_strlen($word)),
+        'intentos' => 0,
+        'letras' => [],
+        'flash' => '',
+    ]);
+}
+
+function reset_game(): void
+{
+    unset($_SESSION[HANGMAN_SESSION_KEY]);
     init_game();
     redirect_to_self();
 }
 
-// Maneja la entrada del usuario (letras y reinicio)
-function handle_user_input() {
-    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+function handle_user_input(): void
+{
+    if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
         return;
     }
 
     if (isset($_POST['reset'])) {
         reset_game();
-    } elseif (isset($_POST['letra'])) {
-        process_guess($_POST['letra']);
+    }
+
+    if (isset($_POST['letra'])) {
+        process_guess((string)$_POST['letra']);
     }
 }
 
-// Procesa una letra adivinada
-function process_guess($letra_raw) {
+function process_guess(string $letraRaw): void
+{
+    $state = hangman_state();
+    if (empty($state)) {
+        init_game();
+        $state = hangman_state();
+    }
+
     $mensaje = '';
-    $letra_trimmed = trim($letra_raw);
-    if ($letra_trimmed === '') {
-        $_SESSION['intentos'] += 2;
-        $restantes = max(0, MAX_INTENTOS - $_SESSION['intentos']);
-        $mensaje = "¡¡¡Tu es que eres BRUTO o te la das escribe una letra sopla picha!!!";
-        $mensaje .= "\nPor esa gracia pierdes 2 intentos por loca y te van quedando $restantes intentos.";
-    } elseif (mb_strlen($letra_raw) !== 1) {
-        $mensaje = "Te dije UNA letra nada más caremonda.";
-        $_SESSION['intentos'] += 2;
-        $restantes = max(0, MAX_INTENTOS - $_SESSION['intentos']);
-        $mensaje .= "\nPor esa gracia pierdes 2 intentos por loca y te van quedando $restantes intentos.";
-    } elseif (!preg_match('/^[a-zA-Z]$/u', $letra_raw)) {
-        $mensaje = "¿Acaso '$letra_raw' es una letra careverga?";
-        $_SESSION['intentos'] += 2;
-        $restantes = max(0, MAX_INTENTOS - $_SESSION['intentos']);
-        $mensaje .= "\nPor esa gracia pierdes 2 intentos por loca y te van quedando $restantes intentos.";
+    $letraTrimmed = trim($letraRaw);
+
+    if ($letraTrimmed === '') {
+        $state['intentos'] += 2;
+        $restantes = max(0, MAX_INTENTOS - $state['intentos']);
+        $mensaje = "Ingresa una letra válida.\nPierdes 2 intentos. Te quedan $restantes.";
+    } elseif (mb_strlen($letraTrimmed) !== 1) {
+        $state['intentos'] += 2;
+        $restantes = max(0, MAX_INTENTOS - $state['intentos']);
+        $mensaje = "Solo puedes ingresar UNA letra.\nPierdes 2 intentos. Te quedan $restantes.";
+    } elseif (!preg_match('/^[\p{L}]$/u', $letraTrimmed)) {
+        $state['intentos'] += 2;
+        $restantes = max(0, MAX_INTENTOS - $state['intentos']);
+        $mensaje = "'$letraTrimmed' no es una letra válida.\nPierdes 2 intentos. Te quedan $restantes.";
     } else {
-        $letra = mb_strtolower($letra_raw, 'UTF-8');
-        
-        if (in_array($letra, $_SESSION['letras'])) {
-            $mensaje = "Ya probaste la letra '$letra', no seas bruto.";
+        $letra = mb_strtolower($letraTrimmed, 'UTF-8');
+
+        if (in_array($letra, $state['letras'], true)) {
+            $mensaje = "Ya probaste la letra '$letra'.";
         } else {
-            $_SESSION['letras'][] = $letra;
-            $palabra = $_SESSION['palabra'];
-            $pal_chars = preg_split('//u', $palabra, -1, PREG_SPLIT_NO_EMPTY);
-            $desc_chars = preg_split('//u', $_SESSION['descubiertas'], -1, PREG_SPLIT_NO_EMPTY);
-            
-            if (in_array($letra, $pal_chars, true)) {
-                foreach ($pal_chars as $i => $ch) {
-                    if ($ch === $letra) $desc_chars[$i] = $letra;
+            $state['letras'][] = $letra;
+            $palChars = preg_split('//u', (string)$state['palabra'], -1, PREG_SPLIT_NO_EMPTY);
+            $descChars = preg_split('//u', (string)$state['descubiertas'], -1, PREG_SPLIT_NO_EMPTY);
+
+            if (in_array($letra, $palChars, true)) {
+                foreach ($palChars as $i => $ch) {
+                    if ($ch === $letra) {
+                        $descChars[$i] = $letra;
+                    }
                 }
-                $_SESSION['descubiertas'] = implode('', $desc_chars);
-                $mensaje = "Bien! Has revelado la letra '$letra'.";
+                $state['descubiertas'] = implode('', $descChars);
+                $mensaje = "¡Bien! Has revelado la letra '$letra'.";
             } else {
-                $_SESSION['intentos']++;
-                $restantes = max(0, MAX_INTENTOS - $_SESSION['intentos']);
-                $mensaje = "Lo siento, la letra '$letra' no está en la palabra. Te van quedando $restantes intentos.";
+                $state['intentos']++;
+                $restantes = max(0, MAX_INTENTOS - $state['intentos']);
+                $mensaje = "La letra '$letra' no está. Te quedan $restantes intentos.";
             }
         }
     }
-    
-    if ($_SESSION['intentos'] > MAX_INTENTOS) $_SESSION['intentos'] = MAX_INTENTOS;
-    $_SESSION['flash'] = $mensaje;
+
+    if ($state['intentos'] > MAX_INTENTOS) {
+        $state['intentos'] = MAX_INTENTOS;
+    }
+
+    $state['flash'] = $mensaje;
+    set_hangman_state($state);
     redirect_to_self();
 }
 
-// Funciones para obtener el estado del juego
-function is_game_active() {
-    return isset($_SESSION['palabra']);
+function is_game_active(): bool
+{
+    $state = hangman_state();
+    return isset($state['palabra']);
 }
 
-function get_flash_message() {
-    $mensaje = !empty($_SESSION['flash']) ? $_SESSION['flash'] : '';
-    $_SESSION['flash'] = '';
+function get_flash_message(): string
+{
+    $state = hangman_state();
+    $mensaje = (string)($state['flash'] ?? '');
+    $state['flash'] = '';
+    set_hangman_state($state);
+
     return $mensaje;
 }
 
-function get_word() {
-    return isset($_SESSION['palabra']) ? $_SESSION['palabra'] : '';
+function get_word(): string
+{
+    $state = hangman_state();
+    return (string)($state['palabra'] ?? '');
 }
 
-function get_discovered_word() {
-    return isset($_SESSION['descubiertas']) ? $_SESSION['descubiertas'] : '';
+function get_discovered_word(): string
+{
+    $state = hangman_state();
+    return (string)($state['descubiertas'] ?? '');
 }
 
-function get_attempts() {
-    return isset($_SESSION['intentos']) ? $_SESSION['intentos'] : 0;
+function get_attempts(): int
+{
+    $state = hangman_state();
+    return (int)($state['intentos'] ?? 0);
 }
 
-function get_used_letters() {
-    return isset($_SESSION['letras']) ? $_SESSION['letras'] : [];
+function get_used_letters(): array
+{
+    $state = hangman_state();
+    $letters = $state['letras'] ?? [];
+    return is_array($letters) ? $letters : [];
 }
 
-function get_game_status() {
+function get_game_status(): ?string
+{
     $palabra = get_word();
     $descubiertas = get_discovered_word();
     $intentos = get_attempts();
 
-    if ($intentos >= MAX_INTENTOS && $descubiertas === str_repeat('_', mb_strlen($palabra))) {
-        return "Debe ser uno muy bruto en la vida para que con " . MAX_INTENTOS . " intentos no pegar ni una HP letra";
-    } elseif ($intentos >= MAX_INTENTOS) {
-        return "¡Has perdido! La palabra era '" . htmlspecialchars($palabra, ENT_QUOTES, 'UTF-8') . "'.";
-    } elseif ($descubiertas === $palabra) {
-        return "¡Felicidades! Has adivinado la palabra '" . htmlspecialchars($palabra, ENT_QUOTES, 'UTF-8') . "'.";
+    if ($palabra === '') {
+        return null;
     }
+
+    if ($intentos >= MAX_INTENTOS && $descubiertas === str_repeat('_', mb_strlen($palabra))) {
+        return 'Perdiste: no lograste adivinar ninguna letra.';
+    }
+
+    if ($intentos >= MAX_INTENTOS) {
+        return "¡Has perdido! La palabra era '$palabra'.";
+    }
+
+    if ($descubiertas === $palabra) {
+        return "¡Felicidades! Adivinaste la palabra '$palabra'.";
+    }
+
     return null;
 }
