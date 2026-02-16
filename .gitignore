@@ -14,6 +14,7 @@ Thumbs.db
 # =========================
 storage/*.log
 storage/cache/
+storage/site_content.json
 
 # =========================
 # Dependencias (Composer)
@@ -24,3 +25,12 @@ vendor/
 # Variables privadas
 # =========================
 .env
+.env.*
+.emp
+.emp.*
+*.pem
+*.key
+
+# Templates permitidos
+!.env.example
+!.emp.example

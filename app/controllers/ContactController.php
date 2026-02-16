@@ -1,15 +1,12 @@
 <?php
 
-require_once __DIR__ . '/../../core/View.php';
+declare(strict_types=1);
 
 class ContactController
 {
-    public function index()
+    public function index(): void
     {
-        View::render('contact/index', [
-            'title' => 'Contacto',
-            'heading' => 'Contacto',
-            'description' => 'Puedes contactarme a través de este formulario o mis redes.'
-        ]);
+        header('Location: /about#contacto');
+        exit;
     }
 }
