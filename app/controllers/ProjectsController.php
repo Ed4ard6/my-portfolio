@@ -8,6 +8,42 @@ require_once __DIR__ . '/../models/TechnologyModel.php';
 
 class ProjectsController
 {
+    private function normalizeProjectUrl(?string $rawUrl): ?string
+    {
+        if ($rawUrl === null) {
+            return null;
+        }
+
+        $url = trim($rawUrl);
+        if ($url === '') {
+            return null;
+        }
+
+        if (str_starts_with($url, '/')) {
+            return $url;
+        }
+
+        if (!filter_var($url, FILTER_VALIDATE_URL)) {
+            return null;
+        }
+
+        $scheme = strtolower((string)parse_url($url, PHP_URL_SCHEME));
+        if (!in_array($scheme, ['http', 'https'], true)) {
+            return null;
+        }
+
+        return $url;
+    }
+
+    private function isValidProjectUrl(?string $url): bool
+    {
+        if ($url === null) {
+            return true;
+        }
+
+        return $this->normalizeProjectUrl($url) !== null;
+    }
+
     private function ensureAuthenticated(): void
     {
         Auth::requireLogin();
@@ -120,19 +156,20 @@ class ProjectsController
         }
 
         $status = (string)($project['status'] ?? 'pending');
-        $projectUrl = trim((string)($project['project_url'] ?? ''));
+        $rawProjectUrl = trim((string)($project['project_url'] ?? ''));
+        $projectUrl = $this->normalizeProjectUrl($rawProjectUrl);
 
         if ($status === 'pending') {
             $this->renderProjectUnavailable($project, 'pending');
             return;
         }
 
-        if ($projectUrl === '') {
+        if ($rawProjectUrl === '') {
             $this->renderProjectUnavailable($project, 'missing_url');
             return;
         }
 
-        if (!filter_var($projectUrl, FILTER_VALIDATE_URL)) {
+        if ($projectUrl === null) {
             $this->renderProjectUnavailable($project, 'invalid_url');
             return;
         }
@@ -230,8 +267,8 @@ class ProjectsController
         $id = (int)($_POST['id'] ?? 0);
         $name = trim($_POST['name'] ?? '');
         $description = trim($_POST['description'] ?? '');
-        $projectUrl = trim($_POST['project_url'] ?? '');
-        $projectUrl = $projectUrl !== '' ? $projectUrl : null;
+        $rawProjectUrl = trim($_POST['project_url'] ?? '');
+        $projectUrl = $rawProjectUrl !== '' ? $this->normalizeProjectUrl($rawProjectUrl) : null;
 
         $techIds = $_POST['technologies'] ?? [];
         if (!is_array($techIds)) $techIds = [];
@@ -242,9 +279,9 @@ class ProjectsController
             return;
         }
 
-        if ($projectUrl !== null && !filter_var($projectUrl, FILTER_VALIDATE_URL)) {
+        if ($rawProjectUrl !== '' && !$this->isValidProjectUrl($rawProjectUrl)) {
             http_response_code(400);
-            echo "La URL del proyecto no es válida.";
+            echo "La URL del proyecto no es válida. Usa https://... o una ruta interna (ejemplo: /hangman).";
             return;
         }
 
@@ -343,8 +380,8 @@ class ProjectsController
         // 2) Tomar datos del formulario
         $name = trim($_POST['name'] ?? '');
         $description = trim($_POST['description'] ?? '');
-        $projectUrl = trim($_POST['project_url'] ?? '');
-        $projectUrl = $projectUrl !== '' ? $projectUrl : null;
+        $rawProjectUrl = trim($_POST['project_url'] ?? '');
+        $projectUrl = $rawProjectUrl !== '' ? $this->normalizeProjectUrl($rawProjectUrl) : null;
 
         // technologies[] llega como array (o no llega si no marcaron nada)
         $techIds = $_POST['technologies'] ?? [];
@@ -368,8 +405,8 @@ class ProjectsController
             $errors[] = 'La descripción debe tener al menos 10 caracteres.';
         }
 
-        if ($projectUrl !== null && !filter_var($projectUrl, FILTER_VALIDATE_URL)) {
-            $errors[] = 'La URL del proyecto debe tener un formato válido (ejemplo: https://tu-dominio.com).';
+        if ($rawProjectUrl !== '' && !$this->isValidProjectUrl($rawProjectUrl)) {
+            $errors[] = 'La URL del proyecto debe ser http(s) o una ruta interna válida (ejemplo: /hangman).';
         }
 
         // 4) Si hay errores, volvemos a mostrar el formulario con:

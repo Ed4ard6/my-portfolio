@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <title>Ahorcado - Eduardo Machacón</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <link rel="stylesheet" href="css/game.css">
+    <link rel="stylesheet" href="/index.php?url=hangman/assets/game.css">
 </head>
 
 <body>
@@ -29,7 +29,7 @@
                 <div style="font-size:13px; margin-top:6px;">Palabra: <strong><?= mb_strlen($palabra) ?> letras</strong></div>
             </div>
             <div style="position: absolute; top: 20px; left: 20px;">
-                <a href="<?= BASE_PATH ?>index.php" class="back-btn">← Volver</a>
+                <a href="<?= PROJECTS_PATH ?>" class="back-btn">← Volver a proyectos</a>
             </div>
         </header>
 

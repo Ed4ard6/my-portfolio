@@ -54,6 +54,13 @@ Estructura principal:
 ### Administración (solo admin)
 
 - Login de administrador contra tabla `admin_users`
+
+### Proyecto integrado: Ahorcado
+
+- El juego está integrado en la ruta interna `'/hangman'`.
+- Para enlazarlo desde la base de datos en un proyecto, guarda la URL como ruta relativa: `'/hangman'`.
+- La validación de URLs de proyectos permite `http/https` o rutas internas (que inician con `/`).
+
 - Crear proyectos
 - Editar proyectos
 - Actualizar estados

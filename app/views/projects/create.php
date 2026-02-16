@@ -52,7 +52,7 @@
                 style="width:100%; padding:10px 12px; border-radius:12px;"
                 type="url"
                 name="project_url"
-                placeholder="https://..."
+                placeholder="https://... o /hangman"
                 value="<?= htmlspecialchars($old['project_url'] ?? '') ?>">
         </div>
 
