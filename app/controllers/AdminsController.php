@@ -112,12 +112,29 @@ class AdminsController
             return;
         }
 
-        $id = $this->model->create($username, $email, $password, $isActive);
-        $this->auditModel->log('admin_created', (string)Auth::user(), $id, 'Se creó un nuevo administrador.');
-        $this->setFlash('success', 'Administrador creado correctamente.');
+        try {
+            $id = $this->model->create($username, $email, $password, $isActive);
+            $this->auditModel->log('admin_created', (string)Auth::user(), $id, 'Se creó un nuevo administrador.');
+            $this->setFlash('success', 'Administrador creado correctamente.');
 
-        header('Location: /admins');
-        exit;
+            header('Location: /admins');
+            exit;
+        } catch (Throwable $e) {
+            error_log('[AdminsController] Error creando admin: ' . $e->getMessage());
+
+            View::render('admins/create', [
+                'title' => 'Crear administrador',
+                'heading' => 'Crear administrador',
+                'errors' => ['No se pudo crear el administrador. Revisa datos y estructura de BD.'],
+                'old' => [
+                    'username' => $username,
+                    'email' => $email,
+                    'is_active' => $isActive ? '1' : '0',
+                ],
+                'emailSupported' => $this->model->supportsEmail(),
+            ]);
+            return;
+        }
     }
 
     public function edit($id = null): void
@@ -201,17 +218,35 @@ class AdminsController
             return;
         }
 
-        $this->model->update($id, $username, $email, $isActive);
-        $this->auditModel->log('admin_updated', (string)Auth::user(), $id, 'Se actualizó username/email/estado.');
+        try {
+            $this->model->update($id, $username, $email, $isActive);
+            $this->auditModel->log('admin_updated', (string)Auth::user(), $id, 'Se actualizó username/email/estado.');
 
-        if ($password !== '') {
-            $this->model->updatePassword($id, $password);
-            $this->auditModel->log('admin_password_updated', (string)Auth::user(), $id, 'Se cambió la contraseña del administrador.');
+            if ($password !== '') {
+                $this->model->updatePassword($id, $password);
+                $this->auditModel->log('admin_password_updated', (string)Auth::user(), $id, 'Se cambió la contraseña del administrador.');
+            }
+
+            $this->setFlash('success', 'Cambios guardados correctamente.');
+            header('Location: /admins');
+            exit;
+        } catch (Throwable $e) {
+            error_log('[AdminsController] Error actualizando admin: ' . $e->getMessage());
+
+            View::render('admins/edit', [
+                'title' => 'Editar administrador',
+                'heading' => 'Editar administrador',
+                'admin' => [
+                    'id' => $id,
+                    'username' => $username,
+                    'email' => $email,
+                    'is_active' => $isActive ? 1 : 0,
+                ],
+                'errors' => ['No se pudieron guardar los cambios. Revisa datos y estructura de BD.'],
+                'emailSupported' => $this->model->supportsEmail(),
+            ]);
+            return;
         }
-
-        $this->setFlash('success', 'Cambios guardados correctamente.');
-        header('Location: /admins');
-        exit;
     }
 
     public function delete($id = null): void

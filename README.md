@@ -221,6 +221,22 @@ Rutas incluidas:
 
 > En local, el enlace de recuperación se escribe en el log del servidor para pruebas.
 
+### ¿Cómo probar recuperación por token en local? (paso a paso)
+
+1. Abre `/auth/forgot` e ingresa un correo admin existente.
+2. El sistema genera un token y escribe el enlace en el log del servidor (no envía correo real todavía).
+3. Busca una línea similar a:
+   `Token reset para correo@dominio.com: http://localhost/auth/reset/TOKEN...`
+4. Copia ese enlace y pégalo en el navegador.
+5. Define nueva contraseña y confirma.
+
+Ejemplos de dónde revisar logs:
+- **Laragon + Apache**: `C:\laragon\bin\apache\httpd-<version>\logs\error.log`
+- **PHP built-in server**: salida de la terminal donde ejecutaste `php -S`.
+- **XAMPP Apache**: `C:\xampp\apache\logs\error.log`
+
+> Si quieres correo real, el siguiente paso es configurar SMTP y reemplazar el `error_log(...)` por envío de email.
+
 ## 🧾 Historial de cambios de administradores (opcional recomendado)
 
 Para registrar quién modificó a qué admin y cuándo, crea esta tabla:
