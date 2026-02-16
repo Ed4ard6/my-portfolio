@@ -50,10 +50,13 @@
             <input
                 class="card card-pad"
                 style="width:100%; padding:10px 12px; border-radius:12px;"
-                type="url"
+                type="text"
                 name="project_url"
+                inputmode="url"
+                spellcheck="false"
                 placeholder="https://... o /hangman"
                 value="<?= htmlspecialchars($old['project_url'] ?? '') ?>">
+            <small class="muted">Acepta URL completa (https://...) o ruta interna (/hangman).</small>
         </div>
 
         <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
