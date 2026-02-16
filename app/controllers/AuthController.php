@@ -136,26 +136,49 @@ class AuthController
         }
 
         $user = $userModel->findByEmail($email);
-
-        if ($user) {
-            $token = bin2hex(random_bytes(32));
-            $ok = $resetModel->create((int)$user['id'], $token, 30);
-
-            if ($ok) {
-                $baseUrl = rtrim((string)(getenv('APP_URL') ?: 'http://localhost'), '/');
-                $link = $baseUrl . '/auth/reset/' . rawurlencode($token);
-                error_log('[AuthController] Token reset para ' . $email . ': ' . $link);
-
-                $audit = new AdminAuditModel();
-                $audit->log('password_reset_requested', (string)($user['username'] ?? 'unknown'), (int)$user['id'], 'Solicitud de recuperación de contraseña.');
-            }
+        if (!$user) {
+            View::render('auth/forgot', [
+                'title' => 'Recuperar contraseña',
+                'heading' => 'Recuperar contraseña de administrador',
+                'error' => 'El correo ingresado no existe en administradores.',
+                'success' => null,
+                'emailSupported' => true,
+                'tokenSupported' => true,
+            ]);
+            return;
         }
+
+        $token = bin2hex(random_bytes(32));
+        $ok = $resetModel->create((int)$user['id'], $token, 30);
+
+        if (!$ok) {
+            View::render('auth/forgot', [
+                'title' => 'Recuperar contraseña',
+                'heading' => 'Recuperar contraseña de administrador',
+                'error' => 'No se pudo generar el token de recuperación.',
+                'success' => null,
+                'emailSupported' => true,
+                'tokenSupported' => true,
+            ]);
+            return;
+        }
+
+        $baseUrl = rtrim((string)(getenv('APP_URL') ?: 'http://localhost'), '/');
+        $link = $baseUrl . '/auth/reset/' . rawurlencode($token);
+
+        $logLine = date('Y-m-d H:i:s') . ' | ' . $email . ' | ' . $link . PHP_EOL;
+        $logFile = dirname(__DIR__, 2) . '/storage/password_reset_links.log';
+        @file_put_contents($logFile, $logLine, FILE_APPEND);
+        error_log('[AuthController] Token reset para ' . $email . ': ' . $link);
+
+        $audit = new AdminAuditModel();
+        $audit->log('password_reset_requested', (int)$user['id'], (int)$user['id'], 'Solicitud de recuperación de contraseña.');
 
         View::render('auth/forgot', [
             'title' => 'Recuperar contraseña',
             'heading' => 'Recuperar contraseña de administrador',
             'error' => null,
-            'success' => 'Si el correo existe, se generó un enlace de recuperación. Revisa el log del servidor para pruebas locales.',
+            'success' => 'Enlace generado. Revisa storage/password_reset_links.log en tu proyecto local.',
             'emailSupported' => true,
             'tokenSupported' => true,
         ]);
@@ -238,9 +261,8 @@ class AuthController
         $adminId = (int)($tokenRow['admin_user_id'] ?? 0);
         $userModel->updatePassword($adminId, $password);
 
-        $admin = $userModel->findById($adminId);
         $audit = new AdminAuditModel();
-        $audit->log('password_reset_completed', (string)($admin['username'] ?? 'system'), $adminId, 'Contraseña actualizada con token.');
+        $audit->log('password_reset_completed', $adminId, $adminId, 'Contraseña actualizada con token.');
 
         View::render('auth/reset', [
             'title' => 'Restablecer contraseña',

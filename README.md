@@ -219,7 +219,7 @@ Rutas incluidas:
 - `/auth/forgot`
 - `/auth/reset/{token}`
 
-> En local, el enlace de recuperación se escribe en el log del servidor para pruebas.
+> En local, el enlace de recuperación se escribe en `storage/password_reset_links.log` (y también en `error_log`).
 
 ### ¿Cómo probar recuperación por token en local? (paso a paso)
 
@@ -231,11 +231,11 @@ Rutas incluidas:
 5. Define nueva contraseña y confirma.
 
 Ejemplos de dónde revisar logs:
-- **Laragon + Apache**: `C:\laragon\bin\apache\httpd-<version>\logs\error.log`
-- **PHP built-in server**: salida de la terminal donde ejecutaste `php -S`.
-- **XAMPP Apache**: `C:\xampp\apache\logs\error.log`
+- **Primera opción recomendada**: archivo del proyecto `storage/password_reset_links.log`.
+- **También disponible**: `error.log` de Apache/PHP si tu servidor lo permite.
 
-> Si quieres correo real, el siguiente paso es configurar SMTP y reemplazar el `error_log(...)` por envío de email.
+> Si el correo no existe en `admin_users`, ahora el sistema te lo informa antes de generar token.
+> Si quieres correo real, el siguiente paso es configurar SMTP y reemplazar el `error_log(...)`/archivo local por envío de email.
 
 ## 🧾 Historial de cambios de administradores (opcional recomendado)
 
@@ -257,6 +257,21 @@ CREATE TABLE IF NOT EXISTS admin_audit_logs (
 ```
 
 > Si no creas esta tabla, el sistema igual funciona; solo no mostrará historial.
+
+### Mejora opcional de auditoría (recomendada)
+
+Para que el historial siga mostrando correctamente el **nombre actual** del admin que realizó cambios, guarda también su ID:
+
+```sql
+ALTER TABLE admin_audit_logs
+  ADD COLUMN performed_by_admin_id INT NULL AFTER performed_by,
+  ADD INDEX idx_admin_audit_performer (performed_by_admin_id),
+  ADD CONSTRAINT fk_admin_audit_performer
+    FOREIGN KEY (performed_by_admin_id) REFERENCES admin_users(id)
+    ON DELETE SET NULL;
+```
+
+> Si no aplicas este ALTER, el sistema sigue funcionando y usa el nombre guardado en texto (`performed_by`).
 
 ## 🧪 Rutas principales
 

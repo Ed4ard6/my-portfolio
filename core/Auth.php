@@ -7,6 +7,7 @@ require_once __DIR__ . '/../app/models/AdminUserModel.php';
 class Auth
 {
     private const SESSION_KEY = 'auth_user';
+    private const SESSION_USER_ID_KEY = 'auth_user_id';
     private const ATTEMPT_KEY = 'auth_attempts';
     private const MAX_ATTEMPTS = 5;
     private const LOCK_SECONDS = 900;
@@ -19,6 +20,12 @@ class Auth
     public static function user(): ?string
     {
         return $_SESSION[self::SESSION_KEY] ?? null;
+    }
+
+    public static function userId(): ?int
+    {
+        $id = $_SESSION[self::SESSION_USER_ID_KEY] ?? null;
+        return is_numeric($id) ? (int)$id : null;
     }
 
     private static function throttleBucket(string $username): string
@@ -72,6 +79,7 @@ class Auth
 
         self::storeAttempt($bucket, ['count' => 0, 'locked_until' => 0]);
         $_SESSION[self::SESSION_KEY] = (string)$user['username'];
+        $_SESSION[self::SESSION_USER_ID_KEY] = (int)$user['id'];
         session_regenerate_id(true);
 
         return ['ok' => true, 'reason' => 'ok'];
@@ -97,7 +105,7 @@ class Auth
 
     public static function logout(): void
     {
-        unset($_SESSION[self::SESSION_KEY]);
+        unset($_SESSION[self::SESSION_KEY], $_SESSION[self::SESSION_USER_ID_KEY]);
         session_regenerate_id(true);
     }
 

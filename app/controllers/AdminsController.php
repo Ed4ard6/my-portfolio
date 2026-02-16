@@ -48,6 +48,11 @@ class AdminsController
             $status = 'all';
         }
 
+        $targetAdminId = (int)($_GET['target_admin_id'] ?? 0);
+        if ($targetAdminId <= 0) {
+            $targetAdminId = null;
+        }
+
         View::render('admins/index', [
             'title' => 'Administradores',
             'heading' => 'Administradores',
@@ -55,7 +60,8 @@ class AdminsController
             'currentUser' => Auth::user(),
             'currentStatus' => $status,
             'flash' => $this->consumeFlash(),
-            'auditLogs' => $this->auditModel->latest(15),
+            'auditLogs' => $this->auditModel->latest(25, $targetAdminId),
+            'targetAdminId' => $targetAdminId,
             'emailSupported' => $this->model->supportsEmail(),
         ]);
     }
@@ -114,7 +120,7 @@ class AdminsController
 
         try {
             $id = $this->model->create($username, $email, $password, $isActive);
-            $this->auditModel->log('admin_created', (string)Auth::user(), $id, 'Se creó un nuevo administrador.');
+            $this->auditModel->log('admin_created', Auth::userId(), $id, 'Se creó un nuevo administrador.');
             $this->setFlash('success', 'Administrador creado correctamente.');
 
             header('Location: /admins');
@@ -220,11 +226,11 @@ class AdminsController
 
         try {
             $this->model->update($id, $username, $email, $isActive);
-            $this->auditModel->log('admin_updated', (string)Auth::user(), $id, 'Se actualizó username/email/estado.');
+            $this->auditModel->log('admin_updated', Auth::userId(), $id, 'Se actualizó username/email/estado.');
 
             if ($password !== '') {
                 $this->model->updatePassword($id, $password);
-                $this->auditModel->log('admin_password_updated', (string)Auth::user(), $id, 'Se cambió la contraseña del administrador.');
+                $this->auditModel->log('admin_password_updated', Auth::userId(), $id, 'Se cambió la contraseña del administrador.');
             }
 
             $this->setFlash('success', 'Cambios guardados correctamente.');
@@ -286,7 +292,7 @@ class AdminsController
         }
 
         $this->model->delete($id);
-        $this->auditModel->log('admin_deleted', (string)Auth::user(), $id, 'Se eliminó un administrador.');
+        $this->auditModel->log('admin_deleted', Auth::userId(), $id, 'Se eliminó un administrador.');
         $this->setFlash('success', 'Administrador eliminado correctamente.');
         header('Location: /admins');
         exit;

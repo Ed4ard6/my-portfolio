@@ -25,6 +25,10 @@
         <a class="btn <?= ($currentStatus ?? 'all') === 'all' ? 'btn-primary' : '' ?>" href="/admins?status=all">Todos</a>
         <a class="btn <?= ($currentStatus ?? '') === 'active' ? 'btn-primary' : '' ?>" href="/admins?status=active">Activos</a>
         <a class="btn <?= ($currentStatus ?? '') === 'inactive' ? 'btn-primary' : '' ?>" href="/admins?status=inactive">Inactivos</a>
+
+        <?php if (!empty($targetAdminId)): ?>
+            <a class="btn" href="/admins?status=<?= urlencode((string)($currentStatus ?? 'all')) ?>">Limpiar filtro de historial</a>
+        <?php endif; ?>
     </div>
 
     <?php if (empty($admins)): ?>
@@ -60,6 +64,7 @@
 
                         <div style="display:flex; gap:8px; flex-wrap:wrap;">
                             <a class="btn" href="/admins/edit/<?= (int)$admin['id'] ?>">Editar</a>
+                            <a class="btn" href="/admins?status=<?= urlencode((string)($currentStatus ?? 'all')) ?>&target_admin_id=<?= (int)$admin['id'] ?>">Historial de este admin</a>
 
                             <?php if (($currentUser ?? '') !== $admin['username']): ?>
                                 <form method="POST" action="/admins/delete/<?= (int)$admin['id'] ?>" onsubmit="return confirm('¿Eliminar este administrador? Esta acción no se puede deshacer.');" style="margin:0;">
@@ -76,17 +81,20 @@
 
     <div class="card card-pad" style="margin-top:14px;">
         <h3 style="margin:0 0 10px 0;">Historial reciente de cambios de administradores</h3>
+        <?php if (!empty($targetAdminId)): ?>
+            <div class="muted" style="margin-bottom:8px;">Mostrando historial filtrado por admin ID: <?= (int)$targetAdminId ?></div>
+        <?php endif; ?>
+
         <?php if (empty($auditLogs)): ?>
-            <div class="muted">No hay historial disponible (crea la tabla <code>admin_audit_logs</code> para activarlo).</div>
+            <div class="muted">No hay historial disponible con el filtro actual.</div>
         <?php else: ?>
             <div style="overflow:auto;">
                 <table class="audit-table">
                     <thead>
                         <tr>
                             <th>Fecha</th>
-                            <th>Acción</th>
                             <th>Realizado por</th>
-                            <th>Admin objetivo</th>
+                            <th>Admin afectado</th>
                             <th>Detalle</th>
                         </tr>
                     </thead>
@@ -94,9 +102,8 @@
                         <?php foreach ($auditLogs as $log): ?>
                             <tr>
                                 <td><?= htmlspecialchars((string)$log['created_at']) ?></td>
-                                <td><?= htmlspecialchars((string)$log['action']) ?></td>
-                                <td><?= htmlspecialchars((string)$log['performed_by']) ?></td>
-                                <td>#<?= htmlspecialchars((string)($log['target_admin_id'] ?? '-')) ?></td>
+                                <td><?= htmlspecialchars((string)($log['performed_by_name'] ?? $log['performed_by'] ?? '-')) ?></td>
+                                <td><?= htmlspecialchars((string)($log['target_admin_name'] ?? ('#' . (string)($log['target_admin_id'] ?? '-')))) ?></td>
                                 <td><?= htmlspecialchars((string)($log['details'] ?? '')) ?></td>
                             </tr>
                         <?php endforeach; ?>
