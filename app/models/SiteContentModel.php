@@ -6,17 +6,17 @@ class SiteContentModel
 {
     private const DEFAULTS = [
         'about_title' => 'Sobre mí',
-        'about_body' => "Soy Eduardo Machacón, desarrollador backend enfocado en PHP y arquitectura MVC, con experiencia creando aplicaciones web seguras y mantenibles.\n\nHe desarrollado soluciones con autenticación, protección CSRF, auditoría de acciones y gestión de contenido, priorizando tanto la calidad del código como la experiencia final del usuario.\n\nMi objetivo es unirme a un equipo de producto donde pueda aportar en desarrollo backend, diseño de bases de datos y construcción de APIs, mientras sigo creciendo en buenas prácticas de arquitectura y escalabilidad.",
+        'about_body' => "Soy Eduardo Machacón, desarrollador backend especializado en PHP, MySQL y arquitectura MVC.\n\nHe construido aplicaciones con autenticación segura, protección CSRF, auditoría de acciones administrativas y paneles de gestión de contenido. Trabajo con enfoque en mantenibilidad, calidad de código y resolución de problemas reales.\n\nActualmente busco mi primera oportunidad profesional como desarrollador junior backend/fullstack, donde pueda aportar en producto mientras sigo fortaleciendo arquitectura de software y APIs.",
         'skills_title' => 'Tecnologías y habilidades',
         'skills_body' => "Frontend\n• HTML5\n• CSS3\n• JavaScript\n\nBackend\n• PHP\n• Arquitectura MVC\n• MySQL\n\nHerramientas\n• Git y GitHub\n• VS Code\n• Hosting y despliegue\n\nHabilidades blandas\n• Resolución de problemas\n• Comunicación\n• Aprendizaje continuo",
         'learning_title' => 'Actualmente aprendiendo',
-        'learning_body' => "• Conceptos avanzados de JavaScript\n• Buenas prácticas de desarrollo backend\n• Diseño de bases de datos\n• Principios de código limpio\n• Inglés (nivel A2 en mejora continua)",
+        'learning_body' => "• APIs RESTful en PHP\n• Buenas prácticas backend y clean code\n• Diseño y optimización de bases de datos\n• Testing y calidad de software\n• Inglés técnico (en mejora continua)",
         'goal_title' => 'Mi objetivo',
         'goal_body' => 'Mi objetivo es unirme a un equipo de desarrollo donde pueda aportar, seguir aprendiendo y crecer profesionalmente mientras construyo soluciones de software con impacto.',
         'projects_title' => 'Proyectos',
         'projects_body' => 'Estos son proyectos orientados a resolver problemas reales con foco en seguridad, mantenibilidad y resultados medibles.',
         'contact_title' => 'Contacto',
-        'contact_body' => '¿Hablamos? Escríbeme a contacto@eduardomachacon.com o conéctate por LinkedIn para oportunidades y colaboraciones.',
+        'contact_body' => '📧 ej.machacon@gmail.com\n💼 LinkedIn: https://www.linkedin.com/in/eduardo-machacon/\n🐙 GitHub: https://github.com/Ed4ard6',
     ];
 
     private function filePath(): string
