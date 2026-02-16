@@ -12,29 +12,30 @@
 <body>
   <div class="container">
     <header class="nav">
-      <!-- Logo = Inicio -->
       <a href="/" class="brand-link" aria-label="Inicio">
         <img id="siteLogo" class="logo" src="/img/logo-dark.png" alt="Logo">
       </a>
 
-      <!-- Menú SIN "Inicio" -->
+      <?php $isAdmin = class_exists('Auth') && Auth::check(); ?>
+
       <nav class="links">
         <a class="btn" href="/about">Sobre mí</a>
         <a class="btn" href="/projects">Proyectos</a>
-        <a class="btn" href="/contact">Contacto</a>
+        <a class="btn" href="/about#contacto">Contacto</a>
+        <?php if ($isAdmin): ?>
+          <a class="btn" href="/about#admin-content-panel">Editar contenido</a>
+        <?php endif; ?>
       </nav>
-
-      <?php $isAdmin = class_exists('Auth') && Auth::check(); ?>
 
       <div style="display:flex; gap:10px; align-items:center;">
         <?php if ($isAdmin): ?>
           <a class="btn" href="/admins">Administradores</a>
+          <a class="btn" href="/technologies">Tecnologías</a>
           <a class="btn btn-secondary" href="/auth/logout">Cerrar sesión</a>
         <?php else: ?>
           <a class="btn btn-secondary" href="/auth/login">Admin</a>
         <?php endif; ?>
 
-        <!-- Toggle elegante -->
         <button id="themeToggle" class="icon-toggle" type="button" aria-label="Cambiar tema">
           <span class="icon" aria-hidden="true">🌙</span>
         </button>
@@ -44,6 +45,10 @@
     <main>
       <?= $content ?>
     </main>
+
+    <footer class="card card-pad" style="margin-top:16px; text-align:center;">
+      <small class="muted">© <?= date('Y') ?> Mi Portafolio · Hecho con PHP MVC</small>
+    </footer>
   </div>
 
   <script src="/js/theme.js"></script>
