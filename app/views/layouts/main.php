@@ -19,9 +19,7 @@
       <?php $isAdmin = class_exists('Auth') && Auth::check(); ?>
 
       <nav class="links">
-        <a class="btn" href="/about">Sobre mí</a>
         <a class="btn" href="/projects">Proyectos</a>
-        <a class="btn" href="/about#contacto">Contacto</a>
         <?php if ($isAdmin): ?>
           <a class="btn" href="/about#admin-content-panel">Editar contenido</a>
         <?php endif; ?>

@@ -44,6 +44,14 @@ class AboutController
         $payload = [
             'about_title' => $_POST['about_title'] ?? '',
             'about_body' => $_POST['about_body'] ?? '',
+            'skills_title' => $_POST['skills_title'] ?? '',
+            'skills_body' => $_POST['skills_body'] ?? '',
+            'learning_title' => $_POST['learning_title'] ?? '',
+            'learning_body' => $_POST['learning_body'] ?? '',
+            'goal_title' => $_POST['goal_title'] ?? '',
+            'goal_body' => $_POST['goal_body'] ?? '',
+            'projects_title' => $_POST['projects_title'] ?? '',
+            'projects_body' => $_POST['projects_body'] ?? '',
             'contact_title' => $_POST['contact_title'] ?? '',
             'contact_body' => $_POST['contact_body'] ?? '',
         ];

@@ -6,9 +6,17 @@ class SiteContentModel
 {
     private const DEFAULTS = [
         'about_title' => 'Sobre mí',
-        'about_body' => 'Soy desarrollador y este portafolio reúne proyectos en los que he trabajado. Aquí puedes ver avances, tecnologías usadas y estado actual de cada proyecto.',
+        'about_body' => "Soy Eduardo Machacón, Junior Web Developer enfocado en construir aplicaciones web y mejorar mis habilidades de desarrollo cada día.\n\nMi experiencia en soporte al cliente fortaleció mi pensamiento analítico, mis habilidades de comunicación y mi capacidad para entender las necesidades de los usuarios; competencias que hoy aplico al crear soluciones de software.\n\nTrabajo con flujos de Git, arquitectura MVC y fundamentos de desarrollo web mientras construyo proyectos personales para ganar experiencia práctica.\n\nActualmente estoy en transición hacia el desarrollo de software y buscando activamente mi primera oportunidad profesional como desarrollador.",
+        'skills_title' => 'Tecnologías y habilidades',
+        'skills_body' => "Frontend\n• HTML5\n• CSS3\n• JavaScript\n\nBackend\n• PHP\n• Arquitectura MVC\n• MySQL\n\nHerramientas\n• Git y GitHub\n• VS Code\n• Hosting y despliegue\n\nHabilidades blandas\n• Resolución de problemas\n• Comunicación\n• Aprendizaje continuo",
+        'learning_title' => 'Actualmente aprendiendo',
+        'learning_body' => "• Conceptos avanzados de JavaScript\n• Buenas prácticas de desarrollo backend\n• Diseño de bases de datos\n• Principios de código limpio\n• Inglés (nivel A2 en mejora continua)",
+        'goal_title' => 'Mi objetivo',
+        'goal_body' => 'Mi objetivo es unirme a un equipo de desarrollo donde pueda aportar, seguir aprendiendo y crecer profesionalmente mientras construyo soluciones de software con impacto.',
+        'projects_title' => 'Proyectos',
+        'projects_body' => 'Aquí encontrarás algunos de los proyectos en los que he trabajado y sigo mejorando.',
         'contact_title' => 'Contacto',
-        'contact_body' => 'Puedes escribirme por correo a tu-email@dominio.com o por LinkedIn. También puedes dejar una descripción breve de tu proyecto y te responderé.',
+        'contact_body' => 'Escríbeme a tu-email@dominio.com o por LinkedIn para colaborar.',
     ];
 
     private function filePath(): string
@@ -38,15 +46,12 @@ class SiteContentModel
 
     public function save(array $content): bool
     {
-        $data = [
-            'about_title' => trim((string)($content['about_title'] ?? self::DEFAULTS['about_title'])),
-            'about_body' => trim((string)($content['about_body'] ?? self::DEFAULTS['about_body'])),
-            'contact_title' => trim((string)($content['contact_title'] ?? self::DEFAULTS['contact_title'])),
-            'contact_body' => trim((string)($content['contact_body'] ?? self::DEFAULTS['contact_body'])),
-        ];
-
-        if ($data['about_title'] === '' || $data['about_body'] === '' || $data['contact_title'] === '' || $data['contact_body'] === '') {
-            return false;
+        $data = [];
+        foreach (self::DEFAULTS as $key => $value) {
+            $data[$key] = trim((string)($content[$key] ?? $value));
+            if ($data[$key] === '') {
+                return false;
+            }
         }
 
         $path = $this->filePath();
