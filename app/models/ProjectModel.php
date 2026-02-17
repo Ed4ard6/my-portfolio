@@ -144,13 +144,17 @@ class ProjectModel
         return array_column($stmt->fetchAll(), 'technology_id');
     }
 
-    public function update(int $id, string $name, ?string $description, ?string $projectUrl, array $techIds): void
+    public function update(int $id, string $name, ?string $description, ?string $projectUrl, string $status, array $techIds): void
     {
         $pdo = Database::connect();
         $pdo->beginTransaction();
 
         try {
-            $status = count($techIds) > 0 ? 'active' : 'pending';
+            $allowedStatus = ['pending', 'active', 'completed'];
+            if (!in_array($status, $allowedStatus, true)) {
+                $status = count($techIds) > 0 ? 'active' : 'pending';
+            }
+
             $urlColumn = $projectUrl !== null ? $this->ensureProjectUrlColumn() : $this->projectUrlColumn();
 
             if ($urlColumn !== null) {
@@ -201,6 +205,7 @@ class ProjectModel
 
         try {
             $status = count($techIds) > 0 ? 'active' : 'pending';
+
             $urlColumn = $projectUrl !== null ? $this->ensureProjectUrlColumn() : $this->projectUrlColumn();
 
             if ($urlColumn !== null) {

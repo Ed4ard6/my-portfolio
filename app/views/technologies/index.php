@@ -1,5 +1,5 @@
-<div class="card card-pad">
-    <div class="row">
+<div class="card card-pad page-shell">
+    <div class="page-header">
         <h1 style="margin:0;"><?= htmlspecialchars($heading ?? 'Tecnologías') ?></h1>
         <a class="btn btn-primary" href="/technologies/create">➕ Nueva tecnología</a>
     </div>
@@ -29,7 +29,7 @@
                         <div class="muted" style="margin-top:6px;">Estado: <?= $isActive ? 'Activa' : 'Inactiva' ?></div>
                     </div>
 
-                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                    <div class="card-actions">
                         <a class="btn" href="/technologies/edit/<?= urlencode((string)$tech['id']) ?>">Editar</a>
 
                         <?php if (!empty($supportsActiveFlag)): ?>
