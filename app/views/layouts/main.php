@@ -33,18 +33,18 @@
         <?php endif; ?>
       </nav>
 
-      <div style="display:flex; gap:10px; align-items:center;">
+      <button id="themeToggle" class="icon-toggle nav-theme-toggle" type="button" aria-label="Cambiar tema">
+        <span class="icon" aria-hidden="true">🌙</span>
+      </button>
+
+      <div class="nav-admin-actions">
         <?php if ($isAdmin): ?>
-          <a class="btn" href="/admins">Administradores</a>
+          <a class="btn" href="/admins">Crear usuario</a>
           <a class="btn" href="/technologies">Tecnologías</a>
-          <a class="btn btn-secondary" href="/auth/logout">Cerrar sesión</a>
+          <a class="btn btn-danger nav-logout-btn" href="/auth/logout">Cerrar sesión</a>
         <?php else: ?>
           <a class="btn btn-secondary" href="/auth/login">Admin</a>
         <?php endif; ?>
-
-        <button id="themeToggle" class="icon-toggle" type="button" aria-label="Cambiar tema">
-          <span class="icon" aria-hidden="true">🌙</span>
-        </button>
       </div>
     </header>
 

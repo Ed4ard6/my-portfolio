@@ -92,7 +92,7 @@ class AuthController
 
         View::render('auth/forgot', [
             'title' => 'Recuperar contraseña',
-            'heading' => 'Recuperar contraseña de administrador',
+            'heading' => 'Recuperar contraseña',
             'error' => null,
             'success' => null,
             'tokenSupported' => $resetModel->supported(),
@@ -120,7 +120,7 @@ class AuthController
         if (!$resetModel->supported()) {
             View::render('auth/forgot', [
                 'title' => 'Recuperar contraseña',
-                'heading' => 'Recuperar contraseña de administrador',
+                'heading' => 'Recuperar contraseña',
                 'error' => 'Falta configuración de base de datos para recuperación por token (email o tabla de tokens).',
                 'success' => null,
                 'tokenSupported' => $resetModel->supported(),
@@ -131,7 +131,7 @@ class AuthController
         if ($identifier === '') {
             View::render('auth/forgot', [
                 'title' => 'Recuperar contraseña',
-                'heading' => 'Recuperar contraseña de administrador',
+                'heading' => 'Recuperar contraseña',
                 'error' => 'Ingresa tu usuario o correo.',
                 'success' => null,
                 'tokenSupported' => true,
@@ -148,7 +148,7 @@ class AuthController
         if (!$user) {
             View::render('auth/forgot', [
                 'title' => 'Recuperar contraseña',
-                'heading' => 'Recuperar contraseña de administrador',
+                'heading' => 'Recuperar contraseña',
                 'error' => 'El usuario o correo ingresado no existe en administradores.',
                 'success' => null,
                 'tokenSupported' => true,
@@ -162,7 +162,7 @@ class AuthController
         if (!$ok) {
             View::render('auth/forgot', [
                 'title' => 'Recuperar contraseña',
-                'heading' => 'Recuperar contraseña de administrador',
+                'heading' => 'Recuperar contraseña',
                 'error' => 'No se pudo generar el token de recuperación.',
                 'success' => null,
                 'tokenSupported' => true,
@@ -183,7 +183,7 @@ class AuthController
 
         View::render('auth/forgot', [
             'title' => 'Recuperar contraseña',
-            'heading' => 'Recuperar contraseña de administrador',
+            'heading' => 'Recuperar contraseña',
             'error' => null,
             'success' => 'Token generado correctamente. Expira en ' . self::RESET_TOKEN_MINUTES . ' minutos.',
             'tokenSupported' => true,

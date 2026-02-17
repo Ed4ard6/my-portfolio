@@ -76,21 +76,18 @@ class ProjectsController
     public function index()
     {
         $status = trim($_GET['status'] ?? '');
+        $page = max(1, (int)($_GET['page'] ?? 1));
 
         $projectModel = new ProjectModel();
-
-        if ($status !== '') {
-            $projects = $projectModel->filterByStatus($status);
-        } else {
-            $projects = $projectModel->all();
-        }
+        $pagination = $projectModel->paginate($page, 6, $status);
 
         View::render('projects/index', [
             'title' => 'Proyectos',
             'heading' => 'Mis Proyectos',
             'description' => 'Listado de proyectos (ahora desde la BD).',
-            'projects' => $projects,
-            'currentStatus' => $status
+            'projects' => $pagination['items'],
+            'currentStatus' => $status,
+            'pagination' => $pagination,
         ]);
     }
 

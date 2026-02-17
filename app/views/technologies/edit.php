@@ -1,8 +1,5 @@
 <div class="card card-pad" style="max-width:680px; margin:0 auto;">
-    <div class="row">
-        <h1 style="margin:0;"><?= htmlspecialchars($heading ?? 'Editar tecnología') ?></h1>
-        <a class="btn" href="/technologies">← Volver</a>
-    </div>
+    <h1 style="margin:0;"><?= htmlspecialchars($heading ?? 'Editar tecnología') ?></h1>
 
     <?php if (!empty($error)): ?>
         <div class="card card-pad" style="margin-top:12px; border-color: rgba(255,0,90,.25); background: rgba(255,0,90,.08);">
@@ -29,7 +26,7 @@
             </div>
         <?php endif; ?>
 
-        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
             <button class="btn btn-primary" type="submit">Guardar cambios</button>
             <a class="btn btn-secondary" href="/technologies">Cancelar</a>
         </div>

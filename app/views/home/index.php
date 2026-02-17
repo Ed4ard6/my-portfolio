@@ -162,7 +162,7 @@ if (empty($contactItems)) {
 
             <div class="hero-actions">
                 <a class="btn btn-primary" href="#proyectos"><?= htmlspecialchars($heroPrimaryCta) ?></a>
-                <a class="btn" href="#contacto"><?= htmlspecialchars($heroSecondaryCta) ?></a>
+                <a class="btn btn-contact-highlight" href="#contacto"><?= htmlspecialchars($heroSecondaryCta) ?></a>
             </div>
 
             <div class="hero-links">
