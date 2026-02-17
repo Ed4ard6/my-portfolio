@@ -103,6 +103,24 @@ require_once __DIR__ . '/../my-portfolio/core/Router.php';
 4. Asegúrate de copiar también `public/.htaccess` a `~/public_html/.htaccess`.
 5. Crea tu `.env` en la carpeta privada del proyecto (`~/my-portfolio/.env`) con los datos de BD.
 
+Si en tu hosting la home carga pero rutas como `/admins` o `/projects` siguen mostrando inicio, revisa que en `public_html/.htaccess` tengas **exactamente** esta base:
+
+```apache
+Options -MultiViews
+DirectoryIndex index.php
+
+RewriteEngine On
+RewriteBase /
+
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+RewriteRule ^ index.php?url=$1 [QSA,L]
+```
+
+Además, el router ahora incluye un fallback por `REQUEST_URI`, por lo que también funcionará aunque tu proveedor limite la reescritura del parámetro `url`.
+
 Con esto, las URLs como `/projects`, `/auth/login`, etc. seguirán funcionando igual bajo tu dominio, porque el sitio público ya estará sirviendo desde `public_html`.
 
 > Nota: este repositorio no incluye contraseñas, credenciales reales ni secretos operativos.
