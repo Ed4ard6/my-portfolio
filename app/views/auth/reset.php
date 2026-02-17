@@ -1,4 +1,4 @@
-<div class="card card-pad" style="max-width:560px; margin:0 auto;">
+<div class="card card-pad page-shell" style="max-width:560px; margin:0 auto;">
     <div class="row" style="align-items:center;">
         <h1 style="margin:0;"><?= htmlspecialchars($heading ?? 'Restablecer contraseña') ?></h1>
         <a class="btn" href="/auth/login">← Volver al login</a>

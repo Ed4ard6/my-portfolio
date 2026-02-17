@@ -965,4 +965,45 @@ select:-webkit-autofill {
 
 main {
   flex: 1;
+  padding-top: 14px;
+}
+
+
+.page-shell {
+  margin-top: 0;
+}
+
+.page-header {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.page-header-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.card-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 760px) {
+  .page-header-actions {
+    width: 100%;
+  }
+
+  .page-header-actions .btn,
+  .page-header-actions form {
+    flex: 1 1 auto;
+  }
+
+  .card-actions {
+    width: 100%;
+  }
 }

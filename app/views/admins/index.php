@@ -1,7 +1,7 @@
-<div class="card card-pad">
-    <div class="row" style="align-items:center;">
+<div class="card card-pad page-shell">
+    <div class="page-header">
         <h1 style="margin:0;"><?= htmlspecialchars($heading ?? 'Administradores') ?></h1>
-        <div style="display:flex; gap:10px;">
+        <div class="page-header-actions">
             <a class="btn" href="/projects">← Volver a proyectos</a>
             <a class="btn btn-primary" href="/admins/create">+ Nuevo admin</a>
         </div>
@@ -62,7 +62,7 @@
                             <?php endif; ?>
                         </div>
 
-                        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                        <div class="card-actions">
                             <a class="btn" href="/admins/edit/<?= (int)$admin['id'] ?>">Editar</a>
                             <a class="btn" href="/admins?status=<?= urlencode((string)($currentStatus ?? 'all')) ?>&target_admin_id=<?= (int)$admin['id'] ?>">Historial de este admin</a>
 

@@ -5,7 +5,7 @@ $selectedFeaturedIds = $selectedFeaturedIds ?? [];
 ?>
 
 <?php if (!$isAdmin): ?>
-    <div class="card card-pad about-pro" style="max-width:980px; margin:0 auto;">
+    <div class="card card-pad about-pro page-shell" style="max-width:980px; margin:0 auto;">
         <span class="badge badge--active"><span class="badge-dot"></span>Perfil profesional</span>
         <h1 style="margin-top:12px;">Sobre mí</h1>
 
@@ -28,7 +28,7 @@ $selectedFeaturedIds = $selectedFeaturedIds ?? [];
 <?php endif; ?>
 
 <?php if ($isAdmin): ?>
-    <div class="card card-pad" id="admin-content-panel" style="max-width:980px; margin:0 auto;">
+    <div class="card card-pad page-shell" id="admin-content-panel" style="max-width:980px; margin:0 auto;">
         <div class="row" style="align-items:center;">
             <h1 style="margin:0;">Editar contenido público</h1>
             <span class="badge badge--active"><span class="badge-dot"></span>Modo administrador</span>
