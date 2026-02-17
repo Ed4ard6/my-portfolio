@@ -53,6 +53,9 @@ class AdminsController
             $targetAdminId = null;
         }
 
+        $auditPage = max(1, (int)($_GET['audit_page'] ?? 1));
+        $auditPagination = $this->auditModel->paginate($auditPage, 10, $targetAdminId);
+
         View::render('admins/index', [
             'title' => 'Administradores',
             'heading' => 'Administradores',
@@ -60,7 +63,8 @@ class AdminsController
             'currentUser' => Auth::user(),
             'currentStatus' => $status,
             'flash' => $this->consumeFlash(),
-            'auditLogs' => $this->auditModel->latest(25, $targetAdminId),
+            'auditLogs' => $auditPagination['items'],
+            'auditPagination' => $auditPagination,
             'targetAdminId' => $targetAdminId,
             'emailSupported' => $this->model->supportsEmail(),
         ]);

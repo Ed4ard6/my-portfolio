@@ -1,7 +1,7 @@
 <div class="card card-pad page-shell" style="max-width:560px; margin:0 auto;">
     <div class="row" style="align-items:center;">
         <h1 style="margin:0;"><?= htmlspecialchars($heading ?? 'Restablecer contraseña') ?></h1>
-        <a class="btn" href="/auth/login">← Volver al login</a>
+        <a class="btn" href="/auth/login">← Volver</a>
     </div>
 
     <?php if (!empty($error)): ?>
@@ -40,7 +40,7 @@
             <input class="card card-pad" style="width:100%; padding:10px 12px; border-radius:12px;" type="password" name="password_confirm" required>
         </div>
 
-        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <div class="form-actions form-actions-center">
             <button class="btn btn-primary" type="submit">Actualizar contraseña</button>
             <a class="btn btn-secondary" href="/auth/login">Cancelar</a>
         </div>

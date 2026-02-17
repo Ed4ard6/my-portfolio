@@ -370,6 +370,8 @@ label {
 }
 
 input[type="text"],
+input[type="email"],
+input[type="password"],
 textarea,
 select {
   width: 100%;
@@ -383,6 +385,8 @@ select {
 }
 
 [data-theme="light"] input[type="text"],
+[data-theme="light"] input[type="email"],
+[data-theme="light"] input[type="password"],
 [data-theme="light"] textarea,
 [data-theme="light"] select {
   background: rgba(255, 255, 255, .85);
@@ -391,12 +395,16 @@ select {
 }
 
 input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
 textarea:focus {
   border-color: rgba(115, 102, 255, .55);
   background: rgba(255, 255, 255, .07);
 }
 
 [data-theme="light"] input[type="text"]:focus,
+[data-theme="light"] input[type="email"]:focus,
+[data-theme="light"] input[type="password"]:focus,
 [data-theme="light"] textarea:focus {
   border-color: rgba(79, 70, 229, .55);
   background: rgba(255, 255, 255, .95);
@@ -1020,5 +1028,112 @@ main {
   .card-actions form,
   .card-actions form .btn {
     width: 100%;
+  }
+}
+
+.nav {
+  position: relative;
+  flex-wrap: wrap;
+}
+
+.nav-admin-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.nav-theme-toggle {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+.nav-logout-btn {
+  font-weight: 700;
+  border-color: rgba(255, 0, 90, .38);
+  box-shadow: inset 0 0 0 1px rgba(255, 0, 90, .18);
+}
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.form-actions-center {
+  justify-content: center;
+}
+
+.pagination-wrap {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.tech-select-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 8px;
+}
+
+.tech-select-tag {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, .04);
+  cursor: pointer;
+}
+
+.tech-select-tag input {
+  accent-color: var(--primary1);
+}
+
+.tech-select-tag.is-selected {
+  border-color: rgba(79, 70, 229, .55);
+  background: rgba(79, 70, 229, .18);
+}
+
+.btn-contact-highlight {
+  position: relative;
+  font-weight: 700;
+  border-color: rgba(79,70,229,.45);
+}
+
+.btn-contact-highlight::after {
+  content: '😊';
+  font-size: 14px;
+}
+
+@media (max-width: 680px) {
+  .container {
+    width: min(100%, 96vw);
+    padding-top: 10px;
+  }
+
+  .nav {
+    padding-top: 56px;
+    justify-content: center;
+  }
+
+  .nav .links,
+  .nav-admin-actions {
+    justify-content: center;
+  }
+
+  .row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .card-actions {
+    width: 100%;
+    justify-content: center;
   }
 }

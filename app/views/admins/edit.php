@@ -1,8 +1,5 @@
 <div class="card card-pad" style="max-width:680px; margin:0 auto;">
-    <div class="row" style="align-items:center;">
-        <h1 style="margin:0;"><?= htmlspecialchars($heading ?? 'Editar administrador') ?></h1>
-        <a class="btn" href="/admins">← Volver</a>
-    </div>
+    <h1 style="margin:0;"><?= htmlspecialchars($heading ?? 'Editar administrador') ?></h1>
 
     <?php if (!empty($errors)): ?>
         <div class="card card-pad" style="margin-top:12px; border-color: rgba(255,0,90,.25); background: rgba(255,0,90,.08);">
@@ -25,7 +22,7 @@
 
         <?php if (!empty($emailSupported)): ?>
             <div>
-                <label class="muted">Correo (para recuperación de contraseña)</label><br>
+                <label class="muted">Correo</label><br>
                 <input class="card card-pad" style="width:100%; padding:10px 12px; border-radius:12px;" type="email" name="email" value="<?= htmlspecialchars((string)($admin['email'] ?? '')) ?>" required>
             </div>
         <?php else: ?>
@@ -53,7 +50,7 @@
             </select>
         </div>
 
-        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
             <button class="btn btn-primary" type="submit">Guardar cambios</button>
             <a class="btn btn-secondary" href="/admins">Cancelar</a>
         </div>

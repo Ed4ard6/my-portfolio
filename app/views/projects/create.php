@@ -1,8 +1,5 @@
 <div class="card card-pad">
-    <div class="row">
-        <h1 style="margin:0;"><?= htmlspecialchars($heading) ?></h1>
-        <a class="btn" href="/projects">← Volver</a>
-    </div>
+    <h1 style="margin:0;"><?= htmlspecialchars($heading) ?></h1>
 
     <?php if (!empty($errors)): ?>
         <div class="card card-pad" style="margin-top:12px; border-color: rgba(255,0,90,.25); background: rgba(255,0,90,.08);">
@@ -26,46 +23,27 @@
         <input type="hidden" name="<?= htmlspecialchars(Csrf::fieldName()) ?>" value="<?= htmlspecialchars(Csrf::token()) ?>">
         <div style="margin-top:12px;">
             <label class="muted">Nombre del proyecto</label><br>
-            <input
-                class="card card-pad"
-                style="width:100%; padding:10px 12px; border-radius:12px;"
-                type="text"
-                name="name"
-                required
-                value="<?= htmlspecialchars($old['name'] ?? '') ?>">
+            <input class="card card-pad" style="width:100%; padding:10px 12px; border-radius:12px;" type="text" name="name" required value="<?= htmlspecialchars($old['name'] ?? '') ?>">
         </div>
 
         <div style="margin-top:12px;">
             <label class="muted">Descripción</label><br>
-            <textarea
-                class="card card-pad"
-                style="width:100%; padding:10px 12px; border-radius:12px; min-height:110px;"
-                name="description"
-                rows="4"
-                required><?= htmlspecialchars($old['description'] ?? '') ?></textarea>
+            <textarea class="card card-pad" style="width:100%; padding:10px 12px; border-radius:12px; min-height:110px;" name="description" rows="4" required><?= htmlspecialchars($old['description'] ?? '') ?></textarea>
         </div>
 
         <div style="margin-top:12px;">
             <label class="muted">URL del proyecto (opcional)</label><br>
-            <input
-                class="card card-pad"
-                style="width:100%; padding:10px 12px; border-radius:12px;"
-                type="text"
-                name="project_url"
-                inputmode="url"
-                spellcheck="false"
-                placeholder="https://... o /hangman"
-                value="<?= htmlspecialchars($old['project_url'] ?? '') ?>">
+            <input class="card card-pad" style="width:100%; padding:10px 12px; border-radius:12px;" type="text" name="project_url" inputmode="url" spellcheck="false" placeholder="https://... o /hangman" value="<?= htmlspecialchars($old['project_url'] ?? '') ?>">
             <small class="muted">Acepta URL completa (https://...) o ruta interna (/hangman).</small>
         </div>
 
         <div class="card card-pad" style="margin-top:12px; border-color: rgba(79,70,229,.35); background: rgba(79,70,229,.10);">
-      <strong>Imagen del proyecto:</strong>
-      Para mostrar imagen en el inicio, sube un archivo en <code>public/img/projects/</code> con el ID del proyecto.
-      Ejemplos: <code>4.jpg</code>, <code>4.png</code> o <code>4.webp</code>.
-    </div>
+            <strong>Imagen del proyecto:</strong>
+            Para mostrar imagen en el inicio, sube un archivo en <code>public/img/projects/</code> con el ID del proyecto.
+            Ejemplos: <code>4.jpg</code>, <code>4.png</code> o <code>4.webp</code>.
+        </div>
 
-    <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
+        <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
             <a class="btn" href="/technologies">Gestionar tecnologías</a>
             <a class="btn btn-secondary" href="/technologies/create">Crear tecnología</a>
         </div>
@@ -78,23 +56,19 @@
             <?php if (empty($technologies)): ?>
                 <p>No hay tecnologías registradas en la base de datos.</p>
             <?php else: ?>
-                <div class="grid" style="grid-template-columns: 1fr; gap:8px;">
+                <div class="tech-select-grid">
                     <?php foreach ($technologies as $t): ?>
                         <?php $checked = in_array((int)$t['id'], $selectedTechIds, true); ?>
-                        <label class="card card-pad" style="display:flex; gap:10px; align-items:center; padding:10px 12px;">
-                            <input
-                                type="checkbox"
-                                name="technologies[]"
-                                value="<?= (int)$t['id'] ?>"
-                                <?= $checked ? 'checked' : '' ?>>
-                            <?= htmlspecialchars($t['name']) ?>
+                        <label class="tech-select-tag <?= $checked ? 'is-selected' : '' ?>">
+                            <input type="checkbox" name="technologies[]" value="<?= (int)$t['id'] ?>" <?= $checked ? 'checked' : '' ?>>
+                            <span><?= htmlspecialchars($t['name']) ?></span>
                         </label>
                     <?php endforeach; ?>
                 </div>
             <?php endif; ?>
         </div>
 
-        <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
+        <div class="form-actions form-actions-center" style="margin-top:16px;">
             <button class="btn btn-primary" type="submit">Guardar</button>
             <a class="btn btn-secondary" href="/projects">Cancelar</a>
         </div>
