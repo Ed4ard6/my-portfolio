@@ -57,6 +57,16 @@ class SiteContentModel
             $merged['about_full_body'] = self::DEFAULTS['about_full_body'];
         }
 
+        $contactTitle = mb_strtolower((string)($merged['contact_title'] ?? ''));
+        if ($contactTitle === "let's connect" || $contactTitle === 'lets connect') {
+            $merged['contact_title'] = self::DEFAULTS['contact_title'];
+        }
+
+        $contactBody = (string)($merged['contact_body'] ?? '');
+        if (str_contains($contactBody, "I'm currently open to junior developer opportunities")) {
+            $merged['contact_body'] = self::DEFAULTS['contact_body'];
+        }
+
         return $merged;
     }
 

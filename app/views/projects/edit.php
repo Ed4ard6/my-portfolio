@@ -75,6 +75,12 @@
       <small class="muted">Acepta URL completa (https://...) o ruta interna (/hangman).</small>
     </div>
 
+    <div class="card card-pad" style="margin-top:12px; border-color: rgba(79,70,229,.35); background: rgba(79,70,229,.10);">
+      <strong>Imagen del proyecto:</strong>
+      Para mostrar imagen en el inicio, sube un archivo en <code>public/img/projects/</code> con el ID del proyecto.
+      Ejemplos: <code>4.jpg</code>, <code>4.png</code> o <code>4.webp</code>.
+    </div>
+
     <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
       <a class="btn" href="/technologies">Gestionar tecnologías</a>
       <a class="btn btn-secondary" href="/technologies/create">Crear tecnología</a>

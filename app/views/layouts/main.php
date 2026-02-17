@@ -11,6 +11,7 @@
   <meta property="og:type" content="website">
 
   <link rel="icon" href="/img/favicon.png" type="image/png">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.min.css">
   <link rel="stylesheet" href="/css/app.css">
 </head>
 
@@ -25,7 +26,6 @@
 
       <nav class="links">
         <a class="btn" href="/projects">Proyectos</a>
-        <a class="btn" href="/#sobre-mi">Sobre mí</a>
         <a class="btn" href="/#contacto">Contacto</a>
         <?php if ($isAdmin): ?>
           <a class="btn" href="/about#admin-content-panel">Editar contenido</a>

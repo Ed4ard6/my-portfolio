@@ -204,10 +204,7 @@ class ProjectModel
         $pdo->beginTransaction();
 
         try {
-            $allowedStatus = ['pending', 'active', 'completed'];
-            if (!in_array($status, $allowedStatus, true)) {
-                $status = count($techIds) > 0 ? 'active' : 'pending';
-            }
+            $status = count($techIds) > 0 ? 'active' : 'pending';
 
             $urlColumn = $projectUrl !== null ? $this->ensureProjectUrlColumn() : $this->projectUrlColumn();
 

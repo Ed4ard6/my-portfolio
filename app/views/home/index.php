@@ -1,6 +1,7 @@
 <?php
 $content = $content ?? [];
 $projects = $projects ?? [];
+$technologies = $technologies ?? [];
 
 $fullName = 'Eduardo Machacón';
 $role = 'Desarrollador backend · PHP y MVC';
@@ -22,13 +23,27 @@ if ($profilePhotoUrl === '' && is_file($defaultProfileAbsolutePath)) {
     $profilePhotoUrl = $defaultProfilePhoto;
 }
 
-$stack = [
-    ['name' => 'PHP', 'icon' => '🐘'],
-    ['name' => 'MySQL', 'icon' => '🗄️'],
-    ['name' => 'MVC', 'icon' => '🏗️'],
-    ['name' => 'HTML/CSS', 'icon' => '🎨'],
-    ['name' => 'JavaScript', 'icon' => '⚡'],
-    ['name' => 'Git', 'icon' => '🔀'],
+$techIconMap = [
+    'php' => 'devicon-php-plain',
+    'mysql' => 'devicon-mysql-plain',
+    'javascript' => 'devicon-javascript-plain',
+    'js' => 'devicon-javascript-plain',
+    'html' => 'devicon-html5-plain',
+    'html/css' => 'devicon-html5-plain',
+    'css' => 'devicon-css3-plain',
+    'git' => 'devicon-git-plain',
+    'go' => 'devicon-go-plain',
+    'python' => 'devicon-python-plain',
+    'laravel' => 'devicon-laravel-plain',
+    'docker' => 'devicon-docker-plain',
+    'react' => 'devicon-react-original',
+    'node' => 'devicon-nodejs-plain',
+    'nodejs' => 'devicon-nodejs-plain',
+    'java' => 'devicon-java-plain',
+    'c#' => 'devicon-csharp-plain',
+    'c++' => 'devicon-cplusplus-plain',
+    'typescript' => 'devicon-typescript-plain',
+    'postgresql' => 'devicon-postgresql-plain',
 ];
 ?>
 
@@ -82,18 +97,31 @@ $stack = [
     <h2 class="section-title"><?= htmlspecialchars((string)($content['skills_title'] ?? 'Tecnologías y habilidades')) ?></h2>
 
     <div class="tech-grid-custom" style="margin-top:14px;">
-        <?php foreach ($stack as $item): ?>
-            <span class="stack-pill stack-pill--square">
-                <span><?= htmlspecialchars($item['icon']) ?></span>
-                <?= htmlspecialchars($item['name']) ?>
-            </span>
-        <?php endforeach; ?>
+        <?php if (empty($technologies)): ?>
+            <span class="stack-pill stack-pill--square">Sin tecnologías registradas</span>
+        <?php else: ?>
+            <?php foreach ($technologies as $tech): ?>
+                <?php
+                $techName = (string)($tech['name'] ?? 'Tecnología');
+                $techKey = mb_strtolower(trim($techName));
+                $iconClass = $techIconMap[$techKey] ?? null;
+                ?>
+                <span class="stack-pill stack-pill--square">
+                    <?php if ($iconClass !== null): ?>
+                        <i class="<?= htmlspecialchars($iconClass) ?>" aria-hidden="true"></i>
+                    <?php else: ?>
+                        <span>•</span>
+                    <?php endif; ?>
+                    <?= htmlspecialchars($techName) ?>
+                </span>
+            <?php endforeach; ?>
+        <?php endif; ?>
     </div>
 </section>
 
 <section class="card card-pad home-section" id="proyectos">
     <h2 class="section-title"><?= htmlspecialchars((string)($content['projects_title'] ?? 'Proyectos destacados')) ?></h2>
-    <p>Aquí verás máximo 2 proyectos destacados en estado completado.</p>
+    <p><?= htmlspecialchars((string)($content['projects_body'] ?? 'Aquí se muestran proyectos destacados.')) ?></p>
 
     <?php if (empty($projects)): ?>
         <p class="muted" style="margin-top:14px;">Aún no hay proyectos completados para mostrar en el inicio.</p>
@@ -106,11 +134,30 @@ $stack = [
                 $projectDescription = trim((string)($project['description'] ?? ''));
                 $projectUrl = trim((string)($project['project_url'] ?? ''));
                 $tags = array_filter(array_map('trim', explode(',', (string)($project['technologies'] ?? ''))));
+
+                $projectImageUrl = '';
+                $projectImageCandidates = [
+                    "/img/projects/{$projectId}.webp",
+                    "/img/projects/{$projectId}.png",
+                    "/img/projects/{$projectId}.jpg",
+                    "/img/projects/{$projectId}.jpeg",
+                ];
+                foreach ($projectImageCandidates as $candidate) {
+                    $candidatePath = dirname(__DIR__, 3) . '/public' . $candidate;
+                    if (is_file($candidatePath)) {
+                        $projectImageUrl = $candidate;
+                        break;
+                    }
+                }
                 ?>
                 <article class="card story-project-card">
                     <div class="project-image-placeholder" aria-hidden="true">
-                        <span>🚀</span>
-                        <small>Proyecto completado</small>
+                        <?php if ($projectImageUrl !== ''): ?>
+                            <img class="project-cover-image" src="<?= htmlspecialchars($projectImageUrl) ?>" alt="Imagen del proyecto <?= htmlspecialchars($projectName) ?>">
+                        <?php else: ?>
+                            <span>🚀</span>
+                            <small>Proyecto completado</small>
+                        <?php endif; ?>
                     </div>
 
                     <div class="project-story-content card-pad">
@@ -160,9 +207,20 @@ $stack = [
 <section class="card card-pad home-section" id="contacto">
     <h2 class="section-title"><?= htmlspecialchars($contactTitle) ?></h2>
     <p style="margin-bottom:6px;">¿Hablamos? Estoy abierto a oportunidades como desarrollador backend o fullstack junior.</p>
-    <p class="muted" style="margin-bottom:0;">
-        📧 <a href="mailto:<?= htmlspecialchars($email) ?>"><?= htmlspecialchars($email) ?></a>
-        · 💼 <a href="<?= htmlspecialchars($linkedinUrl) ?>" target="_blank" rel="noopener noreferrer">LinkedIn</a>
-        · 🐙 <a href="<?= htmlspecialchars($githubUrl) ?>" target="_blank" rel="noopener noreferrer">GitHub</a>
+    <p class="muted contact-links" style="margin-bottom:0;">
+        <a href="mailto:<?= htmlspecialchars($email) ?>" aria-label="Correo electrónico">
+            <svg class="contact-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M2 6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v.35l-10 6.25L2 6.35V6Zm0 2.69V18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8.69l-9.47 5.92a1 1 0 0 1-1.06 0L2 8.69Z"/></svg>
+            <?= htmlspecialchars($email) ?>
+        </a>
+        ·
+        <a href="<?= htmlspecialchars($linkedinUrl) ?>" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+            <svg class="contact-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M6.94 8.5A1.56 1.56 0 1 1 6.94 5.4a1.56 1.56 0 0 1 0 3.1ZM5.5 9.8h2.9V19H5.5V9.8Zm4.7 0H13v1.3h.04c.39-.74 1.35-1.52 2.78-1.52 2.98 0 3.53 1.96 3.53 4.5V19h-2.9v-4.35c0-1.04-.02-2.37-1.45-2.37-1.45 0-1.67 1.13-1.67 2.3V19h-2.9V9.8Z"/></svg>
+            LinkedIn
+        </a>
+        ·
+        <a href="<?= htmlspecialchars($githubUrl) ?>" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+            <svg class="contact-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a12 12 0 0 0-3.79 23.39c.6.11.82-.26.82-.58v-2.05c-3.34.73-4.04-1.42-4.04-1.42-.55-1.38-1.33-1.75-1.33-1.75-1.1-.75.08-.74.08-.74 1.2.08 1.84 1.23 1.84 1.23 1.08 1.84 2.83 1.3 3.51 1 .1-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.9 0-1.3.47-2.36 1.24-3.2-.12-.3-.54-1.52.12-3.16 0 0 1.01-.33 3.3 1.22a11.44 11.44 0 0 1 6 0c2.3-1.55 3.3-1.22 3.3-1.22.66 1.64.24 2.86.12 3.16.77.84 1.24 1.9 1.24 3.2 0 4.58-2.8 5.6-5.48 5.9.43.37.82 1.1.82 2.23v3.31c0 .32.21.7.83.58A12 12 0 0 0 12 .5Z"/></svg>
+            GitHub
+        </a>
     </p>
 </section>

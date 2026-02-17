@@ -412,14 +412,6 @@ class ProjectsController
         } elseif (mb_strlen($description) < 10) {
             $errors[] = 'La descripción debe tener al menos 10 caracteres.';
         }
-
-        $allowedStatus = ['pending', 'active', 'completed'];
-        if (!in_array($status, $allowedStatus, true)) {
-            http_response_code(400);
-            echo "Estado inválido.";
-            return;
-        }
-
         if ($rawProjectUrl !== '' && !$this->isValidProjectUrl($rawProjectUrl)) {
             $errors[] = 'La URL del proyecto debe ser http(s) o una ruta interna válida (ejemplo: /hangman).';
         }

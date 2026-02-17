@@ -5,6 +5,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../../core/View.php';
 require_once __DIR__ . '/../models/SiteContentModel.php';
 require_once __DIR__ . '/../models/ProjectModel.php';
+require_once __DIR__ . '/../models/TechnologyModel.php';
 
 class HomeController
 {
@@ -26,9 +27,11 @@ class HomeController
     {
         $contentModel = new SiteContentModel();
         $projectModel = new ProjectModel();
+        $technologyModel = new TechnologyModel();
 
         $content = $contentModel->get();
         $projects = [];
+        $technologies = [];
 
         try {
             $allProjects = $projectModel->all();
@@ -64,11 +67,18 @@ class HomeController
             $projects = [];
         }
 
+        try {
+            $technologies = array_slice($technologyModel->all(true), 0, 8);
+        } catch (Throwable $e) {
+            $technologies = [];
+        }
+
         View::render('home/index', [
             'title' => 'Eduardo Machacón | Desarrollador backend en PHP',
             'heading' => 'Portafolio profesional',
             'content' => $content,
             'projects' => $projects,
+            'technologies' => $technologies,
         ]);
     }
 }
