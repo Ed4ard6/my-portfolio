@@ -1,0 +1,22 @@
+name: Deploy to Hostinger
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Execute deployment via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: 45.152.44.28
+          username: u485990613
+          key: ${{ secrets.DEPLOY_MY_PORTFOLIO }}
+          port: 65002
+          script: |
+            cd domains/eduardomachacon.com/my-portfolio
+            git pull origin main
