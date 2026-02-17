@@ -2,10 +2,14 @@
   <div class="row">
     <h1 style="margin:0;"><?= htmlspecialchars($heading) ?></h1>
 
-    <?php $status = $project['status'] ?? 'pending'; ?>
+    <?php
+      $status = $project['status'] ?? 'pending';
+      $statusLabelMap = ['pending' => 'Pendiente', 'active' => 'Activo', 'completed' => 'Completado'];
+      $statusLabel = $statusLabelMap[$status] ?? ucfirst((string)$status);
+    ?>
     <span class="badge badge--<?= htmlspecialchars($status) ?>">
       <span class="badge-dot"></span>
-      <?= htmlspecialchars(ucfirst($status)) ?>
+      <?= htmlspecialchars($statusLabel) ?>
     </span>
   </div>
 
@@ -44,6 +48,20 @@
     </div>
 
     <div style="margin-top:12px;">
+      <label class="muted">Estado del proyecto</label><br>
+      <select
+        class="card card-pad"
+        style="width:100%; padding:10px 12px; border-radius:12px;"
+        name="status"
+        required>
+        <?php $currentStatus = (string)($project['status'] ?? 'pending'); ?>
+        <option value="pending" <?= $currentStatus === 'pending' ? 'selected' : '' ?>>Pendiente</option>
+        <option value="active" <?= $currentStatus === 'active' ? 'selected' : '' ?>>Activo</option>
+        <option value="completed" <?= $currentStatus === 'completed' ? 'selected' : '' ?>>Completado</option>
+      </select>
+    </div>
+
+    <div style="margin-top:12px;">
       <label class="muted">URL del proyecto (opcional)</label><br>
       <input
         class="card card-pad"
@@ -55,6 +73,12 @@
         placeholder="https://... o /hangman"
         value="<?= htmlspecialchars($project['project_url'] ?? '') ?>">
       <small class="muted">Acepta URL completa (https://...) o ruta interna (/hangman).</small>
+    </div>
+
+    <div class="card card-pad" style="margin-top:12px; border-color: rgba(79,70,229,.35); background: rgba(79,70,229,.10);">
+      <strong>Imagen del proyecto:</strong>
+      Para mostrar imagen en el inicio, sube un archivo en <code>public/img/projects/</code> con el ID del proyecto.
+      Ejemplos: <code>4.jpg</code>, <code>4.png</code> o <code>4.webp</code>.
     </div>
 
     <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
