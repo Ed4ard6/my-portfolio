@@ -1,7 +1,7 @@
 <div class="card card-pad page-shell" style="max-width:520px; margin:0 auto;">
     <div class="row" style="align-items:center;">
         <h1 style="margin:0;"><?= htmlspecialchars($heading ?? 'Recuperar contraseña') ?></h1>
-        <a class="btn" href="/auth/login">← Volver al login</a>
+        <a class="btn" href="/auth/login">← Volver</a>
     </div>
 
     <?php if (!empty($error)): ?>
@@ -26,13 +26,12 @@
         <input type="hidden" name="<?= htmlspecialchars(Csrf::fieldName()) ?>" value="<?= htmlspecialchars(Csrf::token()) ?>">
 
         <div>
-            <label class="muted">Usuario o correo del administrador</label><br>
+            <label class="muted">Usuario o correo</label><br>
             <input class="card card-pad" style="width:100%; padding:10px 12px; border-radius:12px;" type="text" name="identifier" autocomplete="username" required>
         </div>
 
-        <div style="display:flex; gap:10px; flex-wrap:wrap;">
-            <button class="btn btn-primary" type="submit">Generar enlace de recuperación</button>
-            <a class="btn btn-secondary" href="/auth/login">Cancelar</a>
+        <div class="form-actions form-actions-center">
+            <button class="btn btn-primary" type="submit">Enviar enlace</button>
         </div>
     </form>
 </div>
