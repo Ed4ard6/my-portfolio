@@ -121,7 +121,7 @@ a {
   border-radius: 18px;
   padding: 10px 14px;
   box-shadow: 0 10px 28px rgba(0, 0, 0, .28);
-  backdrop-filter: blur(10px);
+  backdrop-filter: none;
 }
 
 /* Light nav (glass card) */
@@ -131,7 +131,7 @@ a {
   border-radius: 18px;
   padding: 10px 14px;
   box-shadow: 0 10px 28px rgba(15,23,42,.10);
-  backdrop-filter: blur(10px);
+  backdrop-filter: none;
 }
 
 /* =========================================================
@@ -143,7 +143,7 @@ a {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-  backdrop-filter: blur(10px);
+  backdrop-filter: none;
 }
 
 .card-pad {
