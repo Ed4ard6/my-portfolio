@@ -8,9 +8,7 @@ $selectedFeaturedIds = $selectedFeaturedIds ?? [];
     <span class="badge badge--active"><span class="badge-dot"></span>Perfil profesional</span>
     <h1 style="margin-top:12px;">Sobre mí</h1>
 
-    <p>Soy <strong>Eduardo Machacón</strong>, desarrollador backend radicado en Bogotá, Colombia.</p>
-    <p>Mi transición a tecnología empezó desde una formación técnica en electrónica y evolucionó hacia el desarrollo de software. Tras estudiar en SENA y trabajar en proyectos reales, consolidé un enfoque fuerte en backend con PHP, bases de datos relacionales y arquitectura MVC.</p>
-    <p>Me caracteriza la constancia para construir productos desde cero, iterar versiones y mejorar hasta lograr una solución sólida, segura y mantenible.</p>
+    <p style="white-space:pre-wrap;"><?= htmlspecialchars((string)($content['about_full_body'] ?? $content['about_body'] ?? '')) ?></p>
 
     <hr class="sep">
 
@@ -78,6 +76,11 @@ $selectedFeaturedIds = $selectedFeaturedIds ?? [];
             <div>
                 <label class="muted">Texto sobre mí</label><br>
                 <textarea class="card card-pad" style="width:100%; min-height:120px; padding:10px 12px; border-radius:12px;" name="about_body" required><?= htmlspecialchars((string)($content['about_body'] ?? '')) ?></textarea>
+            </div>
+
+            <div>
+                <label class="muted">Texto sobre mí (versión completa para /about)</label><br>
+                <textarea class="card card-pad" style="width:100%; min-height:180px; padding:10px 12px; border-radius:12px;" name="about_full_body" required><?= htmlspecialchars((string)($content['about_full_body'] ?? $content['about_body'] ?? '')) ?></textarea>
             </div>
 
             <div>

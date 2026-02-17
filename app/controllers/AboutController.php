@@ -92,6 +92,7 @@ class AboutController
         $payload = [
             'about_title' => $_POST['about_title'] ?? '',
             'about_body' => $_POST['about_body'] ?? '',
+            'about_full_body' => $_POST['about_full_body'] ?? '',
             'skills_title' => $_POST['skills_title'] ?? '',
             'skills_body' => $_POST['skills_body'] ?? '',
             'learning_title' => $_POST['learning_title'] ?? '',

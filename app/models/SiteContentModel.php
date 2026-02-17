@@ -7,6 +7,7 @@ class SiteContentModel
     private const DEFAULTS = [
         'about_title' => 'Sobre mí',
         'about_body' => "Soy Eduardo Machacón, desarrollador backend especializado en PHP, MySQL y arquitectura MVC.\n\nHe construido aplicaciones con autenticación segura, protección CSRF, auditoría de acciones administrativas y paneles de gestión de contenido. Trabajo con enfoque en mantenibilidad, calidad de código y resolución de problemas reales.\n\nActualmente busco mi primera oportunidad profesional como desarrollador junior backend/fullstack, donde pueda aportar en producto mientras sigo fortaleciendo arquitectura de software y APIs.",
+        'about_full_body' => "Soy Eduardo Machacón, desarrollador backend especializado en PHP, MySQL y arquitectura MVC.\n\nMi transición a tecnología inició desde una formación técnica en electrónica y evolucionó hacia el desarrollo de software. Tras estudiar en el SENA y trabajar en proyectos reales, consolidé un enfoque fuerte en backend con PHP, bases de datos relacionales y arquitectura MVC.\n\nHe construido aplicaciones con autenticación segura, protección CSRF, auditoría de acciones administrativas y paneles de gestión de contenido. Trabajo con enfoque en mantenibilidad, calidad de código y resolución de problemas reales.\n\nActualmente busco mi primera oportunidad profesional como desarrollador junior backend/fullstack, donde pueda aportar en producto mientras sigo fortaleciendo arquitectura de software y APIs.",
         'skills_title' => 'Tecnologías y habilidades',
         'skills_body' => "Frontend\n• HTML5\n• CSS3\n• JavaScript\n\nBackend\n• PHP\n• Arquitectura MVC\n• MySQL\n\nHerramientas\n• Git y GitHub\n• VS Code\n• Hosting y despliegue\n\nHabilidades blandas\n• Resolución de problemas\n• Comunicación\n• Aprendizaje continuo",
         'learning_title' => 'Actualmente aprendiendo',
@@ -48,7 +49,15 @@ class SiteContentModel
             return self::DEFAULTS;
         }
 
-        return array_merge(self::DEFAULTS, $decoded);
+        $merged = array_merge(self::DEFAULTS, $decoded);
+
+        $aboutBody = (string)($merged['about_body'] ?? '');
+        if (str_contains($aboutBody, "I’m a Junior Web Developer") || str_contains($aboutBody, "I'm a Junior Web Developer")) {
+            $merged['about_body'] = self::DEFAULTS['about_body'];
+            $merged['about_full_body'] = self::DEFAULTS['about_full_body'];
+        }
+
+        return $merged;
     }
 
     public function featuredProjectIds(?array $content = null): array

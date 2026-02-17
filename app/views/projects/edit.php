@@ -2,10 +2,14 @@
   <div class="row">
     <h1 style="margin:0;"><?= htmlspecialchars($heading) ?></h1>
 
-    <?php $status = $project['status'] ?? 'pending'; ?>
+    <?php
+      $status = $project['status'] ?? 'pending';
+      $statusLabelMap = ['pending' => 'Pendiente', 'active' => 'Activo', 'completed' => 'Completado'];
+      $statusLabel = $statusLabelMap[$status] ?? ucfirst((string)$status);
+    ?>
     <span class="badge badge--<?= htmlspecialchars($status) ?>">
       <span class="badge-dot"></span>
-      <?= htmlspecialchars(ucfirst($status)) ?>
+      <?= htmlspecialchars($statusLabel) ?>
     </span>
   </div>
 
@@ -41,6 +45,20 @@
         name="description"
         rows="4"
         required><?= htmlspecialchars($project['description'] ?? '') ?></textarea>
+    </div>
+
+    <div style="margin-top:12px;">
+      <label class="muted">Estado del proyecto</label><br>
+      <select
+        class="card card-pad"
+        style="width:100%; padding:10px 12px; border-radius:12px;"
+        name="status"
+        required>
+        <?php $currentStatus = (string)($project['status'] ?? 'pending'); ?>
+        <option value="pending" <?= $currentStatus === 'pending' ? 'selected' : '' ?>>Pendiente</option>
+        <option value="active" <?= $currentStatus === 'active' ? 'selected' : '' ?>>Activo</option>
+        <option value="completed" <?= $currentStatus === 'completed' ? 'selected' : '' ?>>Completado</option>
+      </select>
     </div>
 
     <div style="margin-top:12px;">

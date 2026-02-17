@@ -269,6 +269,7 @@ class ProjectsController
         $description = trim($_POST['description'] ?? '');
         $rawProjectUrl = trim($_POST['project_url'] ?? '');
         $projectUrl = $rawProjectUrl !== '' ? $this->normalizeProjectUrl($rawProjectUrl) : null;
+        $status = trim($_POST['status'] ?? 'pending');
 
         $techIds = $_POST['technologies'] ?? [];
         if (!is_array($techIds)) $techIds = [];
@@ -279,6 +280,13 @@ class ProjectsController
             return;
         }
 
+        $allowedStatus = ['pending', 'active', 'completed'];
+        if (!in_array($status, $allowedStatus, true)) {
+            http_response_code(400);
+            echo "Estado inválido.";
+            return;
+        }
+
         if ($rawProjectUrl !== '' && !$this->isValidProjectUrl($rawProjectUrl)) {
             http_response_code(400);
             echo "La URL del proyecto no es válida. Usa https://... o una ruta interna (ejemplo: /hangman).";
@@ -286,7 +294,7 @@ class ProjectsController
         }
 
         $projectModel = new ProjectModel();
-        $projectModel->update($id, $name, $description, $projectUrl, $techIds);
+        $projectModel->update($id, $name, $description, $projectUrl, $status, $techIds);
 
         header("Location: /projects/show/$id");
         exit;
@@ -403,6 +411,13 @@ class ProjectsController
             $errors[] = 'La descripción es obligatoria.';
         } elseif (mb_strlen($description) < 10) {
             $errors[] = 'La descripción debe tener al menos 10 caracteres.';
+        }
+
+        $allowedStatus = ['pending', 'active', 'completed'];
+        if (!in_array($status, $allowedStatus, true)) {
+            http_response_code(400);
+            echo "Estado inválido.";
+            return;
         }
 
         if ($rawProjectUrl !== '' && !$this->isValidProjectUrl($rawProjectUrl)) {
