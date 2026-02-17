@@ -18,6 +18,7 @@ $contactTitleRaw = trim((string)($content['contact_title'] ?? ''));
 $contactTitle = in_array(mb_strtolower($contactTitleRaw), ["let's connect", 'lets connect'], true)
     ? 'Contacto'
     : ($contactTitleRaw !== '' ? $contactTitleRaw : 'Contacto');
+$contactIntro = trim((string)($content['contact_intro'] ?? ''));
 
 $profilePhotoUrl = trim((string)($content['profile_photo_url'] ?? ''));
 $defaultProfilePhoto = '/img/profile-photo.jpg';
@@ -61,6 +62,7 @@ $iconByType = [
 $defaultIcon = $iconByType['web'];
 
 $contactItems = [];
+$inferredIntroParts = [];
 $rawContactBody = trim((string)($content['contact_body'] ?? ''));
 
 if ($rawContactBody !== '') {
@@ -106,6 +108,11 @@ if ($rawContactBody !== '') {
             }
         }
 
+        if (!str_contains($line, '|') && !filter_var($value, FILTER_VALIDATE_EMAIL) && !filter_var($value, FILTER_VALIDATE_URL)) {
+            $inferredIntroParts[] = $line;
+            continue;
+        }
+
         $valueLower = mb_strtolower($value);
         $typeLower = mb_strtolower($type);
 
@@ -130,6 +137,10 @@ if ($rawContactBody !== '') {
             'icon' => $iconByType[$typeLower] ?? $defaultIcon,
         ];
     }
+}
+
+if ($contactIntro === '' && !empty($inferredIntroParts)) {
+    $contactIntro = implode(' ', $inferredIntroParts);
 }
 
 if (empty($contactItems)) {
@@ -298,7 +309,7 @@ if (empty($contactItems)) {
 
 <section class="card card-pad home-section" id="contacto">
     <h2 class="section-title"><?= htmlspecialchars($contactTitle) ?></h2>
-    <p style="margin-bottom:8px;">Canales de contacto:</p>
+    <p style="margin-bottom:6px;"><?= htmlspecialchars($contactIntro !== "" ? $contactIntro : "Canales de contacto:") ?></p>
     <p class="muted contact-links" style="margin-bottom:0;">
         <?php foreach ($contactItems as $index => $item): ?>
             <?php if (!empty($item['href'])): ?>

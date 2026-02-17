@@ -112,6 +112,7 @@ class AboutController
             'projects_title' => $_POST['projects_title'] ?? '',
             'projects_body' => $_POST['projects_body'] ?? '',
             'contact_title' => $_POST['contact_title'] ?? '',
+            'contact_intro' => $_POST['contact_intro'] ?? '',
             'contact_body' => $_POST['contact_body'] ?? '',
             'profile_photo_url' => $_POST['profile_photo_url'] ?? '',
             'featured_project_ids' => implode(',', $selectedFeaturedIds),

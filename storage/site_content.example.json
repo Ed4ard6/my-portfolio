@@ -21,6 +21,7 @@
   "projects_title": "Proyectos",
   "projects_body": "Aquí encontrarás una selección breve de proyectos destacados en estado completado.",
   "contact_title": "Contacto",
+  "contact_intro": "¿Hablamos? Estoy abierto a oportunidades como desarrollador backend o fullstack junior.",
   "contact_body": "correo|Correo|ej.machacon@gmail.com\nlinkedin|LinkedIn|https://www.linkedin.com/in/eduardo-machacon/\ngithub|GitHub|https://github.com/Ed4ard6",
   "profile_photo_url": "/img/profile-photo.jpg",
   "featured_project_ids": ""

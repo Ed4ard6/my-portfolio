@@ -152,8 +152,17 @@ $selectedFeaturedIds = $selectedFeaturedIds ?? [];
                 <input class="card card-pad" style="width:100%; padding:10px 12px; border-radius:12px;" type="text" name="contact_title" required value="<?= htmlspecialchars((string)($content['contact_title'] ?? '')) ?>">
             </div>
             <div>
-                <label class="muted">Medios de contacto (una línea por medio)</label><br>
-                <small class="muted">Formato: <code>tipo|etiqueta|valor</code>. Tipos recomendados: <code>correo</code>, <code>linkedin</code>, <code>github</code>, <code>whatsapp</code>, <code>telegram</code>, <code>web</code>.</small>
+                <label class="muted">Texto introductorio de contacto</label><br>
+                <input class="card card-pad" style="width:100%; padding:10px 12px; border-radius:12px;" type="text" name="contact_intro" required value="<?= htmlspecialchars((string)($content['contact_intro'] ?? '')) ?>">
+            </div>
+            <div>
+                <label class="muted">Links de contacto (una línea por link)</label><br>
+                <small class="muted">Usa este formato exacto: <code>tipo|etiqueta|valor</code>.</small><br>
+                <small class="muted">Ejemplos:</small>
+                <pre class="card card-pad" style="margin:8px 0 6px; white-space:pre-wrap;">correo|Correo|ej.machacon@gmail.com
+linkedin|LinkedIn|https://www.linkedin.com/in/eduardo-machacon/
+github|GitHub|https://github.com/Ed4ard6
+whatsapp|WhatsApp|https://wa.me/573001112233</pre>
                 <textarea class="card card-pad" style="width:100%; min-height:130px; padding:10px 12px; border-radius:12px; margin-top:6px;" name="contact_body" required><?= htmlspecialchars((string)($content['contact_body'] ?? '')) ?></textarea>
             </div>
 

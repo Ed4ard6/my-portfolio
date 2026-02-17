@@ -28,6 +28,7 @@ class SiteContentModel
         'projects_title' => 'Proyectos',
         'projects_body' => 'Estos son proyectos orientados a resolver problemas reales con foco en seguridad, mantenibilidad y resultados medibles.',
         'contact_title' => 'Contacto',
+        'contact_intro' => '¿Hablamos? Estoy abierto a oportunidades como desarrollador backend o fullstack junior.',
         'contact_body' => "correo|Correo|ej.machacon@gmail.com\nlinkedin|LinkedIn|https://www.linkedin.com/in/eduardo-machacon/\ngithub|GitHub|https://github.com/Ed4ard6",
         'profile_photo_url' => '',
         'featured_project_ids' => '',
@@ -75,6 +76,7 @@ class SiteContentModel
 
         $contactBody = (string)($merged['contact_body'] ?? '');
         if (str_contains($contactBody, "I'm currently open to junior developer opportunities")) {
+            $merged['contact_intro'] = self::DEFAULTS['contact_intro'];
             $merged['contact_body'] = self::DEFAULTS['contact_body'];
         }
 
