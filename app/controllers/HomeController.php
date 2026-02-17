@@ -21,7 +21,7 @@ class HomeController
         }
 
         View::render('home/index', [
-            'title' => 'Eduardo Machacón | Backend PHP Developer',
+            'title' => 'Eduardo Machacón | Desarrollador backend en PHP',
             'heading' => 'Portafolio profesional',
             'content' => $contentModel->get(),
             'projects' => $projects,
