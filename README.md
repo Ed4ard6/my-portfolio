@@ -72,6 +72,39 @@ Variables utilizadas:
 4. Aplica las migraciones de `database/migrations/` según corresponda a tu estado actual.
 5. Abre la app en tu host local.
 
+## Despliegue en hosting compartido (`public_html`)
+
+Si tu proveedor usa `public_html` (en lugar de `public/` como document root configurable), **no necesitas cambiar controladores ni rutas**.
+
+Usa esta estructura en el servidor:
+
+- `~/my-portfolio/` → código de la app (`app`, `core`, `storage`, etc.).
+- `~/public_html/` → contenido público (equivalente a la carpeta `public` de este repo).
+
+Pasos recomendados:
+
+1. Sube el proyecto completo a una carpeta privada, por ejemplo `~/my-portfolio`.
+2. Copia el contenido de `public/` dentro de `~/public_html/`.
+3. En `~/public_html/index.php`, ajusta los `require_once` para apuntar al proyecto real.
+
+Ejemplo (si el proyecto quedó en `~/my-portfolio`):
+
+```php
+require_once __DIR__ . '/../my-portfolio/core/Env.php';
+require_once __DIR__ . '/../my-portfolio/core/Database.php';
+require_once __DIR__ . '/../my-portfolio/core/Auth.php';
+require_once __DIR__ . '/../my-portfolio/core/Csrf.php';
+
+Env::load(__DIR__ . '/../my-portfolio');
+
+require_once __DIR__ . '/../my-portfolio/core/Router.php';
+```
+
+4. Asegúrate de copiar también `public/.htaccess` a `~/public_html/.htaccess`.
+5. Crea tu `.env` en la carpeta privada del proyecto (`~/my-portfolio/.env`) con los datos de BD.
+
+Con esto, las URLs como `/projects`, `/auth/login`, etc. seguirán funcionando igual bajo tu dominio, porque el sitio público ya estará sirviendo desde `public_html`.
+
 > Nota: este repositorio no incluye contraseñas, credenciales reales ni secretos operativos.
 
 ## Base de datos
