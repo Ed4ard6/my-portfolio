@@ -6,15 +6,13 @@ class Router
 {
     public static function run()
     {
-        $url = $_GET['url'] ?? '/';
-        $url = trim($url, '/');
+        $url = self::resolveUrl();
         $parts = ($url === '') ? [] : explode('/', $url);
 
         if ($url === '') {
             $controller = 'HomeController';
             $method = 'index';
         } else {
-            $parts = explode('/', $url);
             $controller = ucfirst($parts[0]) . 'Controller';
             $method = $parts[1] ?? 'index';
         }
@@ -41,6 +39,27 @@ class Router
         $controllerInstance = new $controller();
         $params = array_slice($parts, 2);
         call_user_func_array([$controllerInstance, $method], $params);
+    }
+
+    private static function resolveUrl(): string
+    {
+        if (isset($_GET['url']) && is_string($_GET['url'])) {
+            return trim($_GET['url'], '/');
+        }
+
+        $requestPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
+        if (!is_string($requestPath) || $requestPath === '') {
+            return '';
+        }
+
+        $baseDir = trim((string) dirname($_SERVER['SCRIPT_NAME'] ?? ''), '/');
+        if ($baseDir !== '' && str_starts_with($requestPath, '/' . $baseDir . '/')) {
+            $requestPath = substr($requestPath, strlen($baseDir) + 2);
+        } elseif ($baseDir !== '' && $requestPath === '/' . $baseDir) {
+            $requestPath = '/';
+        }
+
+        return trim($requestPath, '/');
     }
 
     private static function renderNotFound(string $heading, string $message): void
