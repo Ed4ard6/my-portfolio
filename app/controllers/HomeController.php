@@ -68,7 +68,7 @@ class HomeController
         }
 
         try {
-            $technologies = array_slice($technologyModel->all(true), 0, 8);
+            $technologies = $technologyModel->all(true);
         } catch (Throwable $e) {
             $technologies = [];
         }

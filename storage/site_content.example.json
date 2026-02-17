@@ -1,4 +1,14 @@
 {
+  "hero_kicker": "Disponible para oportunidades en desarrollo backend",
+  "hero_greeting": "Hola, soy Eduardo Machacón",
+  "hero_role": "Desarrollador backend · PHP y MVC",
+  "hero_summary": "Construyo sistemas web con enfoque en seguridad, bases de datos relacionales y código mantenible. Busco aportar valor en un equipo que construya productos útiles para personas reales.",
+  "hero_primary_cta_label": "Ver proyectos destacados",
+  "hero_secondary_cta_label": "Contáctame",
+  "profile_name": "Eduardo Machacón",
+  "profile_role": "Desarrollador backend · PHP y MVC",
+  "profile_badge": "Disponible para trabajar",
+  "profile_location": "Bogotá, Colombia",
   "about_title": "Sobre mí",
   "about_body": "Soy Eduardo Machacón, desarrollador web junior enfocado en construir aplicaciones útiles y mejorar mis habilidades de desarrollo cada día.\n\nMi experiencia en soporte al cliente fortaleció mi pensamiento analítico, mis habilidades de comunicación y mi capacidad para entender las necesidades de las personas usuarias; competencias que hoy aplico al crear soluciones de software.\n\nTrabajo con flujos de Git, arquitectura MVC y fundamentos de desarrollo web mientras construyo proyectos personales para ganar experiencia práctica.\n\nActualmente estoy en transición hacia el desarrollo de software y buscando activamente mi primera oportunidad profesional como desarrollador.",
   "about_full_body": "Soy Eduardo Machacón, desarrollador backend especializado en PHP, MySQL y arquitectura MVC.\n\nMi transición a tecnología inició desde una formación técnica en electrónica y evolucionó hacia el desarrollo de software. Tras estudiar en el SENA y trabajar en proyectos reales, consolidé un enfoque fuerte en backend con PHP, bases de datos relacionales y arquitectura MVC.\n\nHe construido aplicaciones con autenticación segura, protección CSRF, auditoría de acciones administrativas y paneles de gestión de contenido. Trabajo con enfoque en mantenibilidad, calidad de código y resolución de problemas reales.\n\nActualmente busco mi primera oportunidad profesional como desarrollador junior backend/fullstack, donde pueda aportar en producto mientras sigo fortaleciendo arquitectura de software y APIs.",
@@ -11,7 +21,7 @@
   "projects_title": "Proyectos",
   "projects_body": "Aquí encontrarás una selección breve de proyectos destacados en estado completado.",
   "contact_title": "Contacto",
-  "contact_body": "Escríbeme por correo o por LinkedIn para conversar sobre oportunidades.",
+  "contact_body": "correo|Correo|ej.machacon@gmail.com\nlinkedin|LinkedIn|https://www.linkedin.com/in/eduardo-machacon/\ngithub|GitHub|https://github.com/Ed4ard6",
   "profile_photo_url": "/img/profile-photo.jpg",
   "featured_project_ids": ""
 }

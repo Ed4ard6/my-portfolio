@@ -90,6 +90,16 @@ class AboutController
         }
 
         $payload = [
+            'hero_kicker' => $_POST['hero_kicker'] ?? '',
+            'hero_greeting' => $_POST['hero_greeting'] ?? '',
+            'hero_role' => $_POST['hero_role'] ?? '',
+            'hero_summary' => $_POST['hero_summary'] ?? '',
+            'hero_primary_cta_label' => $_POST['hero_primary_cta_label'] ?? '',
+            'hero_secondary_cta_label' => $_POST['hero_secondary_cta_label'] ?? '',
+            'profile_name' => $_POST['profile_name'] ?? '',
+            'profile_role' => $_POST['profile_role'] ?? '',
+            'profile_badge' => $_POST['profile_badge'] ?? '',
+            'profile_location' => $_POST['profile_location'] ?? '',
             'about_title' => $_POST['about_title'] ?? '',
             'about_body' => $_POST['about_body'] ?? '',
             'about_full_body' => $_POST['about_full_body'] ?? '',
