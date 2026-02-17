@@ -10,13 +10,20 @@ class SiteContentModel
         'skills_title' => 'Tecnologías y habilidades',
         'skills_body' => "Frontend\n• HTML5\n• CSS3\n• JavaScript\n\nBackend\n• PHP\n• Arquitectura MVC\n• MySQL\n\nHerramientas\n• Git y GitHub\n• VS Code\n• Hosting y despliegue\n\nHabilidades blandas\n• Resolución de problemas\n• Comunicación\n• Aprendizaje continuo",
         'learning_title' => 'Actualmente aprendiendo',
-        'learning_body' => "• APIs RESTful en PHP\n• Buenas prácticas backend y clean code\n• Diseño y optimización de bases de datos\n• Testing y calidad de software\n• Inglés técnico (en mejora continua)",
+        'learning_body' => "• APIs RESTful en PHP\n• Buenas prácticas backend y código limpio\n• Diseño y optimización de bases de datos\n• Pruebas y calidad de software\n• Inglés técnico (en mejora continua)",
         'goal_title' => 'Mi objetivo',
         'goal_body' => 'Mi objetivo es unirme a un equipo de desarrollo donde pueda aportar, seguir aprendiendo y crecer profesionalmente mientras construyo soluciones de software con impacto.',
         'projects_title' => 'Proyectos',
         'projects_body' => 'Estos son proyectos orientados a resolver problemas reales con foco en seguridad, mantenibilidad y resultados medibles.',
         'contact_title' => 'Contacto',
         'contact_body' => '📧 ej.machacon@gmail.com\n💼 LinkedIn: https://www.linkedin.com/in/eduardo-machacon/\n🐙 GitHub: https://github.com/Ed4ard6',
+        'profile_photo_url' => '',
+        'featured_project_ids' => '',
+    ];
+
+    private const OPTIONAL_KEYS = [
+        'profile_photo_url',
+        'featured_project_ids',
     ];
 
     private function filePath(): string
@@ -44,12 +51,28 @@ class SiteContentModel
         return array_merge(self::DEFAULTS, $decoded);
     }
 
+    public function featuredProjectIds(?array $content = null): array
+    {
+        $source = $content ?? $this->get();
+        $raw = (string)($source['featured_project_ids'] ?? '');
+        $parts = array_filter(array_map('trim', explode(',', $raw)));
+        $ids = [];
+
+        foreach ($parts as $part) {
+            if (ctype_digit($part)) {
+                $ids[] = (int)$part;
+            }
+        }
+
+        return array_values(array_unique($ids));
+    }
+
     public function save(array $content): bool
     {
         $data = [];
         foreach (self::DEFAULTS as $key => $value) {
             $data[$key] = trim((string)($content[$key] ?? $value));
-            if ($data[$key] === '') {
+            if ($data[$key] === '' && !in_array($key, self::OPTIONAL_KEYS, true)) {
                 return false;
             }
         }

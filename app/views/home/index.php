@@ -9,6 +9,19 @@ $githubUrl = 'https://github.com/Ed4ard6';
 $linkedinUrl = 'https://www.linkedin.com/in/eduardo-machacon/';
 $email = 'ej.machacon@gmail.com';
 
+$contactTitleRaw = trim((string)($content['contact_title'] ?? ''));
+$contactTitle = in_array(mb_strtolower($contactTitleRaw), ["let's connect", 'lets connect'], true)
+    ? 'Contacto'
+    : ($contactTitleRaw !== '' ? $contactTitleRaw : 'Contacto');
+
+$profilePhotoUrl = trim((string)($content['profile_photo_url'] ?? ''));
+$defaultProfilePhoto = '/img/profile-photo.jpg';
+$defaultProfileAbsolutePath = dirname(__DIR__, 3) . '/public' . $defaultProfilePhoto;
+
+if ($profilePhotoUrl === '' && is_file($defaultProfileAbsolutePath)) {
+    $profilePhotoUrl = $defaultProfilePhoto;
+}
+
 $stack = [
     ['name' => 'PHP', 'icon' => '🐘'],
     ['name' => 'MySQL', 'icon' => '🗄️'],
@@ -28,7 +41,7 @@ $stack = [
             <p class="hero-summary"><?= htmlspecialchars($summary) ?></p>
 
             <div class="hero-actions">
-                <a class="btn btn-primary" href="#proyectos">Ver proyectos</a>
+                <a class="btn btn-primary" href="#proyectos">Ver proyectos destacados</a>
                 <a class="btn" href="#contacto">Contáctame</a>
             </div>
 
@@ -42,7 +55,13 @@ $stack = [
         </div>
 
         <aside class="profile-card">
-            <div class="profile-avatar" aria-hidden="true">📸</div>
+            <div class="profile-avatar" aria-hidden="true">
+                <?php if ($profilePhotoUrl !== ''): ?>
+                    <img class="profile-avatar-image" src="<?= htmlspecialchars($profilePhotoUrl) ?>" alt="Foto de Eduardo Machacón">
+                <?php else: ?>
+                    <span>EM</span>
+                <?php endif; ?>
+            </div>
             <h2><?= htmlspecialchars($fullName) ?></h2>
             <p><?= htmlspecialchars($role) ?></p>
             <span class="badge badge--active"><span class="badge-dot"></span>Disponible para trabajar</span>
@@ -74,10 +93,10 @@ $stack = [
 
 <section class="card card-pad home-section" id="proyectos">
     <h2 class="section-title"><?= htmlspecialchars((string)($content['projects_title'] ?? 'Proyectos destacados')) ?></h2>
-    <p><?= htmlspecialchars((string)($content['projects_body'] ?? 'Proyectos obtenidos desde la base de datos y enriquecidos con su stack tecnológico.')) ?></p>
+    <p>Aquí verás máximo 2 proyectos destacados en estado completado.</p>
 
     <?php if (empty($projects)): ?>
-        <p class="muted" style="margin-top:14px;">Aún no hay proyectos publicados.</p>
+        <p class="muted" style="margin-top:14px;">Aún no hay proyectos completados para mostrar en el inicio.</p>
     <?php else: ?>
         <div class="featured-projects-list" style="margin-top:18px;">
             <?php foreach ($projects as $project): ?>
@@ -85,14 +104,13 @@ $stack = [
                 $projectId = (int)($project['id'] ?? 0);
                 $projectName = (string)($project['name'] ?? 'Proyecto sin nombre');
                 $projectDescription = trim((string)($project['description'] ?? ''));
-                $projectStatus = (string)($project['status'] ?? 'pending');
                 $projectUrl = trim((string)($project['project_url'] ?? ''));
                 $tags = array_filter(array_map('trim', explode(',', (string)($project['technologies'] ?? ''))));
                 ?>
                 <article class="card story-project-card">
                     <div class="project-image-placeholder" aria-hidden="true">
                         <span>🚀</span>
-                        <small><?= htmlspecialchars($projectStatus === 'active' ? 'Proyecto activo' : 'Proyecto en evolución') ?></small>
+                        <small>Proyecto completado</small>
                     </div>
 
                     <div class="project-story-content card-pad">
@@ -140,7 +158,7 @@ $stack = [
 </section>
 
 <section class="card card-pad home-section" id="contacto">
-    <h2 class="section-title"><?= htmlspecialchars((string)($content['contact_title'] ?? 'Contacto')) ?></h2>
+    <h2 class="section-title"><?= htmlspecialchars($contactTitle) ?></h2>
     <p style="margin-bottom:6px;">¿Hablamos? Estoy abierto a oportunidades como desarrollador backend o fullstack junior.</p>
     <p class="muted" style="margin-bottom:0;">
         📧 <a href="mailto:<?= htmlspecialchars($email) ?>"><?= htmlspecialchars($email) ?></a>

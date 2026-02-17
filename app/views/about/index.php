@@ -1,4 +1,8 @@
-<?php $isAdmin = !empty($isAdmin); ?>
+<?php
+$isAdmin = !empty($isAdmin);
+$completedProjects = $completedProjects ?? [];
+$selectedFeaturedIds = $selectedFeaturedIds ?? [];
+?>
 
 <div class="card card-pad about-pro" style="max-width:980px; margin:0 auto;">
     <span class="badge badge--active"><span class="badge-dot"></span>Perfil profesional</span>
@@ -124,6 +128,33 @@
             <div>
                 <label class="muted">Texto contacto</label><br>
                 <textarea class="card card-pad" style="width:100%; min-height:120px; padding:10px 12px; border-radius:12px;" name="contact_body" required><?= htmlspecialchars((string)($content['contact_body'] ?? '')) ?></textarea>
+            </div>
+
+
+            <div>
+                <label class="muted">URL de foto de perfil (opcional)</label><br>
+                <input class="card card-pad" style="width:100%; padding:10px 12px; border-radius:12px;" type="text" name="profile_photo_url" placeholder="/img/profile-photo.jpg o https://..." value="<?= htmlspecialchars((string)($content['profile_photo_url'] ?? '')) ?>">
+                <small class="muted">Puedes usar una ruta local dentro de <code>public/img</code> o una URL externa.</small>
+            </div>
+
+            <div>
+                <label class="muted">Proyectos destacados del inicio (máximo 2, solo completados)</label>
+                <?php if (empty($completedProjects)): ?>
+                    <p class="muted" style="margin:8px 0 0;">No hay proyectos en estado completado para seleccionar.</p>
+                <?php else: ?>
+                    <div style="display:grid; gap:8px; margin-top:8px;">
+                        <?php foreach ($completedProjects as $project): ?>
+                            <?php $projectId = (int)($project['id'] ?? 0); ?>
+                            <label class="card card-pad" style="display:flex; gap:10px; align-items:flex-start; padding:10px 12px;">
+                                <input type="checkbox" name="featured_project_ids[]" value="<?= htmlspecialchars((string)$projectId) ?>" <?= in_array($projectId, $selectedFeaturedIds, true) ? 'checked' : '' ?>>
+                                <span>
+                                    <strong><?= htmlspecialchars((string)($project['name'] ?? 'Proyecto sin nombre')) ?></strong><br>
+                                    <span class="muted">ID <?= htmlspecialchars((string)$projectId) ?></span>
+                                </span>
+                            </label>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
             </div>
 
             <div style="display:flex; gap:10px; flex-wrap:wrap;">

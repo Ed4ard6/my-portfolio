@@ -750,8 +750,8 @@ select:-webkit-autofill {
 }
 
 .profile-avatar {
-  width: 72px;
-  height: 72px;
+  width: 92px;
+  height: 92px;
   border-radius: 999px;
   display: grid;
   place-items: center;
@@ -759,6 +759,15 @@ select:-webkit-autofill {
   margin-bottom: 12px;
   background: linear-gradient(135deg, var(--primary1), var(--primary2));
   color: #fff;
+  overflow: hidden;
+}
+
+.profile-avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
 }
 
 .section-title {
