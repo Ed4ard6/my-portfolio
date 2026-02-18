@@ -116,6 +116,7 @@ class ProjectsController
         }
 
         $techNames = $projectModel->technologyNames($id);
+        $projectImages = $projectModel->images($id);
 
         View::render('projects/show', [
             'title' => $project['name'],
@@ -125,6 +126,7 @@ class ProjectsController
             'id' => $project['id'],
             'techNames' => $techNames,
             'status' => $project['status'] ?? 'pending',
+            'projectImages' => $projectImages,
 
         ]);
     }
