@@ -6,7 +6,13 @@ class Mailer
 {
     public static function send(string $to, string $subject, string $htmlBody, ?string $textBody = null): array
     {
-        $transport = mb_strtolower(trim((string)(getenv('MAIL_TRANSPORT') ?: 'mail')));
+        $transportConfigured = trim((string)(getenv('MAIL_TRANSPORT') ?: ''));
+        $hostHints = [
+            trim((string)(getenv('SMTP_HOST') ?: '')),
+            trim((string)(getenv('MAIL_HOST') ?: '')),
+        ];
+        $transport = mb_strtolower($transportConfigured !== '' ? $transportConfigured : (implode('', $hostHints) !== '' ? 'smtp' : 'mail'));
+
         if ($transport === 'smtp') {
             return self::sendViaSmtp($to, $subject, $htmlBody, $textBody);
         }
@@ -54,16 +60,16 @@ class Mailer
 
     private static function sendViaSmtp(string $to, string $subject, string $htmlBody, ?string $textBody): array
     {
-        $host = trim((string)(getenv('SMTP_HOST') ?: ''));
-        $username = trim((string)(getenv('SMTP_USERNAME') ?: ''));
-        $password = trim((string)(getenv('SMTP_PASSWORD') ?: ''));
-        $port = (int)(getenv('SMTP_PORT') ?: 587);
-        $encryption = mb_strtolower(trim((string)(getenv('SMTP_ENCRYPTION') ?: 'tls')));
-        $from = trim((string)(getenv('MAIL_FROM') ?: $username));
+        $host = trim((string)(getenv('SMTP_HOST') ?: getenv('MAIL_HOST') ?: ''));
+        $username = trim((string)(getenv('SMTP_USERNAME') ?: getenv('MAIL_USERNAME') ?: ''));
+        $password = trim((string)(getenv('SMTP_PASSWORD') ?: getenv('MAIL_PASSWORD') ?: ''));
+        $port = (int)(getenv('SMTP_PORT') ?: getenv('MAIL_PORT') ?: 587);
+        $encryption = mb_strtolower(trim((string)(getenv('SMTP_ENCRYPTION') ?: getenv('MAIL_ENCRYPTION') ?: 'tls')));
+        $from = trim((string)(getenv('MAIL_FROM') ?: getenv('MAIL_FROM_EMAIL') ?: $username));
         $fromName = trim((string)(getenv('MAIL_FROM_NAME') ?: 'My Portfolio'));
 
         if ($host === '' || $username === '' || $password === '' || $from === '') {
-            return ['ok' => false, 'error' => 'Configura SMTP_HOST, SMTP_PORT, SMTP_USERNAME, SMTP_PASSWORD y MAIL_FROM.'];
+            return ['ok' => false, 'error' => 'Configura SMTP_/MAIL_ HOST, PORT, USERNAME, PASSWORD y MAIL_FROM (o MAIL_FROM_EMAIL).'];
         }
 
         $remote = self::smtpRemote($host, $port, $encryption);
