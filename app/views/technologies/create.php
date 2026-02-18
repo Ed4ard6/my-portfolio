@@ -1,5 +1,5 @@
-<div class="card card-pad" style="max-width:680px; margin:0 auto;">
-    <h1 style="margin:0;"><?= htmlspecialchars($heading ?? 'Crear tecnología') ?></h1>
+<div class="card card-pad form-compact" style="max-width:560px;">
+    <h1 class="section-title-center" style="margin:0;"><?= htmlspecialchars($heading ?? 'Crear tecnología') ?></h1>
 
     <?php if (!empty($error)): ?>
         <div class="card card-pad" style="margin-top:12px; border-color: rgba(255,0,90,.25); background: rgba(255,0,90,.08);">

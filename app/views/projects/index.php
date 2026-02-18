@@ -1,3 +1,27 @@
+<?php
+$techIconMap = [
+  'php' => 'devicon-php-plain',
+  'mysql' => 'devicon-mysql-plain',
+  'javascript' => 'devicon-javascript-plain',
+  'js' => 'devicon-javascript-plain',
+  'html' => 'devicon-html5-plain',
+  'css' => 'devicon-css3-plain',
+  'git' => 'devicon-git-plain',
+  'go' => 'devicon-go-plain',
+  'python' => 'devicon-python-plain',
+  'laravel' => 'devicon-laravel-plain',
+  'docker' => 'devicon-docker-plain',
+  'react' => 'devicon-react-original',
+  'node' => 'devicon-nodejs-plain',
+  'nodejs' => 'devicon-nodejs-plain',
+  'java' => 'devicon-java-plain',
+  'c#' => 'devicon-csharp-plain',
+  'c++' => 'devicon-cplusplus-plain',
+  'typescript' => 'devicon-typescript-plain',
+  'postgresql' => 'devicon-postgresql-plain',
+];
+?>
+
 <section class="card card-pad page-shell">
   <h1 style="margin-top:0;"><?= htmlspecialchars($heading ?? 'Proyectos') ?></h1>
   <p><?= htmlspecialchars($description ?? '') ?></p>
@@ -41,9 +65,22 @@
                 </span>
               </div>
 
-              <div class="muted" style="margin-top:8px;">
-                <b>Tecnologías:</b>
-                <?= empty($p['technologies']) ? 'Pendiente' : htmlspecialchars($p['technologies']) ?>
+              <div class="muted detail-meta"><b>Tecnologías:</b></div>
+              <div class="tech-list-inline">
+                <?php
+                $techs = array_filter(array_map('trim', explode(',', (string)($p['technologies'] ?? ''))));
+                ?>
+                <?php if (empty($techs)): ?>
+                  <span class="tech-pill">Pendiente</span>
+                <?php else: ?>
+                  <?php foreach ($techs as $tech): ?>
+                    <?php $iconClass = $techIconMap[mb_strtolower($tech)] ?? null; ?>
+                    <span class="tech-pill">
+                      <?php if ($iconClass): ?><i class="<?= htmlspecialchars($iconClass) ?>" aria-hidden="true"></i><?php else: ?>•<?php endif; ?>
+                      <?= htmlspecialchars($tech) ?>
+                    </span>
+                  <?php endforeach; ?>
+                <?php endif; ?>
               </div>
             </div>
 
@@ -87,7 +124,11 @@
   <?php if ($totalPages > 1): ?>
     <div class="pagination-wrap">
       <a class="btn" href="<?= htmlspecialchars($buildUrl(max(1, $page - 1), (string)$currentStatus)) ?>" <?= $page <= 1 ? 'aria-disabled="true" tabindex="-1"' : '' ?>>← Anterior</a>
-      <span class="muted">Página <?= $page ?> de <?= $totalPages ?></span>
+      <div class="pagination-pages">
+        <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+          <a class="btn <?= $i === $page ? 'btn-primary' : '' ?>" href="<?= htmlspecialchars($buildUrl($i, (string)$currentStatus)) ?>"><?= $i ?></a>
+        <?php endfor; ?>
+      </div>
       <a class="btn" href="<?= htmlspecialchars($buildUrl(min($totalPages, $page + 1), (string)$currentStatus)) ?>" <?= $page >= $totalPages ? 'aria-disabled="true" tabindex="-1"' : '' ?>>Siguiente →</a>
     </div>
   <?php endif; ?>

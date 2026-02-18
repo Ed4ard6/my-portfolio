@@ -1,4 +1,27 @@
-<div class="card card-pad">
+<?php
+$techIconMap = [
+  'php' => 'devicon-php-plain',
+  'mysql' => 'devicon-mysql-plain',
+  'javascript' => 'devicon-javascript-plain',
+  'js' => 'devicon-javascript-plain',
+  'html' => 'devicon-html5-plain',
+  'css' => 'devicon-css3-plain',
+  'git' => 'devicon-git-plain',
+  'go' => 'devicon-go-plain',
+  'python' => 'devicon-python-plain',
+  'laravel' => 'devicon-laravel-plain',
+  'docker' => 'devicon-docker-plain',
+  'react' => 'devicon-react-original',
+  'node' => 'devicon-nodejs-plain',
+  'nodejs' => 'devicon-nodejs-plain',
+  'java' => 'devicon-java-plain',
+  'c#' => 'devicon-csharp-plain',
+  'c++' => 'devicon-cplusplus-plain',
+  'typescript' => 'devicon-typescript-plain',
+  'postgresql' => 'devicon-postgresql-plain',
+];
+?>
+<div class="card card-pad detail-shell">
   <?php $isAdmin = class_exists('Auth') && Auth::check(); ?>
 
   <div class="row">
@@ -17,55 +40,30 @@
     </div>
   </div>
 
-  <?php if ($isAdmin && ($status ?? 'pending') !== 'archived'): ?>
-    <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
-      <form method="POST" action="/projects/updateStatus/<?= urlencode((string)($id ?? '')) ?>" style="display:inline;">
-        <input type="hidden" name="<?= htmlspecialchars(Csrf::fieldName()) ?>" value="<?= htmlspecialchars(Csrf::token()) ?>">
-        <input type="hidden" name="status" value="pending">
-        <button class="btn btn-status-pending" <?= ($status === 'pending') ? 'disabled' : '' ?>>
-          Pending
-        </button>
-      </form>
-
-      <form method="POST" action="/projects/updateStatus/<?= urlencode((string)($id ?? '')) ?>" style="display:inline;">
-        <input type="hidden" name="<?= htmlspecialchars(Csrf::fieldName()) ?>" value="<?= htmlspecialchars(Csrf::token()) ?>">
-        <input type="hidden" name="status" value="active">
-        <button class="btn btn-status-active" <?= ($status === 'active') ? 'disabled' : '' ?>>
-          Active
-        </button>
-      </form>
-
-      <form method="POST" action="/projects/updateStatus/<?= urlencode((string)($id ?? '')) ?>" style="display:inline;">
-        <input type="hidden" name="<?= htmlspecialchars(Csrf::fieldName()) ?>" value="<?= htmlspecialchars(Csrf::token()) ?>">
-        <input type="hidden" name="status" value="completed">
-        <button class="btn btn-status-completed" <?= ($status === 'completed') ? 'disabled' : '' ?>>
-          Completed
-        </button>
-      </form>
-    </div>
-  <?php endif; ?>
-
-
   <p style="margin-top:12px;">
     <?= nl2br(htmlspecialchars($description)) ?>
   </p>
 
-  <p style="margin-top:10px;">
-    <b>Tecnologías:</b>
+  <div class="muted detail-meta"><b>Tecnologías:</b></div>
+  <div class="tech-list-inline">
     <?php if (!isset($techNames) || empty($techNames)): ?>
-      Pendiente
+      <span class="tech-pill">Pendiente</span>
     <?php else: ?>
-      <?= htmlspecialchars(implode(', ', $techNames)) ?>
+      <?php foreach ($techNames as $techName): ?>
+        <?php
+        $techName = (string)$techName;
+        $iconClass = $techIconMap[mb_strtolower(trim($techName))] ?? null;
+        ?>
+        <span class="tech-pill">
+          <?php if ($iconClass): ?><i class="<?= htmlspecialchars($iconClass) ?>" aria-hidden="true"></i><?php else: ?>•<?php endif; ?>
+          <?= htmlspecialchars($techName) ?>
+        </span>
+      <?php endforeach; ?>
     <?php endif; ?>
-  </p>
+  </div>
 
-  <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
+  <div style="margin-top:14px; display:flex; gap:8px; flex-wrap:wrap;">
     <a class="btn btn-primary" href="/projects/open/<?= urlencode((string)($id ?? "")) ?>">Abrir proyecto</a>
-    <?php if (!empty($projectUrl)): ?>
-      <a class="btn" href="<?= htmlspecialchars($projectUrl) ?>" target="_blank" rel="noopener noreferrer">
-        Ver URL guardada
-      </a>
-    <?php endif; ?>
   </div>
 
   <div style="margin-top:16px; display:flex; gap:8px; flex-wrap:wrap;">

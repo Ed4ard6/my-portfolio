@@ -1,7 +1,7 @@
 <div class="card card-pad page-shell" style="max-width:420px; margin:0 auto;">
-    <h1 style="margin:0;"><?= htmlspecialchars($heading ?? 'Iniciar sesión') ?></h1>
+    <h1 class="auth-title-center" style="margin:0;"><?= htmlspecialchars($heading ?? 'Iniciar sesión') ?></h1>
 
-    <p class="muted" style="margin-top:8px;">
+    <p class="muted" style="margin-top:8px; text-align:center;">
         Esta sección es solo para administrar tus proyectos.
     </p>
 
@@ -33,12 +33,12 @@
                 name="password"
                 autocomplete="current-password"
                 required>
+            <a class="auth-link-inline" href="/auth/forgot">¿Olvidaste tu contraseña?</a>
         </div>
 
-        <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
+        <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
             <button class="btn btn-primary" type="submit">Entrar</button>
             <a class="btn btn-secondary" href="/">Cancelar</a>
-            <a class="btn" href="/auth/forgot">Olvidé mi contraseña</a>
         </div>
     </form>
 </div>

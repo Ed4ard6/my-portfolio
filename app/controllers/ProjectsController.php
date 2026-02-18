@@ -84,7 +84,7 @@ class ProjectsController
         View::render('projects/index', [
             'title' => 'Proyectos',
             'heading' => 'Mis Proyectos',
-            'description' => 'Listado de proyectos (ahora desde la BD).',
+            'description' => 'Listado de proyectos.',
             'projects' => $pagination['items'],
             'currentStatus' => $status,
             'pagination' => $pagination,

@@ -1,8 +1,5 @@
 <div class="card card-pad page-shell" style="max-width:560px; margin:0 auto;">
-    <div class="row" style="align-items:center;">
-        <h1 style="margin:0;"><?= htmlspecialchars($heading ?? 'Restablecer contraseña') ?></h1>
-        <a class="btn" href="/auth/login">← Volver</a>
-    </div>
+    <h1 class="auth-title-center" style="margin:0;"><?= htmlspecialchars($heading ?? 'Restablecer contraseña') ?></h1>
 
     <?php if (!empty($error)): ?>
         <div class="card card-pad" style="margin-top:12px; border-color: rgba(255,0,90,.25); background: rgba(255,0,90,.08);">
