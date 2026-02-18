@@ -49,11 +49,16 @@ class Env
 
     private static function parseEnvFile(string $file): array
     {
-        $lines = @file($file, FILE_IGNORE_NEW_LINES);
-        if (!is_array($lines)) {
+        $rawContent = @file_get_contents($file);
+        if (!is_string($rawContent) || $rawContent === '') {
             return [];
         }
 
+        if (!str_contains($rawContent, "\n") && str_contains($rawContent, '\\n')) {
+            $rawContent = str_replace(['\\r\\n', '\\n', '\\r'], ["\n", "\n", "\n"], $rawContent);
+        }
+
+        $lines = preg_split('/\r?\n/', $rawContent) ?: [];
         $values = [];
 
         foreach ($lines as $line) {
