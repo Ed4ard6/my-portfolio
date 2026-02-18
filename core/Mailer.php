@@ -79,7 +79,7 @@ class Mailer
             return ['ok' => false, 'error' => 'SMTP no respondió saludo válido: ' . trim($greeting)];
         }
 
-        $hostName = trim((string)(getenv('SMTP_HELO_DOMAIN') ?: 'localhost'));
+        $hostName = self::smtpHeloDomain();
         self::smtpWrite($socket, 'EHLO ' . $hostName);
         $ehlo = self::smtpRead($socket, true);
         if (!self::smtpExpect($ehlo, [250])) {
@@ -107,27 +107,14 @@ class Mailer
                 fclose($socket);
                 return ['ok' => false, 'error' => 'EHLO tras TLS rechazado: ' . trim($ehloTls)];
             }
+
+            $ehlo = $ehloTls;
         }
 
-        self::smtpWrite($socket, 'AUTH LOGIN');
-        $authPromptUser = self::smtpRead($socket);
-        if (!self::smtpExpect($authPromptUser, [334])) {
+        $authResult = self::smtpAuthenticate($socket, $ehlo, $username, $password);
+        if (!(bool)$authResult['ok']) {
             fclose($socket);
-            return ['ok' => false, 'error' => 'AUTH LOGIN rechazado: ' . trim($authPromptUser)];
-        }
-
-        self::smtpWrite($socket, base64_encode($username));
-        $authPromptPass = self::smtpRead($socket);
-        if (!self::smtpExpect($authPromptPass, [334])) {
-            fclose($socket);
-            return ['ok' => false, 'error' => 'Usuario SMTP rechazado: ' . trim($authPromptPass)];
-        }
-
-        self::smtpWrite($socket, base64_encode($password));
-        $authResult = self::smtpRead($socket);
-        if (!self::smtpExpect($authResult, [235])) {
-            fclose($socket);
-            return ['ok' => false, 'error' => 'Credenciales SMTP inválidas: ' . trim($authResult)];
+            return ['ok' => false, 'error' => (string)($authResult['error'] ?? 'No se pudo autenticar en SMTP.')];
         }
 
         self::smtpWrite($socket, 'MAIL FROM:<' . $from . '>');
@@ -229,6 +216,88 @@ class Mailer
         return in_array((int)$matches[1], $codes, true);
     }
 
+    private static function smtpAuthenticate($socket, string $ehloResponse, string $username, string $password): array
+    {
+        $preferredMode = mb_strtolower(trim((string)(getenv('SMTP_AUTH_MODE') ?: 'auto')));
+        $serverMethods = self::smtpAuthMethods($ehloResponse);
+
+        $method = 'login';
+        if ($preferredMode === 'plain' || $preferredMode === 'login') {
+            $method = $preferredMode;
+        } elseif ($preferredMode === 'auto') {
+            if (in_array('plain', $serverMethods, true)) {
+                $method = 'plain';
+            } elseif (in_array('login', $serverMethods, true)) {
+                $method = 'login';
+            }
+        }
+
+        if ($method === 'plain') {
+            $payload = base64_encode("\0" . $username . "\0" . $password);
+            self::smtpWrite($socket, 'AUTH PLAIN ' . $payload);
+            $response = self::smtpRead($socket);
+            if (!self::smtpExpect($response, [235])) {
+                return ['ok' => false, 'error' => 'AUTH PLAIN rechazado: ' . trim($response)];
+            }
+
+            return ['ok' => true, 'error' => null];
+        }
+
+        self::smtpWrite($socket, 'AUTH LOGIN');
+        $authPromptUser = self::smtpRead($socket);
+        if (!self::smtpExpect($authPromptUser, [334])) {
+            return ['ok' => false, 'error' => 'AUTH LOGIN rechazado: ' . trim($authPromptUser)];
+        }
+
+        self::smtpWrite($socket, base64_encode($username));
+        $authPromptPass = self::smtpRead($socket);
+        if (!self::smtpExpect($authPromptPass, [334])) {
+            return ['ok' => false, 'error' => 'Usuario SMTP rechazado: ' . trim($authPromptPass)];
+        }
+
+        self::smtpWrite($socket, base64_encode($password));
+        $authResult = self::smtpRead($socket);
+        if (!self::smtpExpect($authResult, [235])) {
+            return ['ok' => false, 'error' => 'Credenciales SMTP inválidas: ' . trim($authResult)];
+        }
+
+        return ['ok' => true, 'error' => null];
+    }
+
+    private static function smtpAuthMethods(string $ehloResponse): array
+    {
+        if (preg_match('/AUTH\\s+([^\\r\\n]+)/i', $ehloResponse, $matches) !== 1) {
+            return [];
+        }
+
+        $methods = preg_split('/\s+/', trim((string)$matches[1])) ?: [];
+        return array_map(static fn (string $method): string => mb_strtolower($method), $methods);
+    }
+
+    private static function smtpHeloDomain(): string
+    {
+        $configured = trim((string)(getenv('SMTP_HELO_DOMAIN') ?: ''));
+        if ($configured !== '') {
+            return $configured;
+        }
+
+        $mailFrom = trim((string)(getenv('MAIL_FROM') ?: ''));
+        if ($mailFrom !== '' && strpos($mailFrom, '@') !== false) {
+            $domain = trim((string)substr($mailFrom, (int)strpos($mailFrom, '@') + 1));
+            if ($domain !== '') {
+                return $domain;
+            }
+        }
+
+        $appUrl = trim((string)(getenv('APP_URL') ?: ''));
+        $host = (string)parse_url($appUrl, PHP_URL_HOST);
+        if ($host !== '') {
+            return $host;
+        }
+
+        return 'localhost';
+    }
+
     private static function formatAddress(string $email, string $name): string
     {
         $safeName = str_replace(['"', "\r", "\n"], '', $name);
@@ -239,4 +308,3 @@ class Mailer
         return '"' . addslashes($safeName) . '" <' . $email . '>';
     }
 }
-
