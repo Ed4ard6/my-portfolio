@@ -39,7 +39,7 @@
 
       <div class="nav-admin-actions">
         <?php if ($isAdmin): ?>
-          <a class="btn" href="/admins">Administradores</a>
+          <a class="btn" href="/admins">Crear usuario</a>
           <a class="btn" href="/technologies">Tecnologías</a>
           <a class="btn btn-danger nav-logout-btn" href="/auth/logout">Cerrar sesión</a>
         <?php else: ?>
