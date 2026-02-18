@@ -27,6 +27,8 @@ $techIconMap = [
   'postgresql' => 'devicon-postgresql-plain',
 ];
 $status = (string)($status ?? 'pending');
+$projectUrl = trim((string)($projectUrl ?? ''));
+$projectImages = is_array($projectImages ?? null) ? $projectImages : [];
 ?>
 <div class="card card-pad detail-shell">
   <?php $isAdmin = class_exists('Auth') && Auth::check(); ?>
@@ -57,6 +59,24 @@ $status = (string)($status ?? 'pending');
     <?= nl2br(htmlspecialchars($description)) ?>
   </p>
 
+  <?php if (!empty($projectImages)): ?>
+    <section class="project-gallery" aria-label="Galería de imágenes del proyecto">
+      <?php foreach ($projectImages as $index => $image): ?>
+        <?php
+          $imageUrl = trim((string)($image['image_url'] ?? ''));
+          if ($imageUrl === '') {
+              continue;
+          }
+        ?>
+        <figure class="project-gallery-item" style="margin:0;">
+          <img src="<?= htmlspecialchars($imageUrl) ?>" alt="Captura <?= (int)$index + 1 ?> de <?= htmlspecialchars((string)$heading) ?>" loading="lazy">
+        </figure>
+      <?php endforeach; ?>
+    </section>
+  <?php else: ?>
+    <p class="muted" style="margin-top:12px;">Este proyecto todavía no tiene imágenes en la galería.</p>
+  <?php endif; ?>
+
   <div class="muted detail-meta"><b>Tecnologías:</b></div>
   <div class="tech-list-inline">
     <?php if (!isset($techNames) || empty($techNames)): ?>
@@ -76,6 +96,12 @@ $status = (string)($status ?? 'pending');
   </div>
 
   <div style="margin-top:16px; display:flex; gap:8px; flex-wrap:wrap;">
+    <?php if ($projectUrl !== ''): ?>
+      <a class="btn btn-primary" href="<?= htmlspecialchars($projectUrl) ?>" target="_blank" rel="noopener noreferrer">Abrir proyecto</a>
+    <?php else: ?>
+      <span class="btn btn-secondary" aria-disabled="true">Sin URL pública</span>
+    <?php endif; ?>
+
     <?php if ($isAdmin): ?>
       <a class="btn" href="/projects/edit/<?= urlencode((string)($id ?? '')) ?>">Editar</a>
     <?php endif; ?>

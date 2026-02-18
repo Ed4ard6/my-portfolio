@@ -4,6 +4,30 @@ require_once __DIR__ . '/../../core/Database.php';
 
 class ProjectModel
 {
+    private function listProjectImageColumns(PDO $pdo): array
+    {
+        $columns = [];
+
+        try {
+            $stmt = $pdo->query('SHOW COLUMNS FROM project_images');
+            foreach ($stmt->fetchAll() as $row) {
+                $field = (string)($row['Field'] ?? '');
+                if ($field !== '') {
+                    $columns[] = $field;
+                }
+            }
+        } catch (Throwable $e) {
+            return [];
+        }
+
+        return $columns;
+    }
+
+    private function projectImagesTableExists(PDO $pdo): bool
+    {
+        return !empty($this->listProjectImageColumns($pdo));
+    }
+
     private function listProjectColumns(PDO $pdo): array
     {
         $columns = [];
@@ -196,6 +220,39 @@ class ProjectModel
         $stmt->execute([$projectId]);
 
         return array_column($stmt->fetchAll(), 'name');
+    }
+
+    public function images(int $projectId): array
+    {
+        $pdo = Database::connect();
+
+        if (!$this->projectImagesTableExists($pdo)) {
+            return [];
+        }
+
+        $availableColumns = $this->listProjectImageColumns($pdo);
+        $urlColumn = in_array('image_url', $availableColumns, true)
+            ? 'image_url'
+            : (in_array('url', $availableColumns, true) ? 'url' : null);
+
+        if ($urlColumn === null) {
+            return [];
+        }
+
+        $sortColumn = in_array('sort_order', $availableColumns, true) ? 'sort_order' : 'id';
+
+        $stmt = $pdo->prepare(
+            "SELECT id, {$urlColumn} AS image_url, is_cover, {$sortColumn} AS sort_order
+             FROM project_images
+             WHERE project_id = ?
+             ORDER BY is_cover DESC, {$sortColumn} ASC, id ASC"
+        );
+        $stmt->execute([$projectId]);
+
+        return array_values(array_filter(
+            $stmt->fetchAll(),
+            static fn(array $row): bool => trim((string)($row['image_url'] ?? '')) !== ''
+        ));
     }
 
     public function create(string $name, ?string $description, ?string $projectUrl, array $techIds): int

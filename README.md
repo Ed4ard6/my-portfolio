@@ -63,7 +63,7 @@ Variables principales:
 - `MAIL_TRANSPORT` (`mail` o `smtp`)
 - `MAIL_FROM`
 - `MAIL_FROM_NAME` (opcional)
-- `SMTP_HOST`, `SMTP_PORT`, `SMTP_ENCRYPTION`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_HELO_DOMAIN` (cuando `MAIL_TRANSPORT=smtp`)
+- `SMTP_HOST`, `SMTP_PORT`, `SMTP_ENCRYPTION`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_HELO_DOMAIN` y `SMTP_AUTH_MODE` (cuando `MAIL_TRANSPORT=smtp`)
 
 ## Ejecución local
 
@@ -91,6 +91,13 @@ Migraciones incluidas:
 
 - `20260216_add_project_url.sql`
 - `20260216_add_technology_is_active.sql`
+- `20260218_create_project_images.sql`
+
+## Imágenes de proyectos (galería)
+
+- Las imágenes por proyecto se almacenan en la tabla `project_images` (URL/ruta, orden y portada), no como binario en base de datos.
+- La vista de detalle (`/projects/show/{id}`) muestra la galería y un CTA explícito de “Abrir proyecto”.
+- Puedes usar rutas públicas como `/img/projects/4-home.webp` o URLs absolutas (`https://...`).
 
 ## Despliegue en hosting con `public_html`
 
