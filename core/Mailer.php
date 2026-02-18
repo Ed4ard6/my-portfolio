@@ -6,7 +6,13 @@ class Mailer
 {
     public static function send(string $to, string $subject, string $htmlBody, ?string $textBody = null): array
     {
-        $transport = mb_strtolower(trim((string)(getenv('MAIL_TRANSPORT') ?: 'mail')));
+        $transportConfigured = trim((string)(getenv('MAIL_TRANSPORT') ?: ''));
+        $hostHints = [
+            trim((string)(getenv('SMTP_HOST') ?: '')),
+            trim((string)(getenv('MAIL_HOST') ?: '')),
+        ];
+        $transport = mb_strtolower($transportConfigured !== '' ? $transportConfigured : (implode('', $hostHints) !== '' ? 'smtp' : 'mail'));
+
         if ($transport === 'smtp') {
             return self::sendViaSmtp($to, $subject, $htmlBody, $textBody);
         }
@@ -54,16 +60,16 @@ class Mailer
 
     private static function sendViaSmtp(string $to, string $subject, string $htmlBody, ?string $textBody): array
     {
-        $host = trim((string)(getenv('SMTP_HOST') ?: ''));
-        $username = trim((string)(getenv('SMTP_USERNAME') ?: ''));
-        $password = trim((string)(getenv('SMTP_PASSWORD') ?: ''));
-        $port = (int)(getenv('SMTP_PORT') ?: 587);
-        $encryption = mb_strtolower(trim((string)(getenv('SMTP_ENCRYPTION') ?: 'tls')));
-        $from = trim((string)(getenv('MAIL_FROM') ?: $username));
+        $host = trim((string)(getenv('SMTP_HOST') ?: getenv('MAIL_HOST') ?: ''));
+        $username = trim((string)(getenv('SMTP_USERNAME') ?: getenv('MAIL_USERNAME') ?: ''));
+        $password = trim((string)(getenv('SMTP_PASSWORD') ?: getenv('MAIL_PASSWORD') ?: ''));
+        $port = (int)(getenv('SMTP_PORT') ?: getenv('MAIL_PORT') ?: 587);
+        $encryption = mb_strtolower(trim((string)(getenv('SMTP_ENCRYPTION') ?: getenv('MAIL_ENCRYPTION') ?: 'tls')));
+        $from = trim((string)(getenv('MAIL_FROM') ?: getenv('MAIL_FROM_EMAIL') ?: $username));
         $fromName = trim((string)(getenv('MAIL_FROM_NAME') ?: 'My Portfolio'));
 
         if ($host === '' || $username === '' || $password === '' || $from === '') {
-            return ['ok' => false, 'error' => 'Configura SMTP_HOST, SMTP_PORT, SMTP_USERNAME, SMTP_PASSWORD y MAIL_FROM.'];
+            return ['ok' => false, 'error' => 'Configura SMTP_/MAIL_ HOST, PORT, USERNAME, PASSWORD y MAIL_FROM (o MAIL_FROM_EMAIL).'];
         }
 
         $remote = self::smtpRemote($host, $port, $encryption);
@@ -124,11 +130,25 @@ class Mailer
             return ['ok' => false, 'error' => (string)($authResult['error'] ?? 'No se pudo autenticar en SMTP.')];
         }
 
-        self::smtpWrite($socket, 'MAIL FROM:<' . $from . '>');
+        $envelopeFrom = $from;
+        self::smtpWrite($socket, 'MAIL FROM:<' . $envelopeFrom . '>');
         $mailFrom = self::smtpRead($socket);
         if (!self::smtpExpect($mailFrom, [250])) {
-            fclose($socket);
-            return ['ok' => false, 'error' => 'MAIL FROM rechazado: ' . trim($mailFrom)];
+            $canRetryWithUsername = $username !== '' && mb_strtolower($envelopeFrom) !== mb_strtolower($username);
+            if ($canRetryWithUsername) {
+                $envelopeFrom = $username;
+                self::smtpWrite($socket, 'RSET');
+                self::smtpRead($socket);
+                self::smtpWrite($socket, 'MAIL FROM:<' . $envelopeFrom . '>');
+                $mailFromRetry = self::smtpRead($socket);
+                if (!self::smtpExpect($mailFromRetry, [250])) {
+                    fclose($socket);
+                    return ['ok' => false, 'error' => 'MAIL FROM rechazado: ' . trim($mailFromRetry) . ' (original: ' . trim($mailFrom) . ')'];
+                }
+            } else {
+                fclose($socket);
+                return ['ok' => false, 'error' => 'MAIL FROM rechazado: ' . trim($mailFrom)];
+            }
         }
 
         self::smtpWrite($socket, 'RCPT TO:<' . $to . '>');
@@ -150,7 +170,8 @@ class Mailer
         $plain = $textBody !== null && $textBody !== '' ? $textBody : trim(strip_tags($htmlBody));
         $payload = [
             'Date: ' . date(DATE_RFC2822),
-            'From: ' . self::formatAddress($from, $fromName),
+            'From: ' . self::formatAddress($envelopeFrom, $fromName),
+            'Reply-To: ' . $envelopeFrom,
             'To: ' . $to,
             'Subject: ' . $encodedSubject,
             'MIME-Version: 1.0',
@@ -228,28 +249,61 @@ class Mailer
         $preferredMode = mb_strtolower(trim((string)(getenv('SMTP_AUTH_MODE') ?: 'auto')));
         $serverMethods = self::smtpAuthMethods($ehloResponse);
 
-        $method = 'login';
-        if ($preferredMode === 'plain' || $preferredMode === 'login') {
-            $method = $preferredMode;
-        } elseif ($preferredMode === 'auto') {
-            if (in_array('plain', $serverMethods, true)) {
-                $method = 'plain';
-            } elseif (in_array('login', $serverMethods, true)) {
-                $method = 'login';
+        $methodsToTry = self::smtpAuthMethodsToTry($preferredMode, $serverMethods);
+        $errors = [];
+
+        foreach ($methodsToTry as $method) {
+            $result = $method === 'plain'
+                ? self::smtpAuthPlain($socket, $username, $password)
+                : self::smtpAuthLogin($socket, $username, $password);
+
+            if ((bool)($result['ok'] ?? false)) {
+                return ['ok' => true, 'error' => null];
             }
+
+            $errors[] = strtoupper($method) . ': ' . (string)($result['error'] ?? 'Error desconocido');
         }
 
-        if ($method === 'plain') {
-            $payload = base64_encode("\0" . $username . "\0" . $password);
-            self::smtpWrite($socket, 'AUTH PLAIN ' . $payload);
-            $response = self::smtpRead($socket);
-            if (!self::smtpExpect($response, [235])) {
-                return ['ok' => false, 'error' => 'AUTH PLAIN rechazado: ' . trim($response)];
-            }
+        return ['ok' => false, 'error' => 'Autenticación SMTP falló. Intentos: ' . implode(' | ', $errors)];
+    }
 
+    private static function smtpAuthMethodsToTry(string $preferredMode, array $serverMethods): array
+    {
+        if ($preferredMode === 'login' || $preferredMode === 'plain') {
+            return [$preferredMode];
+        }
+
+        $supported = array_values(array_intersect(['plain', 'login'], $serverMethods));
+        if ($supported === []) {
+            return ['login', 'plain'];
+        }
+
+        if (in_array('plain', $supported, true) && in_array('login', $supported, true)) {
+            return ['plain', 'login'];
+        }
+
+        if (in_array('plain', $supported, true)) {
+            return ['plain', 'login'];
+        }
+
+        return ['login', 'plain'];
+    }
+
+    private static function smtpAuthPlain($socket, string $username, string $password): array
+    {
+        $payload = base64_encode("\0" . $username . "\0" . $password);
+        self::smtpWrite($socket, 'AUTH PLAIN ' . $payload);
+        $response = self::smtpRead($socket);
+
+        if (self::smtpExpect($response, [235])) {
             return ['ok' => true, 'error' => null];
         }
 
+        return ['ok' => false, 'error' => 'AUTH PLAIN rechazado: ' . trim($response)];
+    }
+
+    private static function smtpAuthLogin($socket, string $username, string $password): array
+    {
         self::smtpWrite($socket, 'AUTH LOGIN');
         $authPromptUser = self::smtpRead($socket);
         if (!self::smtpExpect($authPromptUser, [334])) {
