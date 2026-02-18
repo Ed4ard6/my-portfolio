@@ -979,6 +979,19 @@ main {
 
 .page-shell {
   margin-top: 0;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+pre,
+code {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+pre {
+  overflow-x: auto;
 }
 
 .page-header {
@@ -1041,18 +1054,25 @@ main {
   gap: 10px;
   align-items: center;
   flex-wrap: wrap;
+  margin-left: auto;
 }
 
 .nav-theme-toggle {
   position: absolute;
   top: 10px;
   right: 10px;
+  z-index: 6;
 }
 
 .nav-logout-btn {
-  font-weight: 700;
-  border-color: rgba(255, 0, 90, .38);
-  box-shadow: inset 0 0 0 1px rgba(255, 0, 90, .18);
+  font-weight: 800;
+  background: linear-gradient(90deg, rgba(190,24,93,.55), rgba(157,23,77,.55));
+  border-color: rgba(255, 99, 132, .62);
+  box-shadow: 0 8px 22px rgba(190,24,93,.30), inset 0 0 0 1px rgba(255,255,255,.15);
+}
+
+.nav-logout-btn:hover {
+  background: linear-gradient(90deg, rgba(225,29,72,.62), rgba(190,24,93,.62));
 }
 
 .form-actions {
@@ -1118,7 +1138,8 @@ main {
   }
 
   .nav {
-    padding-top: 56px;
+    padding-top: 14px;
+    padding-right: 64px;
     justify-content: center;
   }
 
@@ -1135,5 +1156,16 @@ main {
   .card-actions {
     width: 100%;
     justify-content: center;
+  }
+}
+
+@media (max-width: 680px) {
+  .admin-panel-header {
+    align-items: flex-start !important;
+    gap: 8px;
+  }
+
+  .admin-panel-header .badge {
+    align-self: flex-start;
   }
 }

@@ -49,7 +49,7 @@
         </div>
 
         <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
-            <button class="btn btn-primary" type="submit">Guardar administrador</button>
+            <button class="btn btn-primary" type="submit">Crear usuario</button>
             <a class="btn btn-secondary" href="/admins">Cancelar</a>
         </div>
     </form>

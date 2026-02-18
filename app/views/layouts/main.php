@@ -33,7 +33,7 @@
         <?php endif; ?>
       </nav>
 
-      <button id="themeToggle" class="icon-toggle nav-theme-toggle" type="button" aria-label="Cambiar tema">
+      <button id="themeToggle" class="icon-toggle nav-theme-toggle" type="button" aria-label="Cambiar tema" style="position:absolute; top:10px; right:10px; z-index:6;">
         <span class="icon" aria-hidden="true">🌙</span>
       </button>
 

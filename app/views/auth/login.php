@@ -1,8 +1,5 @@
 <div class="card card-pad page-shell" style="max-width:420px; margin:0 auto;">
-    <div class="row" style="align-items:center;">
-        <h1 style="margin:0;"><?= htmlspecialchars($heading ?? 'Iniciar sesión') ?></h1>
-        <a class="btn" href="/">← Volver</a>
-    </div>
+    <h1 style="margin:0;"><?= htmlspecialchars($heading ?? 'Iniciar sesión') ?></h1>
 
     <p class="muted" style="margin-top:8px;">
         Esta sección es solo para administrar tus proyectos.
