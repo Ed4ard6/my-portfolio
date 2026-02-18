@@ -1047,6 +1047,7 @@ pre {
 .nav {
   position: relative;
   flex-wrap: wrap;
+  padding-right: 64px;
 }
 
 .nav-admin-actions {
@@ -1058,10 +1059,11 @@ pre {
 }
 
 .nav-theme-toggle {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  z-index: 6;
+  position: fixed;
+  top: 14px;
+  right: 14px;
+  z-index: 30;
+  box-shadow: var(--shadow);
 }
 
 .nav-logout-btn {
@@ -1092,6 +1094,80 @@ pre {
   justify-content: center;
   gap: 10px;
   flex-wrap: wrap;
+}
+
+.pagination-pages {
+  display: inline-flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+}
+
+.pagination-pages .btn {
+  min-width: 38px;
+}
+
+.auth-title-center,
+.section-title-center {
+  text-align: center;
+}
+
+.auth-link-inline {
+  margin-top: 8px;
+  display: inline-flex;
+  color: var(--primary1);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+
+.auth-link-inline:hover {
+  border-bottom-color: var(--primary1);
+}
+
+.detail-shell {
+  max-width: 920px;
+  margin: 0 auto;
+}
+
+.detail-meta {
+  margin-top: 8px;
+}
+
+.tech-list-inline {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tech-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, .06);
+  font-size: 13px;
+}
+
+.tech-pill i {
+  font-size: 15px;
+}
+
+.form-grid-two {
+  display: grid;
+  gap: 12px;
+}
+
+.form-grid-span {
+  grid-column: 1 / -1;
+}
+
+.form-compact {
+  max-width: 560px;
+  margin: 0 auto;
 }
 
 .tech-select-grid {
@@ -1139,13 +1215,18 @@ pre {
 
   .nav {
     padding-top: 14px;
-    padding-right: 64px;
+    padding-right: 12px;
     justify-content: center;
   }
 
   .nav .links,
   .nav-admin-actions {
     justify-content: center;
+    width: 100%;
+  }
+
+  .nav-admin-actions .btn {
+    flex: 1 1 auto;
   }
 
   .row {
@@ -1156,6 +1237,12 @@ pre {
   .card-actions {
     width: 100%;
     justify-content: center;
+  }
+}
+
+@media (min-width: 900px) {
+  .form-grid-two {
+    grid-template-columns: 1fr 1fr;
   }
 }
 

@@ -1,8 +1,5 @@
 <div class="card card-pad page-shell" style="max-width:520px; margin:0 auto;">
-    <div class="row" style="align-items:center;">
-        <h1 style="margin:0;"><?= htmlspecialchars($heading ?? 'Recuperar contraseña') ?></h1>
-        <a class="btn" href="/auth/login">← Volver</a>
-    </div>
+    <h1 class="auth-title-center" style="margin:0;"><?= htmlspecialchars($heading ?? 'Recuperar contraseña') ?></h1>
 
     <?php if (!empty($error)): ?>
         <div class="card card-pad" style="margin-top:12px; border-color: rgba(255,0,90,.25); background: rgba(255,0,90,.08);">
@@ -32,6 +29,7 @@
 
         <div class="form-actions form-actions-center">
             <button class="btn btn-primary" type="submit">Enviar enlace</button>
+            <a class="btn btn-secondary" href="/auth/login">Volver al login</a>
         </div>
     </form>
 </div>
