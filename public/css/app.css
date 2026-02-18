@@ -35,16 +35,16 @@
 }
 
 [data-theme="light"] {
-  /* Light theme: clean white canvas + stronger depth */
-  --bg: #f8fafc;
-  --card: rgba(255, 255, 255, .96);
+  /* Light theme: bright but with tint + richer depth */
+  --bg: #eef2ff;
+  --card: rgba(255, 255, 255, .94);
   --text: #0f172a;
   --muted: #475569;
-  --border: rgba(15, 23, 42, .12);
-  --shadow: 0 18px 44px rgba(15, 23, 42, .10);
+  --border: rgba(30, 41, 59, .14);
+  --shadow: 0 18px 44px rgba(15, 23, 42, .12);
 
-  --grad1: rgba(99, 102, 241, .18);
-  --grad2: rgba(14, 165, 233, .12);
+  --grad1: rgba(99, 102, 241, .30);
+  --grad2: rgba(14, 165, 233, .20);
 
   --primary1: #4f46e5;
   --primary2: #4338ca;
@@ -57,8 +57,8 @@
   --dangerBd: rgba(255, 0, 90, .22);
   --dangerBgHover: rgba(255, 0, 90, .18);
 
-  --btnBg: rgba(255, 255, 255, .88);
-  --btnBgHover: rgba(255, 255, 255, .98);
+  --btnBg: rgba(255, 255, 255, .82);
+  --btnBgHover: rgba(255, 255, 255, .96);
 }
 
 /* =========================================================
@@ -126,12 +126,17 @@ a {
 
 /* Light nav (glass card) */
 [data-theme="light"] .nav{
-  background: rgba(255,255,255,.88);
-  border: 1px solid rgba(15,23,42,.08);
+  background: linear-gradient(145deg, rgba(255,255,255,.96), rgba(241,245,249,.88));
+  border: 1px solid rgba(99,102,241,.16);
   border-radius: 18px;
   padding: 10px 14px;
-  box-shadow: 0 14px 38px rgba(15,23,42,.10);
+  box-shadow: 0 14px 38px rgba(15,23,42,.12), inset 0 1px 0 rgba(255,255,255,.75);
   backdrop-filter: none;
+}
+
+[data-theme="light"] .card {
+  background: linear-gradient(160deg, rgba(255,255,255,.96), rgba(248,250,252,.94));
+  border-color: rgba(99,102,241,.16);
 }
 
 /* =========================================================
@@ -237,10 +242,12 @@ hr.sep {
 .btn-primary {
   background: linear-gradient(90deg, var(--primary1), var(--primary2));
   border-color: rgba(255, 255, 255, .10);
+  color: #f8fafc;
+  box-shadow: 0 10px 24px rgba(79, 70, 229, .28);
 }
 
 [data-theme="light"] .btn-primary {
-  border-color: rgba(15, 23, 42, .10);
+  border-color: rgba(67, 56, 202, .36);
 }
 
 .btn-secondary {
@@ -558,6 +565,41 @@ textarea {
 [data-theme="light"] .nav #themeToggle:hover,
 [data-theme="light"] .nav #theme-toggle:hover {
   background: #fff;
+}
+
+[data-theme="light"] .nav .btn {
+  background: rgba(255, 255, 255, .74);
+  border-color: rgba(99,102,241,.20);
+  box-shadow: 0 3px 10px rgba(15, 23, 42, .08);
+}
+
+[data-theme="light"] .nav .btn:hover {
+  background: linear-gradient(120deg, rgba(99,102,241,.16), rgba(14,165,233,.14));
+  border-color: rgba(99,102,241,.45);
+  color: #312e81;
+  box-shadow: 0 10px 20px rgba(99,102,241,.20);
+}
+
+[data-theme="light"] .nav .btn:focus-visible,
+[data-theme="light"] .btn:focus-visible {
+  outline: 2px solid rgba(79, 70, 229, .45);
+  outline-offset: 2px;
+}
+
+[data-theme="light"] .btn-secondary:hover {
+  background: linear-gradient(130deg, rgba(99,102,241,.12), rgba(59,130,246,.10));
+  border-color: rgba(99,102,241,.40);
+  color: #1e1b4b;
+}
+
+[data-theme="light"] .grid > .card {
+  transition: transform .16s ease, box-shadow .18s ease, border-color .18s ease;
+}
+
+[data-theme="light"] .grid > .card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(99,102,241,.34);
+  box-shadow: 0 18px 34px rgba(99, 102, 241, .14);
 }
 
 
