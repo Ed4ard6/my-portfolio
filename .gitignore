@@ -33,7 +33,6 @@ vendor/
 
 # Templates permitidos
 !.env.example
-!.emp.example
 
 hostinger_deploy
 hostinger_deploy.pub
