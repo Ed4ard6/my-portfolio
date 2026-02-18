@@ -5,6 +5,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../../core/View.php';
 require_once __DIR__ . '/../../core/Auth.php';
 require_once __DIR__ . '/../../core/Csrf.php';
+require_once __DIR__ . '/../../core/Mailer.php';
 require_once __DIR__ . '/../models/AdminUserModel.php';
 require_once __DIR__ . '/../models/PasswordResetTokenModel.php';
 require_once __DIR__ . '/../models/AdminAuditModel.php';
@@ -173,10 +174,51 @@ class AuthController
         $baseUrl = rtrim((string)(getenv('APP_URL') ?: 'http://localhost'), '/');
         $link = $baseUrl . '/auth/reset/' . rawurlencode($token);
 
-        $logLine = date('Y-m-d H:i:s') . ' | ' . ($user['email'] ?? $user['username'] ?? $identifier) . ' | ' . $link . PHP_EOL;
+        $destinationEmail = trim((string)($user['email'] ?? ''));
+        if ($destinationEmail === '' || filter_var($destinationEmail, FILTER_VALIDATE_EMAIL) === false) {
+            View::render('auth/forgot', [
+                'title' => 'Recuperar contraseña',
+                'heading' => 'Recuperar contraseña',
+                'error' => 'El administrador no tiene un correo válido para recibir el enlace de recuperación.',
+                'success' => null,
+                'tokenSupported' => true,
+            ]);
+            return;
+        }
+
+        $subject = 'Recuperación de contraseña';
+        $htmlBody =
+            '<p>Hola,</p>' .
+            '<p>Recibimos una solicitud para restablecer tu contraseña de administrador.</p>' .
+            '<p>Haz clic en el siguiente enlace (expira en ' . self::RESET_TOKEN_MINUTES . ' minutos):</p>' .
+            '<p><a href="' . htmlspecialchars($link, ENT_QUOTES, 'UTF-8') . '">' . htmlspecialchars($link, ENT_QUOTES, 'UTF-8') . '</a></p>' .
+            '<p>Si no solicitaste este cambio, puedes ignorar este mensaje.</p>';
+        $textBody =
+            "Hola,\n\n" .
+            "Recibimos una solicitud para restablecer tu contraseña de administrador.\n" .
+            'Enlace (expira en ' . self::RESET_TOKEN_MINUTES . " minutos):\n" .
+            $link . "\n\n" .
+            "Si no solicitaste este cambio, ignora este mensaje.\n";
+
+        $mailResult = Mailer::send($destinationEmail, $subject, $htmlBody, $textBody);
+        if (!(bool)($mailResult['ok'] ?? false)) {
+            $errorMessage = (string)($mailResult['error'] ?? 'No se pudo enviar el correo de recuperación.');
+            error_log('[AuthController] Error enviando email de recuperación a ' . $destinationEmail . ': ' . $errorMessage);
+
+            View::render('auth/forgot', [
+                'title' => 'Recuperar contraseña',
+                'heading' => 'Recuperar contraseña',
+                'error' => 'Token generado, pero no se pudo enviar el correo. Revisa la configuración MAIL_/SMTP en el servidor.',
+                'success' => null,
+                'tokenSupported' => true,
+            ]);
+            return;
+        }
+
+        $logLine = date('Y-m-d H:i:s') . ' | ' . $destinationEmail . ' | ' . $link . PHP_EOL;
         $logFile = dirname(__DIR__, 2) . '/storage/password_reset_links.log';
         @file_put_contents($logFile, $logLine, FILE_APPEND);
-        error_log('[AuthController] Token reset para ' . ($user['email'] ?? $user['username'] ?? $identifier) . ': ' . $link);
+        error_log('[AuthController] Correo de recuperación enviado a ' . $destinationEmail . '.');
 
         $audit = new AdminAuditModel();
         $audit->log('password_reset_requested', (int)$user['id'], (int)$user['id'], 'Solicitud de recuperación de contraseña.');
@@ -185,7 +227,7 @@ class AuthController
             'title' => 'Recuperar contraseña',
             'heading' => 'Recuperar contraseña',
             'error' => null,
-            'success' => 'Token generado correctamente. Expira en ' . self::RESET_TOKEN_MINUTES . ' minutos.',
+            'success' => 'Correo de recuperación enviado correctamente. El enlace expira en ' . self::RESET_TOKEN_MINUTES . ' minutos.',
             'tokenSupported' => true,
         ]);
     }

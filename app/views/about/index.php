@@ -5,7 +5,7 @@ $selectedFeaturedIds = $selectedFeaturedIds ?? [];
 ?>
 
 <?php if (!$isAdmin): ?>
-    <div class="card card-pad about-pro page-shell" style="max-width:980px; margin:0 auto;">
+    <div class="card card-pad about-pro page-shell" style="max-width:860px; margin:0 auto;">
         <span class="badge badge--active"><span class="badge-dot"></span>Perfil profesional</span>
         <h1 style="margin-top:12px;">Sobre mí</h1>
 
@@ -192,7 +192,7 @@ whatsapp|WhatsApp|https://wa.me/573001112233</pre>
                 <?php endif; ?>
             </div>
 
-            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <div class="form-actions form-actions-center">
                 <button class="btn btn-primary" type="submit">Guardar contenido</button>
                 <a class="btn btn-secondary" href="/">Ver inicio público</a>
             </div>
