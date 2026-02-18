@@ -19,7 +19,7 @@
 
                             <span class="badge badge--<?= htmlspecialchars($status) ?>">
                                 <span class="badge-dot"></span>
-                                <?= htmlspecialchars(ucfirst($status)) ?>
+                                <?= htmlspecialchars(($status === 'pending' ? 'Pendiente' : ($status === 'active' ? 'Activo' : ($status === 'completed' ? 'Completado' : ($status === 'archived' ? 'Archivado' : ucfirst($status))))) ) ?>
                             </span>
                         </div>
 

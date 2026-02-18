@@ -1,4 +1,10 @@
 <?php
+$statusLabels = [
+  'pending' => 'Pendiente',
+  'active' => 'Activo',
+  'completed' => 'Completado',
+  'archived' => 'Archivado',
+];
 $techIconMap = [
   'php' => 'devicon-php-plain',
   'mysql' => 'devicon-mysql-plain',
@@ -61,7 +67,7 @@ $techIconMap = [
 
                 <span class="badge badge--<?= htmlspecialchars($status) ?>">
                   <span class="badge-dot"></span>
-                  <?= htmlspecialchars(ucfirst($status)) ?>
+                  <?= htmlspecialchars($statusLabels[$status] ?? ucfirst($status)) ?>
                 </span>
               </div>
 

@@ -61,27 +61,59 @@ class TechnologyModel
 
     public function all(bool $onlyActive = false): array
     {
+        $status = $onlyActive ? 'active' : 'all';
+        return $this->paginate(1, PHP_INT_MAX, $status)['items'];
+    }
+
+    public function paginate(int $page = 1, int $perPage = 10, string $status = 'all'): array
+    {
         $pdo = Database::connect();
 
         if (!$this->hasTechnologiesTable($pdo)) {
-            return [];
+            return ['items' => [], 'page' => 1, 'perPage' => $perPage, 'total' => 0, 'totalPages' => 1];
         }
+
+        $page = max(1, $page);
+        $perPage = max(1, $perPage);
 
         $hasActive = $this->ensureIsActiveColumn($pdo);
         $activeColumn = $hasActive ? 'is_active' : '1 AS is_active';
 
-        if ($onlyActive && $hasActive) {
-            $stmt = $pdo->query("SELECT id, name, {$activeColumn}, created_at FROM technologies WHERE is_active = 1 ORDER BY name ASC");
-        } else {
-            $stmt = $pdo->query("SELECT id, name, {$activeColumn}, created_at FROM technologies ORDER BY name ASC");
+        $where = '';
+        if ($hasActive && $status === 'active') {
+            $where = ' WHERE is_active = 1';
+        } elseif ($hasActive && $status === 'inactive') {
+            $where = ' WHERE is_active = 0';
         }
+
+        $countStmt = $pdo->query("SELECT COUNT(*) AS cnt FROM technologies{$where}");
+        $total = (int)($countStmt->fetch()['cnt'] ?? 0);
+        $totalPages = max(1, (int)ceil($total / $perPage));
+        $page = min($page, $totalPages);
+        $offset = ($page - 1) * $perPage;
+
+        $stmt = $pdo->prepare(
+            "SELECT id, name, {$activeColumn}, created_at
+             FROM technologies{$where}
+             ORDER BY name ASC
+             LIMIT :limit OFFSET :offset"
+        );
+        $stmt->bindValue(':limit', $perPage, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+        $stmt->execute();
 
         $rows = $stmt->fetchAll();
 
-        return array_map(static function (array $row): array {
-            $row['is_active'] = (int)($row['is_active'] ?? 1) === 1 ? 1 : 0;
-            return $row;
-        }, $rows);
+        return [
+            'items' => array_map(static function (array $row): array {
+                $row['is_active'] = (int)($row['is_active'] ?? 1) === 1 ? 1 : 0;
+                return $row;
+            }, $rows),
+            'page' => $page,
+            'perPage' => $perPage,
+            'total' => $total,
+            'totalPages' => $totalPages,
+        ];
     }
 
     public function find(int $id): ?array

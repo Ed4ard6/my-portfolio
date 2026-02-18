@@ -12,20 +12,20 @@
 
         <div>
             <label class="muted">Nombre de la tecnología</label><br>
-            <input class="card card-pad" style="width:100%; padding:10px 12px; border-radius:12px;" type="text" name="name" required value="<?= htmlspecialchars((string)($old['name'] ?? '')) ?>">
+            <input class="input-compact" type="text" name="name" required value="<?= htmlspecialchars((string)($old['name'] ?? '')) ?>">
         </div>
 
         <?php if (!empty($supportsActiveFlag)): ?>
             <div>
                 <label class="muted">Estado</label><br>
-                <select class="card card-pad" style="width:100%; padding:10px 12px; border-radius:12px;" name="is_active">
+                <select class="input-compact" name="is_active">
                     <option value="1" <?= (($old['is_active'] ?? '1') === '1') ? 'selected' : '' ?>>Activa</option>
                     <option value="0" <?= (($old['is_active'] ?? '1') === '0') ? 'selected' : '' ?>>Inactiva</option>
                 </select>
             </div>
         <?php endif; ?>
 
-        <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
+        <div class="form-actions form-actions-center">
             <button class="btn btn-primary" type="submit">Guardar</button>
             <a class="btn btn-secondary" href="/technologies">Cancelar</a>
         </div>

@@ -1,4 +1,10 @@
 <?php
+$statusLabels = [
+  'pending' => 'Pendiente',
+  'active' => 'Activo',
+  'completed' => 'Completado',
+  'archived' => 'Archivado',
+];
 $techIconMap = [
   'php' => 'devicon-php-plain',
   'mysql' => 'devicon-mysql-plain',
@@ -20,27 +26,34 @@ $techIconMap = [
   'typescript' => 'devicon-typescript-plain',
   'postgresql' => 'devicon-postgresql-plain',
 ];
+$status = (string)($status ?? 'pending');
 ?>
 <div class="card card-pad detail-shell">
   <?php $isAdmin = class_exists('Auth') && Auth::check(); ?>
 
-  <div class="row">
-    <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-      <h1 style="margin:0;"><?= htmlspecialchars($heading) ?></h1>
-
-      <?php $status = $status ?? 'pending'; ?>
-      <span class="badge badge--<?= htmlspecialchars($status) ?>">
-        <span class="badge-dot"></span>
-        <?= htmlspecialchars(ucfirst($status)) ?>
-      </span>
+  <a
+    class="project-launch-card"
+    href="/projects/open/<?= urlencode((string)($id ?? '')) ?>"
+    target="_blank"
+    rel="noopener noreferrer"
+    aria-label="Abrir proyecto en nueva pestaña"
+  >
+    <div class="row">
+      <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+        <h1 style="margin:0;"><?= htmlspecialchars($heading) ?></h1>
+        <span class="badge badge--<?= htmlspecialchars($status) ?>">
+          <span class="badge-dot"></span>
+          <?= htmlspecialchars($statusLabels[$status] ?? ucfirst($status)) ?>
+        </span>
+      </div>
+      <div class="muted">
+        <strong>ID:</strong> <?= htmlspecialchars((string)($id ?? '')) ?>
+      </div>
     </div>
+    <p class="muted" style="margin:8px 0 0;">Haz clic en esta tarjeta para abrir el proyecto en una nueva pestaña.</p>
+  </a>
 
-    <div class="muted">
-      <strong>ID:</strong> <?= htmlspecialchars((string)($id ?? '')) ?>
-    </div>
-  </div>
-
-  <p style="margin-top:12px;">
+  <p style="margin-top:14px;">
     <?= nl2br(htmlspecialchars($description)) ?>
   </p>
 
@@ -60,10 +73,6 @@ $techIconMap = [
         </span>
       <?php endforeach; ?>
     <?php endif; ?>
-  </div>
-
-  <div style="margin-top:14px; display:flex; gap:8px; flex-wrap:wrap;">
-    <a class="btn btn-primary" href="/projects/open/<?= urlencode((string)($id ?? "")) ?>">Abrir proyecto</a>
   </div>
 
   <div style="margin-top:16px; display:flex; gap:8px; flex-wrap:wrap;">

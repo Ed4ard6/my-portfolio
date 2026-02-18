@@ -53,13 +53,17 @@ class AdminsController
             $targetAdminId = null;
         }
 
+        $page = max(1, (int)($_GET['page'] ?? 1));
+        $adminsPagination = $this->model->paginate($page, 8, $status);
+
         $auditPage = max(1, (int)($_GET['audit_page'] ?? 1));
         $auditPagination = $this->auditModel->paginate($auditPage, 10, $targetAdminId);
 
         View::render('admins/index', [
             'title' => 'Administradores',
             'heading' => 'Administradores',
-            'admins' => $this->model->all($status),
+            'admins' => $adminsPagination['items'],
+            'adminsPagination' => $adminsPagination,
             'currentUser' => Auth::user(),
             'currentStatus' => $status,
             'flash' => $this->consumeFlash(),
@@ -284,20 +288,20 @@ class AdminsController
 
         $admin = $this->model->findById($id);
         if (!$admin) {
-            $this->setFlash('error', 'No se encontró el administrador que intentabas eliminar.');
+            $this->setFlash('error', 'No se encontró el administrador que intentabas desactivar.');
             header('Location: /admins');
             exit;
         }
 
         if ((string)$admin['username'] === (string)Auth::user()) {
-            $this->setFlash('error', 'No puedes eliminar tu propio usuario en sesión.');
+            $this->setFlash('error', 'No puedes desactivar tu propio usuario en sesión.');
             header('Location: /admins');
             exit;
         }
 
-        $this->model->delete($id);
-        $this->auditModel->log('admin_deleted', Auth::userId(), $id, 'Se eliminó un administrador.');
-        $this->setFlash('success', 'Administrador eliminado correctamente.');
+        $this->model->setActive($id, false);
+        $this->auditModel->log('admin_deactivated', Auth::userId(), $id, 'Se desactivó un administrador.');
+        $this->setFlash('success', 'Administrador desactivado correctamente.');
         header('Location: /admins');
         exit;
     }
