@@ -63,6 +63,34 @@ Variables utilizadas:
 - `DB_USERNAME`
 - `DB_PASSWORD`
 - `DB_CHARSET` (opcional, por defecto `utf8mb4`)
+- `APP_URL` (URL pública base para construir enlace de reset)
+- `MAIL_TRANSPORT` (`mail` o `smtp`)
+- `MAIL_FROM`
+- `MAIL_FROM_NAME` (opcional)
+- `SMTP_HOST` (si `MAIL_TRANSPORT=smtp`)
+- `SMTP_PORT` (si `MAIL_TRANSPORT=smtp`)
+- `SMTP_ENCRYPTION` (`tls`, `ssl` o vacío; si `MAIL_TRANSPORT=smtp`)
+- `SMTP_USERNAME` (si `MAIL_TRANSPORT=smtp`)
+- `SMTP_PASSWORD` (si `MAIL_TRANSPORT=smtp`)
+- `SMTP_HELO_DOMAIN` (opcional, por defecto `localhost`)
+
+### Recuperación de contraseña por correo en hosting
+
+En local puede funcionar con logs o con `mail()` según tu entorno, pero en hosting compartido casi siempre necesitas SMTP autenticado.
+
+Desde esta versión, el flujo `/auth/forgot`:
+
+1. Genera y guarda token en `admin_password_resets`.
+2. Envía correo real al `email` del administrador usando `MAIL_TRANSPORT`.
+3. Si el envío falla, muestra error en pantalla (no “éxito falso”).
+
+Checklist rápido para producción:
+
+1. Verifica que el admin tenga correo válido en `admin_users.email`.
+2. Configura `.env` con SMTP real de tu proveedor (Hostinger/cPanel/Workspace).
+3. Usa `APP_URL=https://tu-dominio.com` para que el enlace sea correcto.
+4. Revisa el log de PHP si aparece error SMTP (credenciales, TLS, puerto, remitente).
+5. Asegura que `MAIL_FROM` pertenezca a tu dominio y exista como buzón/cuenta SMTP.
 
 ## Ejecución local
 
