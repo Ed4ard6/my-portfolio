@@ -3,7 +3,7 @@
         <h1 style="margin:0;"><?= htmlspecialchars($heading ?? 'Administradores') ?></h1>
         <div class="page-header-actions">
             <a class="btn" href="/projects">← Volver a proyectos</a>
-            <a class="btn btn-primary" href="/admins/create">+ Nuevo admin</a>
+            <a class="btn btn-primary" href="/admins/create">+ Crear usuario</a>
         </div>
     </div>
 
