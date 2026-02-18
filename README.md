@@ -63,7 +63,7 @@ Variables principales:
 - `MAIL_TRANSPORT` (`mail` o `smtp`)
 - `MAIL_FROM`
 - `MAIL_FROM_NAME` (opcional)
-- `SMTP_HOST`, `SMTP_PORT`, `SMTP_ENCRYPTION`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_HELO_DOMAIN` (cuando `MAIL_TRANSPORT=smtp`)
+- `SMTP_HOST`, `SMTP_PORT`, `SMTP_ENCRYPTION`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_HELO_DOMAIN` y `SMTP_AUTH_MODE` (cuando `MAIL_TRANSPORT=smtp`)
 
 ## Ejecución local
 
