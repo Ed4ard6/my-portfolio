@@ -116,7 +116,7 @@ RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^ - [L]
 
-RewriteRule ^ index.php?url=$1 [QSA,L]
+RewriteRule ^(.*)$ index.php?url=$1 [QSA,L]
 ```
 
 Además, el router ahora incluye un fallback por `REQUEST_URI`, por lo que también funcionará aunque tu proveedor limite la reescritura del parámetro `url`.
