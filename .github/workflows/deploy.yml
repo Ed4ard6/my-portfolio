@@ -20,3 +20,4 @@ jobs:
           script: |
             cd domains/eduardomachacon.com/my-portfolio
             git pull origin main
+            bash scripts/deploy-hostinger.sh

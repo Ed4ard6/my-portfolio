@@ -125,6 +125,51 @@ Con esto, las URLs como `/projects`, `/auth/login`, etc. seguirán funcionando i
 
 > Nota: este repositorio no incluye contraseñas, credenciales reales ni secretos operativos.
 
+
+## Flujo recomendado para producción + local (Laragon)
+
+Para evitar que `public_html` se desactualice, el proyecto ahora incluye el script:
+
+- `scripts/deploy-hostinger.sh`
+
+### ¿Qué hace este script?
+
+1. Copia todo lo público de `my-portfolio/public` (CSS, JS, IMG, etc.) hacia `public_html`.
+2. Deja fijo `public_html/index.php` como “puente” hacia `my-portfolio/public/index.php`.
+3. Deja fijo `public_html/.htaccess` con reglas de rutas.
+
+Así, `public_html` siempre queda igual que tu proyecto real al hacer deploy.
+
+### Producción (GitHub Actions)
+
+El workflow ya lo ejecuta automáticamente después de `git pull`.
+
+### Local en Laragon (replicar hosting)
+
+Si en tu PC tienes esta estructura:
+
+- `C:/laragon/www/my-portfolio`
+- `C:/laragon/www/public_html`
+
+puedes sincronizar manualmente con:
+
+```bash
+cd C:/laragon/www/my-portfolio
+bash scripts/deploy-hostinger.sh --public-html-dir "C:/laragon/www/public_html"
+```
+
+Después, en Laragon, usa como Document Root la carpeta `public_html`.
+
+### Alternativa local más simple (sin replicar hosting)
+
+Para desarrollo diario también puedes apuntar Laragon directo a:
+
+- `C:/laragon/www/my-portfolio/public`
+
+y te ahorras la capa `public_html`. Esta opción suele ser más simple para programar.
+
+Cuando quieras validar exactamente “como en producción”, corres el script y pruebas con `public_html`.
+
 ## Base de datos
 
 Entidades principales utilizadas por la aplicación:
