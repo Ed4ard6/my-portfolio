@@ -3,7 +3,7 @@
         <h1 style="margin:0;"><?= htmlspecialchars($heading ?? 'Administradores') ?></h1>
         <div class="page-header-actions">
             <a class="btn" href="/projects">← Volver a proyectos</a>
-            <a class="btn btn-primary" href="/admins/create">+ Nuevo admin</a>
+            <a class="btn btn-primary" href="/admins/create">+ Crear usuario</a>
         </div>
     </div>
 
@@ -110,6 +110,28 @@
                     </tbody>
                 </table>
             </div>
+
+        <?php
+            $auditPagination = $auditPagination ?? ['page' => 1, 'totalPages' => 1];
+            $auditPage = (int)($auditPagination['page'] ?? 1);
+            $auditTotalPages = (int)($auditPagination['totalPages'] ?? 1);
+
+            $auditUrl = static function (int $targetPage, string $status, ?int $targetAdminId): string {
+                $query = ['status' => $status, 'audit_page' => $targetPage];
+                if ($targetAdminId !== null && $targetAdminId > 0) {
+                    $query['target_admin_id'] = $targetAdminId;
+                }
+                return '/admins?' . http_build_query($query);
+            };
+        ?>
+
+        <?php if ($auditTotalPages > 1): ?>
+            <div class="pagination-wrap" style="margin-top:10px;">
+                <a class="btn" href="<?= htmlspecialchars($auditUrl(max(1, $auditPage - 1), (string)($currentStatus ?? 'all'), $targetAdminId ?? null)) ?>" <?= $auditPage <= 1 ? 'aria-disabled="true" tabindex="-1"' : '' ?>>← Anterior</a>
+                <span class="muted">Página <?= $auditPage ?> de <?= $auditTotalPages ?></span>
+                <a class="btn" href="<?= htmlspecialchars($auditUrl(min($auditTotalPages, $auditPage + 1), (string)($currentStatus ?? 'all'), $targetAdminId ?? null)) ?>" <?= $auditPage >= $auditTotalPages ? 'aria-disabled="true" tabindex="-1"' : '' ?>>Siguiente →</a>
+            </div>
+        <?php endif; ?>
         <?php endif; ?>
     </div>
 </div>

@@ -329,6 +329,86 @@ class ProjectModel
         return $stmt->fetchAll();
     }
 
+
+    public function paginate(int $page = 1, int $perPage = 6, string $status = '', bool $includeArchived = false): array
+    {
+        $pdo = Database::connect();
+
+        $page = max(1, $page);
+        $perPage = max(1, min(30, $perPage));
+        $offset = ($page - 1) * $perPage;
+
+        $whereParts = [];
+        $params = [];
+
+        if (!$includeArchived) {
+            $whereParts[] = "p.status <> 'archived'";
+        }
+
+        $allowed = ['pending', 'active', 'completed', 'archived'];
+        if ($status !== '' && in_array($status, $allowed, true)) {
+            $whereParts[] = 'p.status = :status';
+            $params[':status'] = $status;
+        }
+
+        $whereSql = $whereParts ? ('WHERE ' . implode(' AND ', $whereParts)) : '';
+
+        $countStmt = $pdo->prepare("SELECT COUNT(*) AS total FROM projects p {$whereSql}");
+        foreach ($params as $k => $v) {
+            $countStmt->bindValue($k, $v, PDO::PARAM_STR);
+        }
+        $countStmt->execute();
+        $total = (int)($countStmt->fetch()['total'] ?? 0);
+        $totalPages = max(1, (int)ceil($total / $perPage));
+
+        if ($page > $totalPages) {
+            $page = $totalPages;
+            $offset = ($page - 1) * $perPage;
+        }
+
+        $columns = [
+            'p.id',
+            'p.name',
+            'p.description',
+            'p.status',
+            'p.created_at',
+        ];
+
+        $urlColumn = $this->projectUrlColumn();
+        $columns[] = $urlColumn !== null ? "p.{$urlColumn} AS project_url" : 'NULL AS project_url';
+
+        $selectColumns = implode(",
+            ", $columns);
+
+        $sql = "
+        SELECT
+            $selectColumns,
+            GROUP_CONCAT(t.name ORDER BY t.name SEPARATOR ', ') AS technologies
+        FROM projects p
+        LEFT JOIN project_technology pt ON pt.project_id = p.id
+        LEFT JOIN technologies t ON t.id = pt.technology_id
+        {$whereSql}
+        GROUP BY p.id
+        ORDER BY p.id DESC
+        LIMIT :limit OFFSET :offset
+        ";
+
+        $stmt = $pdo->prepare($sql);
+        foreach ($params as $k => $v) {
+            $stmt->bindValue($k, $v, PDO::PARAM_STR);
+        }
+        $stmt->bindValue(':limit', $perPage, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return [
+            'items' => $stmt->fetchAll(),
+            'total' => $total,
+            'page' => $page,
+            'perPage' => $perPage,
+            'totalPages' => $totalPages,
+        ];
+    }
     public function updateStatus(int $id, string $status): bool
     {
         $pdo = Database::connect();

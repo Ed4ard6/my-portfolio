@@ -29,7 +29,7 @@ $selectedFeaturedIds = $selectedFeaturedIds ?? [];
 
 <?php if ($isAdmin): ?>
     <div class="card card-pad page-shell" id="admin-content-panel" style="max-width:980px; margin:0 auto;">
-        <div class="row" style="align-items:center;">
+        <div class="row admin-panel-header" style="align-items:center;">
             <h1 style="margin:0;">Editar contenido público</h1>
             <span class="badge badge--active"><span class="badge-dot"></span>Modo administrador</span>
         </div>

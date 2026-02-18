@@ -65,4 +65,30 @@
       <?php endforeach; ?>
     </div>
   <?php endif; ?>
+
+  <?php
+    $pagination = $pagination ?? ['page' => 1, 'totalPages' => 1, 'total' => count($projects ?? [])];
+    $page = (int)($pagination['page'] ?? 1);
+    $totalPages = (int)($pagination['totalPages'] ?? 1);
+
+    $buildUrl = static function (int $targetPage, string $currentStatus): string {
+      $query = [];
+      if ($currentStatus !== '') {
+        $query['status'] = $currentStatus;
+      }
+      if ($targetPage > 1) {
+        $query['page'] = $targetPage;
+      }
+      $qs = http_build_query($query);
+      return '/projects' . ($qs !== '' ? ('?' . $qs) : '');
+    };
+  ?>
+
+  <?php if ($totalPages > 1): ?>
+    <div class="pagination-wrap">
+      <a class="btn" href="<?= htmlspecialchars($buildUrl(max(1, $page - 1), (string)$currentStatus)) ?>" <?= $page <= 1 ? 'aria-disabled="true" tabindex="-1"' : '' ?>>← Anterior</a>
+      <span class="muted">Página <?= $page ?> de <?= $totalPages ?></span>
+      <a class="btn" href="<?= htmlspecialchars($buildUrl(min($totalPages, $page + 1), (string)$currentStatus)) ?>" <?= $page >= $totalPages ? 'aria-disabled="true" tabindex="-1"' : '' ?>>Siguiente →</a>
+    </div>
+  <?php endif; ?>
 </section>
