@@ -24,18 +24,14 @@ class TechnologiesController
         }
 
         $model = new TechnologyModel();
-        $technologies = $model->all(false);
-
-        if ($status === 'active') {
-            $technologies = array_values(array_filter($technologies, static fn(array $t) => (int)$t['is_active'] === 1));
-        } elseif ($status === 'inactive') {
-            $technologies = array_values(array_filter($technologies, static fn(array $t) => (int)$t['is_active'] === 0));
-        }
+        $page = max(1, (int)($_GET['page'] ?? 1));
+        $pagination = $model->paginate($page, 12, $status);
 
         View::render('technologies/index', [
             'title' => 'Tecnologías',
             'heading' => 'Gestión de tecnologías',
-            'technologies' => $technologies,
+            'technologies' => $pagination['items'],
+            'technologiesPagination' => $pagination,
             'currentStatus' => $status,
             'supportsActiveFlag' => $model->supportsActiveFlag(),
         ]);

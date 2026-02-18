@@ -130,30 +130,56 @@ class AdminUserModel
 
     public function all(string $status = 'all'): array
     {
+        return $this->paginate(1, PHP_INT_MAX, $status)['items'];
+    }
+
+    public function paginate(int $page = 1, int $perPage = 10, string $status = 'all'): array
+    {
         $pdo = Database::connect();
 
         if (!$this->hasAdminUsersTable($pdo)) {
-            return [];
+            return ['items' => [], 'page' => 1, 'perPage' => $perPage, 'total' => 0, 'totalPages' => 1];
         }
+
+        $page = max(1, $page);
+        $perPage = max(1, $perPage);
+
+        $conditions = [];
+        if ($status === 'active') {
+            $conditions[] = 'is_active = 1';
+        } elseif ($status === 'inactive') {
+            $conditions[] = 'is_active = 0';
+        }
+
+        $where = empty($conditions) ? '' : (' WHERE ' . implode(' AND ', $conditions));
+
+        $countStmt = $pdo->query("SELECT COUNT(*) AS cnt FROM admin_users{$where}");
+        $total = (int)($countStmt->fetch()['cnt'] ?? 0);
+        $totalPages = max(1, (int)ceil($total / $perPage));
+        $page = min($page, $totalPages);
+        $offset = ($page - 1) * $perPage;
 
         $emailSelect = $this->hasEmailColumn($pdo) ? 'email' : 'NULL AS email';
-        $where = '';
-
-        if ($status === 'active') {
-            $where = 'WHERE is_active = 1';
-        } elseif ($status === 'inactive') {
-            $where = 'WHERE is_active = 0';
-        }
-
-        $stmt = $pdo->query(
+        $stmt = $pdo->prepare(
             "SELECT id, username, {$emailSelect}, password_hash, is_active, created_at
              FROM admin_users
              {$where}
-             ORDER BY id DESC"
+             ORDER BY id DESC
+             LIMIT :limit OFFSET :offset"
         );
+        $stmt->bindValue(':limit', $perPage, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+        $stmt->execute();
 
         $rows = $stmt->fetchAll();
-        return array_map(fn(array $row) => $this->normalizeRow($row), $rows);
+
+        return [
+            'items' => array_map(fn(array $row): array => $this->normalizeRow($row), $rows),
+            'page' => $page,
+            'perPage' => $perPage,
+            'total' => $total,
+            'totalPages' => $totalPages,
+        ];
     }
 
     public function findById(int $id): ?array
@@ -295,11 +321,16 @@ class AdminUserModel
         $stmt->execute([password_hash($plainPassword, PASSWORD_DEFAULT), $id]);
     }
 
-    public function delete(int $id): void
+    public function setActive(int $id, bool $isActive): void
     {
         $pdo = Database::connect();
 
-        $stmt = $pdo->prepare('DELETE FROM admin_users WHERE id = ?');
-        $stmt->execute([$id]);
+        $stmt = $pdo->prepare('UPDATE admin_users SET is_active = ? WHERE id = ?');
+        $stmt->execute([$isActive ? 1 : 0, $id]);
+    }
+
+    public function delete(int $id): void
+    {
+        $this->setActive($id, false);
     }
 }

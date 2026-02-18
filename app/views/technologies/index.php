@@ -46,4 +46,30 @@
             <?php endforeach; ?>
         </div>
     <?php endif; ?>
+
+    <?php
+        $pagination = $technologiesPagination ?? ['page' => 1, 'totalPages' => 1];
+        $page = (int)($pagination['page'] ?? 1);
+        $totalPages = (int)($pagination['totalPages'] ?? 1);
+
+        $buildUrl = static function (int $targetPage, string $status): string {
+            $query = ['status' => $status];
+            if ($targetPage > 1) {
+                $query['page'] = $targetPage;
+            }
+            return '/technologies?' . http_build_query($query);
+        };
+    ?>
+
+    <?php if ($totalPages > 1): ?>
+        <div class="pagination-wrap">
+            <a class="btn" href="<?= htmlspecialchars($buildUrl(max(1, $page - 1), (string)($currentStatus ?? 'all'))) ?>" <?= $page <= 1 ? 'aria-disabled="true" tabindex="-1"' : '' ?>>← Anterior</a>
+            <div class="pagination-pages">
+                <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                    <a class="btn <?= $i === $page ? 'btn-primary' : '' ?>" href="<?= htmlspecialchars($buildUrl($i, (string)($currentStatus ?? 'all'))) ?>"><?= $i ?></a>
+                <?php endfor; ?>
+            </div>
+            <a class="btn" href="<?= htmlspecialchars($buildUrl(min($totalPages, $page + 1), (string)($currentStatus ?? 'all'))) ?>" <?= $page >= $totalPages ? 'aria-disabled="true" tabindex="-1"' : '' ?>>Siguiente →</a>
+        </div>
+    <?php endif; ?>
 </div>

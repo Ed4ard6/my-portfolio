@@ -3,7 +3,7 @@
         <h1 style="margin:0;"><?= htmlspecialchars($heading ?? 'Administradores') ?></h1>
         <div class="page-header-actions">
             <a class="btn" href="/projects">← Volver a proyectos</a>
-            <a class="btn btn-primary" href="/admins/create">+ Crear usuario</a>
+            <a class="btn btn-primary" href="/admins/create">+ Crear administrador</a>
         </div>
     </div>
 
@@ -66,16 +66,42 @@
                             <a class="btn" href="/admins/edit/<?= (int)$admin['id'] ?>">Editar</a>
                             <a class="btn" href="/admins?status=<?= urlencode((string)($currentStatus ?? 'all')) ?>&target_admin_id=<?= (int)$admin['id'] ?>">Historial de este admin</a>
 
-                            <?php if (($currentUser ?? '') !== $admin['username']): ?>
-                                <form method="POST" action="/admins/delete/<?= (int)$admin['id'] ?>" onsubmit="return confirm('¿Eliminar este administrador? Esta acción no se puede deshacer.');" style="margin:0;">
+                            <?php if (($currentUser ?? '') !== $admin['username'] && (int)$admin['is_active'] === 1): ?>
+                                <form method="POST" action="/admins/delete/<?= (int)$admin['id'] ?>" onsubmit="return confirm('¿Desactivar este administrador?');" style="margin:0;">
                                     <input type="hidden" name="<?= htmlspecialchars(Csrf::fieldName()) ?>" value="<?= htmlspecialchars(Csrf::token()) ?>">
-                                    <button class="btn btn-danger" type="submit">Eliminar</button>
+                                    <button class="btn btn-danger" type="submit">Desactivar</button>
                                 </form>
                             <?php endif; ?>
                         </div>
                     </div>
                 </div>
             <?php endforeach; ?>
+        </div>
+    <?php endif; ?>
+
+    <?php
+        $adminsPagination = $adminsPagination ?? ['page' => 1, 'totalPages' => 1];
+        $adminsPage = (int)($adminsPagination['page'] ?? 1);
+        $adminsTotalPages = (int)($adminsPagination['totalPages'] ?? 1);
+
+        $adminsUrl = static function (int $targetPage, string $status): string {
+            $query = ['status' => $status];
+            if ($targetPage > 1) {
+                $query['page'] = $targetPage;
+            }
+            return '/admins?' . http_build_query($query);
+        };
+    ?>
+
+    <?php if ($adminsTotalPages > 1): ?>
+        <div class="pagination-wrap" style="margin-top:12px;">
+            <a class="btn" href="<?= htmlspecialchars($adminsUrl(max(1, $adminsPage - 1), (string)($currentStatus ?? 'all'))) ?>" <?= $adminsPage <= 1 ? 'aria-disabled="true" tabindex="-1"' : '' ?>>← Anterior</a>
+            <div class="pagination-pages">
+                <?php for ($i = 1; $i <= $adminsTotalPages; $i++): ?>
+                    <a class="btn <?= $i === $adminsPage ? 'btn-primary' : '' ?>" href="<?= htmlspecialchars($adminsUrl($i, (string)($currentStatus ?? 'all'))) ?>"><?= $i ?></a>
+                <?php endfor; ?>
+            </div>
+            <a class="btn" href="<?= htmlspecialchars($adminsUrl(min($adminsTotalPages, $adminsPage + 1), (string)($currentStatus ?? 'all'))) ?>" <?= $adminsPage >= $adminsTotalPages ? 'aria-disabled="true" tabindex="-1"' : '' ?>>Siguiente →</a>
         </div>
     <?php endif; ?>
 
@@ -128,7 +154,11 @@
         <?php if ($auditTotalPages > 1): ?>
             <div class="pagination-wrap" style="margin-top:10px;">
                 <a class="btn" href="<?= htmlspecialchars($auditUrl(max(1, $auditPage - 1), (string)($currentStatus ?? 'all'), $targetAdminId ?? null)) ?>" <?= $auditPage <= 1 ? 'aria-disabled="true" tabindex="-1"' : '' ?>>← Anterior</a>
-                <span class="muted">Página <?= $auditPage ?> de <?= $auditTotalPages ?></span>
+                <div class="pagination-pages">
+                    <?php for ($i = 1; $i <= $auditTotalPages; $i++): ?>
+                        <a class="btn <?= $i === $auditPage ? 'btn-primary' : '' ?>" href="<?= htmlspecialchars($auditUrl($i, (string)($currentStatus ?? 'all'), $targetAdminId ?? null)) ?>"><?= $i ?></a>
+                    <?php endfor; ?>
+                </div>
                 <a class="btn" href="<?= htmlspecialchars($auditUrl(min($auditTotalPages, $auditPage + 1), (string)($currentStatus ?? 'all'), $targetAdminId ?? null)) ?>" <?= $auditPage >= $auditTotalPages ? 'aria-disabled="true" tabindex="-1"' : '' ?>>Siguiente →</a>
             </div>
         <?php endif; ?>
