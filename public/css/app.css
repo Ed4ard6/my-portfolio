@@ -36,15 +36,15 @@
 
 [data-theme="light"] {
   /* Light theme: bright but with tint + richer depth */
-  --bg: #eef2ff;
-  --card: rgba(255, 255, 255, .94);
+  --bg: #e8eefc;
+  --card: rgba(242, 247, 255, .92);
   --text: #0f172a;
   --muted: #475569;
-  --border: rgba(30, 41, 59, .14);
-  --shadow: 0 18px 44px rgba(15, 23, 42, .12);
+  --border: rgba(59, 73, 101, .16);
+  --shadow: 0 18px 44px rgba(30, 41, 59, .14);
 
-  --grad1: rgba(99, 102, 241, .30);
-  --grad2: rgba(14, 165, 233, .20);
+  --grad1: rgba(99, 102, 241, .34);
+  --grad2: rgba(14, 165, 233, .24);
 
   --primary1: #4f46e5;
   --primary2: #4338ca;
@@ -135,8 +135,8 @@ a {
 }
 
 [data-theme="light"] .card {
-  background: linear-gradient(160deg, rgba(255,255,255,.96), rgba(248,250,252,.94));
-  border-color: rgba(99,102,241,.16);
+  background: linear-gradient(160deg, rgba(246,249,255,.96), rgba(236,243,255,.92));
+  border-color: rgba(99,102,241,.20);
 }
 
 /* =========================================================
@@ -246,6 +246,12 @@ hr.sep {
   box-shadow: 0 10px 24px rgba(79, 70, 229, .28);
 }
 
+.btn-primary:hover {
+  background: linear-gradient(90deg, #5b52eb, #4f46e5);
+  border-color: rgba(115, 102, 255, .55);
+  color: #f8fafc;
+}
+
 [data-theme="light"] .btn-primary {
   border-color: rgba(67, 56, 202, .36);
 }
@@ -253,6 +259,11 @@ hr.sep {
 .btn-secondary {
   background: transparent;
   border-color: var(--border);
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, .11);
+  border-color: rgba(115, 102, 255, .32);
 }
 
 /* Danger: Archivar should ALWAYS stand out */
@@ -303,6 +314,12 @@ hr.sep {
   border-color: var(--border);
   font-size: 12px;
   color: var(--text);
+}
+
+.nav .btn:hover {
+  border-color: rgba(115, 102, 255, .42);
+  background: rgba(115, 102, 255, .14);
+  box-shadow: 0 8px 18px rgba(79, 70, 229, .20);
 }
 
 /* =========================================================
@@ -806,6 +823,15 @@ select:-webkit-autofill {
   font-size: 14px;
 }
 
+[data-theme="light"] .hero-actions .btn-primary {
+  box-shadow: 0 12px 28px rgba(79, 70, 229, .30);
+}
+
+[data-theme="light"] .hero-actions .btn-primary:hover {
+  background: linear-gradient(90deg, #4f46e5, #4338ca);
+  color: #eef2ff;
+}
+
 .hero-links a {
   text-decoration: none;
   border-bottom: 1px solid transparent;
@@ -815,6 +841,7 @@ select:-webkit-autofill {
 .hero-links a:hover {
   color: var(--text);
   border-color: var(--primary1);
+  text-shadow: 0 0 0 transparent;
 }
 
 .profile-card {
@@ -1178,8 +1205,19 @@ pre {
   box-shadow: 0 8px 22px rgba(190,24,93,.30), inset 0 0 0 1px rgba(255,255,255,.15);
 }
 
-.nav-logout-btn:hover {
-  background: linear-gradient(90deg, rgba(225,29,72,.62), rgba(190,24,93,.62));
+.nav-logout-btn:hover,
+.nav .btn.nav-logout-btn:hover {
+  background: linear-gradient(90deg, rgba(225,29,72,.90), rgba(190,24,93,.86));
+  border-color: rgba(244, 63, 94, .75);
+  color: #fff1f2;
+  box-shadow: 0 10px 24px rgba(190,24,93,.34);
+}
+
+[data-theme="light"] .nav-logout-btn,
+[data-theme="light"] .nav .btn.nav-logout-btn {
+  background: linear-gradient(90deg, rgba(225,29,72,.82), rgba(190,24,93,.78));
+  border-color: rgba(244, 63, 94, .70);
+  color: #fff1f2;
 }
 
 .form-actions {
@@ -1331,6 +1369,7 @@ pre {
   position: relative;
   font-weight: 700;
   border-color: rgba(79,70,229,.45);
+  background: rgba(99,102,241,.10);
 }
 
 .btn-contact-highlight::after {
