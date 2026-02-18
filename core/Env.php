@@ -54,7 +54,7 @@ class Env
             return [];
         }
 
-        if (!str_contains($rawContent, "\n") && str_contains($rawContent, '\\n')) {
+        if (!self::contains($rawContent, "\n") && self::contains($rawContent, '\\n')) {
             $rawContent = str_replace(['\\r\\n', '\\n', '\\r'], ["\n", "\n", "\n"], $rawContent);
         }
 
@@ -63,11 +63,11 @@ class Env
 
         foreach ($lines as $line) {
             $trimmed = trim((string)$line);
-            if ($trimmed === '' || str_starts_with($trimmed, '#') || str_starts_with($trimmed, ';')) {
+            if ($trimmed === '' || self::startsWith($trimmed, '#') || self::startsWith($trimmed, ';')) {
                 continue;
             }
 
-            if (str_starts_with($trimmed, 'export ')) {
+            if (self::startsWith($trimmed, 'export ')) {
                 $trimmed = trim((string)substr($trimmed, 7));
             }
 
@@ -112,5 +112,15 @@ class Env
         }
 
         return $rawValue;
+    }
+
+    private static function startsWith(string $haystack, string $needle): bool
+    {
+        return substr($haystack, 0, strlen($needle)) === $needle;
+    }
+
+    private static function contains(string $haystack, string $needle): bool
+    {
+        return strpos($haystack, $needle) !== false;
     }
 }
