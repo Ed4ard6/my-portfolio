@@ -66,7 +66,7 @@ class Mailer
             return ['ok' => false, 'error' => 'Configura SMTP_HOST, SMTP_PORT, SMTP_USERNAME, SMTP_PASSWORD y MAIL_FROM.'];
         }
 
-        $remote = ($encryption === 'ssl' ? 'ssl://' : '') . $host . ':' . $port;
+        $remote = self::smtpRemote($host, $port, $encryption);
         $socket = @stream_socket_client($remote, $errno, $errstr, 15);
         if (!is_resource($socket)) {
             return ['ok' => false, 'error' => 'No se pudo abrir conexión SMTP: ' . $errstr . ' (' . $errno . ').'];
@@ -83,8 +83,14 @@ class Mailer
         self::smtpWrite($socket, 'EHLO ' . $hostName);
         $ehlo = self::smtpRead($socket, true);
         if (!self::smtpExpect($ehlo, [250])) {
-            fclose($socket);
-            return ['ok' => false, 'error' => 'EHLO rechazado: ' . trim($ehlo)];
+            self::smtpWrite($socket, 'HELO ' . $hostName);
+            $helo = self::smtpRead($socket);
+            if (!self::smtpExpect($helo, [250])) {
+                fclose($socket);
+                return ['ok' => false, 'error' => 'EHLO/HELO rechazado: ' . trim($ehlo . ' ' . $helo)];
+            }
+
+            $ehlo = $helo;
         }
 
         if ($encryption === 'tls') {
@@ -97,8 +103,9 @@ class Mailer
 
             $cryptoEnabled = @stream_socket_enable_crypto($socket, true, STREAM_CRYPTO_METHOD_TLS_CLIENT);
             if ($cryptoEnabled !== true) {
+                $cryptoError = (string)((error_get_last()['message'] ?? ''));
                 fclose($socket);
-                return ['ok' => false, 'error' => 'No se pudo activar cifrado TLS para SMTP.'];
+                return ['ok' => false, 'error' => 'No se pudo activar cifrado TLS para SMTP.' . ($cryptoError !== '' ? ' ' . $cryptoError : '')];
             }
 
             self::smtpWrite($socket, 'EHLO ' . $hostName);
@@ -266,12 +273,32 @@ class Mailer
 
     private static function smtpAuthMethods(string $ehloResponse): array
     {
-        if (preg_match('/AUTH\\s+([^\\r\\n]+)/i', $ehloResponse, $matches) !== 1) {
-            return [];
+        $methods = [];
+
+        foreach (preg_split('/\\r?\\n/', $ehloResponse) ?: [] as $line) {
+            if (preg_match('/AUTH(?:=|\\s+)([^\\r\\n]+)/i', $line, $matches) !== 1) {
+                continue;
+            }
+
+            $lineMethods = preg_split('/\\s+/', trim((string)$matches[1])) ?: [];
+            foreach ($lineMethods as $method) {
+                $normalized = mb_strtolower(trim($method));
+                if ($normalized !== '') {
+                    $methods[] = $normalized;
+                }
+            }
         }
 
-        $methods = preg_split('/\s+/', trim((string)$matches[1])) ?: [];
-        return array_map(static fn (string $method): string => mb_strtolower($method), $methods);
+        return array_values(array_unique($methods));
+    }
+
+    private static function smtpRemote(string $host, int $port, string $encryption): string
+    {
+        if ($encryption === 'ssl') {
+            return 'ssl://' . $host . ':' . $port;
+        }
+
+        return 'tcp://' . $host . ':' . $port;
     }
 
     private static function smtpHeloDomain(): string
