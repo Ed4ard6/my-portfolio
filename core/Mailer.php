@@ -124,11 +124,25 @@ class Mailer
             return ['ok' => false, 'error' => (string)($authResult['error'] ?? 'No se pudo autenticar en SMTP.')];
         }
 
-        self::smtpWrite($socket, 'MAIL FROM:<' . $from . '>');
+        $envelopeFrom = $from;
+        self::smtpWrite($socket, 'MAIL FROM:<' . $envelopeFrom . '>');
         $mailFrom = self::smtpRead($socket);
         if (!self::smtpExpect($mailFrom, [250])) {
-            fclose($socket);
-            return ['ok' => false, 'error' => 'MAIL FROM rechazado: ' . trim($mailFrom)];
+            $canRetryWithUsername = $username !== '' && mb_strtolower($envelopeFrom) !== mb_strtolower($username);
+            if ($canRetryWithUsername) {
+                $envelopeFrom = $username;
+                self::smtpWrite($socket, 'RSET');
+                self::smtpRead($socket);
+                self::smtpWrite($socket, 'MAIL FROM:<' . $envelopeFrom . '>');
+                $mailFromRetry = self::smtpRead($socket);
+                if (!self::smtpExpect($mailFromRetry, [250])) {
+                    fclose($socket);
+                    return ['ok' => false, 'error' => 'MAIL FROM rechazado: ' . trim($mailFromRetry) . ' (original: ' . trim($mailFrom) . ')'];
+                }
+            } else {
+                fclose($socket);
+                return ['ok' => false, 'error' => 'MAIL FROM rechazado: ' . trim($mailFrom)];
+            }
         }
 
         self::smtpWrite($socket, 'RCPT TO:<' . $to . '>');
@@ -150,7 +164,8 @@ class Mailer
         $plain = $textBody !== null && $textBody !== '' ? $textBody : trim(strip_tags($htmlBody));
         $payload = [
             'Date: ' . date(DATE_RFC2822),
-            'From: ' . self::formatAddress($from, $fromName),
+            'From: ' . self::formatAddress($envelopeFrom, $fromName),
+            'Reply-To: ' . $envelopeFrom,
             'To: ' . $to,
             'Subject: ' . $encodedSubject,
             'MIME-Version: 1.0',
